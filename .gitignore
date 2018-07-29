@@ -1,0 +1,10 @@
+bin*/
+*.pyc
+.vscode
+/build/
+.cproject
+.project
+.settings/*
+msos_v2 Debug.launch
+.vs
+CMakeSettings.json
