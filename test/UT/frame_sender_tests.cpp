@@ -33,7 +33,7 @@ TEST_CASE("Sender should", "[frame_sender]")
     SECTION("send data correctly")
     {
         const std::vector<uint8_t> message{0xA, 0xB, 0xC, 0xD};
-        const std::vector<uint8_t> expected_message{START_BYTE, 0xA, 0xB, 0xC, 0xD};
+        const std::vector<uint8_t> expected_message{START_BYTE, 0xA, 0xB, 0xC, 0xD, 0xB6, 0xDF};
         sut.send(message);
         REQUIRE(writer.data() == expected_message);
     }
@@ -41,7 +41,8 @@ TEST_CASE("Sender should", "[frame_sender]")
     SECTION("should escape special symbols")
     {
         const std::vector<uint8_t> message{0xA, START_BYTE, 0xC, ESCAPE_BYTE};
-        const std::vector<uint8_t> expected_message{START_BYTE, 0xA, ESCAPE_BYTE, START_BYTE, 0xC, ESCAPE_BYTE, ESCAPE_BYTE};
+        const std::vector<uint8_t> expected_message{
+            START_BYTE, 0xA, ESCAPE_BYTE, START_BYTE, 0xC, ESCAPE_BYTE, ESCAPE_BYTE, 0xE9, 0x84};
         sut.send(message);
         REQUIRE(writer.data() == expected_message);
     }
@@ -54,9 +55,9 @@ TEST_CASE("Sender should", "[frame_sender]")
                                            0xB, ESCAPE_BYTE, 0xA, 0xB,
                                            0xB};
         const std::vector<uint8_t> expected_message{
-            START_BYTE, 0xA, ESCAPE_BYTE, START_BYTE, 0xC, // first frame
-            START_BYTE, 0xA, 0xB, ESCAPE_BYTE, ESCAPE_BYTE, // second frame
-            START_BYTE, 0xA, 0xB, 0xB}; // third frame
+            START_BYTE, 0xA, ESCAPE_BYTE, START_BYTE, 0xC, 0x7B, 0xEA, // first frame
+            START_BYTE, 0xA, 0xB, ESCAPE_BYTE, ESCAPE_BYTE, 0x38, 0xE1, // second frame
+            START_BYTE, 0xA, 0xB, 0xB, 0x66, 0xF5}; // third frame
         // clang-format on
 
         sut.send(message);

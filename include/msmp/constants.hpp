@@ -5,12 +5,16 @@
 namespace msmp
 {
 
-constexpr uint8_t START_BYTE  = 0x1F;
-constexpr uint8_t ESCAPE_BYTE = 0x1B;
-
-bool is_special_code(uint8_t byte)
+enum Bytes : uint8_t
 {
-    if (byte == START_BYTE || byte == ESCAPE_BYTE)
+    START  = 0x1F,
+    ESCAPE = 0x1B,
+    STUFF  = 0x1C
+};
+
+constexpr bool is_special_code(Bytes byte)
+{
+    if (byte == Bytes::START || byte == ESCAPE || byte == STUFF)
     {
         return true;
     }

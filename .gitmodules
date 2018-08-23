@@ -1,3 +1,6 @@
 [submodule "lib/eul"]
 	path = lib/eul
 	url = git@github.com:matgla/EmbeddedUtilityLibraries.git
+[submodule "lib/crcpp/crcpp"]
+	path = lib/crcpp/crcpp
+	url = https://github.com/d-bahr/CRCpp

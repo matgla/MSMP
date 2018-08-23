@@ -12,7 +12,7 @@ target_sources(msmp INTERFACE
 target_include_directories(msmp INTERFACE "${PROJECT_SOURCE_DIR}/include")
 add_subdirectory(lib)
 
-target_link_libraries(msmp INTERFACE eul gsl)
+target_link_libraries(msmp INTERFACE eul gsl crcpp)
 
 if (BUILD_TESTS)
     add_subdirectory(test)

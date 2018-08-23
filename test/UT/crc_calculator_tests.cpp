@@ -20,10 +20,10 @@ TEST_CASE("CrcCalculator", "[crc]")
         REQUIRE(msmp::CrcCalculator::crc16(message) == 0);
     }
 
-    SECTION("crc16 for 0xabcd = 0xa5be")
+    SECTION("crc16")
     {
-        const std::vector<uint8_t> message{0xA, 0xB, 0xC, 0xD};
+        const std::vector<uint8_t> message{0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39};
 
-        REQUIRE(msmp::CrcCalculator::crc16(message) == 0xA5BE);
+        REQUIRE(msmp::CrcCalculator::crc16(message) == 0xBB3D);
     }
 }

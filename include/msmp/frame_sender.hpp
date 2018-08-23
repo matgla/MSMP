@@ -7,6 +7,8 @@
 #include "constants.hpp"
 #include "crc_calculator.hpp"
 
+#include <iostream>
+
 namespace msmp
 {
 
@@ -34,10 +36,19 @@ public:
             offset           = writeToBuffer(DataSpan{data.data() + start, data.data() + start + offset});
             start += offset;
             writer_(DataSpan{buffer_.data(), static_cast<IndexType>(buffer_.size())});
+            uint16_t crc = CrcCalculatorType::crc16(DataSpan{buffer_.data(), static_cast<IndexType>(buffer_.size())});
+            write(crc);
         }
     }
 
 private:
+    void write(uint16_t data)
+    {
+        const std::array<uint8_t, 2> bytes = {static_cast<uint8_t>(data & 0x00ff), 
+            static_cast<uint8_t>((data & 0xff00) >> 8)};
+        std::cout << "c: " << std::hex << " 0x" <<  data << std::endl;
+        writer_(bytes);
+    }
     void frameStart() const
     {
         constexpr std::array<uint8_t, 1> buffer{START_BYTE};
@@ -66,6 +77,7 @@ private:
                 return bytesCounter;
             }
         }
+        
         return bytesCounter;
     }
 
