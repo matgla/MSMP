@@ -1,20 +1,33 @@
-add_executable(msmp_tests
-    main.cpp
-    frame_sender_tests.cpp
-    frame_receiver_tests.cpp
-    crc_calculator_tests.cpp
+add_executable(msmp_tests)
+
+target_sources(msmp_tests
+    PRIVATE
+        # HPP
+        stubs/ITimerStub.hpp
+        stubs/TimeoutTimerStub.hpp
+        stubs/TimerManagerStub.hpp
+        stubs/TimeStub.hpp
+        # CPP
+        main.cpp
+        PayloadReceiverTests.cpp
+        PayloadTransmitterTests.cpp
+        serializers/SerializersTests.cpp
 )
 
 target_include_directories(msmp_tests
-    PRIVATE
-        ../lib
-        ${PROJECT_SOURCE_DIR}/include
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/
 )
 
-target_link_libraries(msmp_tests PRIVATE msmp)
+target_link_libraries(msmp_tests
+    PRIVATE
+        msmp
+        gtest
+        gmock
+)
 
 target_compile_options(msmp_tests PRIVATE
-    $<$<COMPILE_LANGUAGE:CXX>:-std=c++1z -fconcepts -Wall -Werror>
+    $<$<COMPILE_LANGUAGE:CXX>:-std=c++2a -fconcepts -Wall -Werror>
     $<$<CONFIG:DEBUG>:-Og -g>
     $<$<CONFIG:RELEASE>:-Os>
 )

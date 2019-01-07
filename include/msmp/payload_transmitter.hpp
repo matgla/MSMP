@@ -11,16 +11,12 @@
 #include <eul/container/ring_buffer.hpp>
 #include <eul/function.hpp>
 
-#include <hal/common/timer/timeout_timer.hpp>
-#include <hal/common/timer/timer_manager.hpp>
-#include <hal/time/time.hpp>
+#include "msmp/control_byte.hpp"
+#include "msmp/message_type.hpp"
+#include "msmp/messages/control/ack.hpp"
+#include "msmp/messages/control/nack.hpp"
 
-#include "request/control_byte.hpp"
-#include "request/message_type.hpp"
-#include "request/messages/control/ack.hpp"
-#include "request/messages/control/nack.hpp"
-
-namespace request
+namespace msmp
 {
 
 constexpr std::size_t max_payload_size = 255;
@@ -36,15 +32,16 @@ struct Message
 };
 
 
-template <uint8_t NumberOfFrames>
+template <uint8_t NumberOfFrames, typename TimerType>
 class PayloadTransmitter
 {
 public:
     using StreamType       = gsl::span<const uint8_t>;
     using TransmitCallback = eul::function<void(const uint8_t), sizeof(void*)>;
 
-    PayloadTransmitter(const TransmitCallback& transmitter, hal::common::timer::TimerManager& timer_manager,
-                       hal::time::Time& time)
+    template <typename TimerManagerType, typename TimeType>
+    PayloadTransmitter(const TransmitCallback& transmitter, TimerManagerType& timer_manager,
+                       const TimeType& time)
         : transaction_id_counter_(0)
         , transmitter_(transmitter)
         , state_(States::Idle)
@@ -221,7 +218,7 @@ protected:
     MessageBuffer message_buffer_;
 
     States state_;
-    hal::common::timer::TimeoutTimer<hal::time::Time> timer_;
+    TimerType timer_;
 };
 
-} // namespace request
+} // namespace msmp

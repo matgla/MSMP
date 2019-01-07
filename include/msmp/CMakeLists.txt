@@ -1,31 +1,30 @@
 set(sources_dir "${PROJECT_SOURCE_DIR}/src/request")
-set(library_name "msboot_request")
+set(library_name "msmp_source")
 
-add_library(${library_name})
+add_library(${library_name} INTERFACE)
 
 target_sources(${library_name}
-    PUBLIC
-        # HPP
-        ${sources_dir}/messages/handshake.hpp
-        ${sources_dir}/control_byte.hpp
-        ${sources_dir}/message_type.hpp
-        ${sources_dir}/payload_receiver.hpp
-        ${sources_dir}/payload_transmitter.hpp
-    PRIVATE
-        # HPP
-        ${sources_dir}/messages/control/ack.hpp
-        ${sources_dir}/messages/control/messages_ids.hpp
-        ${sources_dir}/messages/control/nack.hpp
-        # CPP
-        ${sources_dir}/messages/handshake.cpp
+    INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}/control_byte.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/message_type.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/payload_receiver.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/payload_transmitter.hpp
 )
 
-target_include_directories(${library_name} PRIVATE "${PROJECT_SOURCE_DIR}/src")
+target_include_directories(${library_name} INTERFACE "${PROJECT_SOURCE_DIR}/include")
+
+add_subdirectory(messages)
 
 target_link_libraries(${library_name}
-    PUBLIC
+    INTERFACE
         gsl
         eul
-        hal
         crcpp
+        msmp_messages
+)
+
+target_compile_options(${library_name} INTERFACE
+    $<$<COMPILE_LANGUAGE:CXX>:-std=c++2a -fconcepts -Wall -Werror>
+    $<$<CONFIG:DEBUG>:-Og -g>
+    $<$<CONFIG:RELEASE>:-Os>
 )

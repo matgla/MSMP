@@ -8,10 +8,10 @@
 #include <eul/container/static_vector.hpp>
 #include <eul/function.hpp>
 
-#include "request/control_byte.hpp"
-#include "request/message_type.hpp"
-#include "request/messages/control/ack.hpp"
-#include "request/messages/control/nack.hpp"
+#include "msmp/control_byte.hpp"
+#include "msmp/message_type.hpp"
+#include "msmp/messages/control/ack.hpp"
+#include "msmp/messages/control/nack.hpp"
 
 
 /*******************
@@ -31,7 +31,7 @@
 --------------------
 *******************/
 
-namespace request
+namespace msmp
 {
 
 using namespace std::chrono_literals;
@@ -49,8 +49,8 @@ public:
     PayloadReceiver(const WriterCallback& writer, PayloadTransmitter& transmitter)
         : writer_(writer)
         , transmitter_(transmitter)
-        , payload_length_(0)
         , transaction_id_(0)
+        , payload_length_(0)
         , state_(States::Idle)
         , receiving_special_character_(false)
     {
@@ -92,12 +92,7 @@ private:
         ReceivingTransactionId,
         ReceivingMessageType,
         ReceivingMessageId,
-        ReceivingLength,
-        ReceivingPayload,
-        ReceivingCrc,
-        ReceivingControlPayload,
-        VerifyPayload,
-        TransmissionEnd
+        ReceivingPayload
     };
 
     void process_payload()
@@ -177,6 +172,11 @@ private:
                 buffer_.push_back(byte);
             }
             break;
+            case States::Idle:
+            {
+                return;
+            }
+            break;
         }
     }
 
@@ -214,4 +214,4 @@ private:
     bool receiving_special_character_;
 };
 
-} // namespace request
+} // namespace msmp

@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace request
+namespace msmp
 {
 
 enum class MessageType : uint8_t
@@ -11,4 +11,4 @@ enum class MessageType : uint8_t
     Data    = 0x02,
 };
 
-} // namespace request
+} // namespace msmp

@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace request
+namespace msmp
 {
 
 enum class ControlByte : uint8_t
@@ -16,4 +16,4 @@ constexpr bool is_control_byte(const uint8_t byte)
     return byte == static_cast<uint8_t>(ControlByte::StartFrame) || byte == static_cast<uint8_t>(ControlByte::EscapeCode);
 }
 
-} // namespace request
+} // namespace msmp
