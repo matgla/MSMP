@@ -1,6 +1,6 @@
 message("-- Adding libraries")
 remove_definitions(-DBUILD_TESTS)
+remove_definitions(-DBUILD_UT)
 add_subdirectory(eul)
 add_subdirectory(gsl)
 add_subdirectory(crcpp)
-add_subdirectory(boost)

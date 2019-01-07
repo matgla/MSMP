@@ -4,6 +4,10 @@
 [submodule "lib/crcpp/crcpp"]
 	path = lib/crcpp/crcpp
 	url = https://github.com/d-bahr/CRCpp
-[submodule "lib/boost/di"]
-	path = lib/boost/di
-	url = https://github.com/boost-experimental/di.git
+[submodule "lib/gsl/gsl"]
+	path = lib/gsl/gsl
+	url = https://github.com/Microsoft/GSL.git
+
+[submodule "test/lib/googletest"]
+	path = test/lib/googletest
+	url = https://github.com/google/googletest.git
