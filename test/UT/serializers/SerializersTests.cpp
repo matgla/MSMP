@@ -143,5 +143,57 @@ TEST_F(SerializerShould, SerializeFloatInLittleEndian)
     EXPECT_THAT(data3, ::testing::ElementsAreArray({0x00, 0xdd, 0x5d, 0x47}));
 }
 
+TEST_F(SerializerShould, SerializeCStringWithData)
+{
+    using Serializers          = Serializers<std::endian::big>;
+    const auto data            = Serializers::serialize("hello world");
+    char str1[]                = "abcdef";
+    const auto data2           = Serializers::serialize(str1);
+    constexpr const char* str2 = "work";
+    const auto data3           = Serializers::serialize<Serializers::length(str2)>(str2);
+
+
+    EXPECT_THAT(data,
+                ::testing::ElementsAreArray({'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\0'}));
+
+    EXPECT_THAT(data2, ::testing::ElementsAreArray({'a', 'b', 'c', 'd', 'e', 'f', '\0'}));
+
+    EXPECT_THAT(data3, ::testing::ElementsAreArray({'w', 'o', 'r', 'k', '\0'}));
+}
+
+TEST_F(SerializerShould, SerializeCStringWithTerminator)
+{
+    using Serializers          = Serializers<std::endian::big>;
+    const auto data            = Serializers::serialize("hello\0wo\0rld\0");
+    char str1[]                = "abcd\0ef\0";
+    const auto data2           = Serializers::serialize(str1);
+    constexpr const char* str2 = "w\0ork";
+    const auto data3           = Serializers::serialize<Serializers::length(str2)>(str2);
+
+
+    EXPECT_THAT(data, ::testing::ElementsAreArray({'h', 'e', 'l', 'l', 'o', '\0'}));
+
+    EXPECT_THAT(data2, ::testing::ElementsAreArray({'a', 'b', 'c', 'd', '\0'}));
+
+    EXPECT_THAT(data3, ::testing::ElementsAreArray({'w', '\0'}));
+}
+
+TEST_F(SerializerShould, SerializeEmptyString)
+{
+    using Serializers          = Serializers<std::endian::big>;
+    const auto data            = Serializers::serialize("");
+    char str1[]                = "";
+    const auto data2           = Serializers::serialize(str1);
+    constexpr const char* str2 = "";
+    const auto data3           = Serializers::serialize<Serializers::length(str2)>(str2);
+
+
+    EXPECT_THAT(data, ::testing::ElementsAreArray({'\0'}));
+
+    EXPECT_THAT(data2, ::testing::ElementsAreArray({'\0'}));
+
+    EXPECT_THAT(data3, ::testing::ElementsAreArray({'\0'}));
+}
+
 } // namespace serializer
 } // namespace msmp
