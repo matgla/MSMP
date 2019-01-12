@@ -12,7 +12,8 @@ namespace control
 enum class ControlMessages : uint8_t
 {
     Ack,
-    Nack
+    Nack,
+    Handshake
 };
 }
 } // namespace messages

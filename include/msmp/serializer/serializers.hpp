@@ -24,25 +24,24 @@ struct Serializers
     template <typename T, typename E = std::enable_if_t<std::conjunction_v<std::is_fundamental<T>>>>
     constexpr static std::array<uint8_t, sizeof(T)> serialize(const T& data)
     {
+        std::array<uint8_t, sizeof(T)> serialized{};
+        const uint8_t* memory = reinterpret_cast<const uint8_t*>(&data);
+
         if constexpr ((Endian == std::endian::big &&
                        is_same_endian<std::endian::native, std::endian::little>::value) ||
                       (Endian == std::endian::little &&
                        is_same_endian<std::endian::native, std::endian::big>::value))
         {
-            std::array<uint8_t, sizeof(T)> serialized{};
             for (std::size_t i = 0; i < serialized.size(); ++i)
             {
-                const uint8_t* memory = reinterpret_cast<const uint8_t*>(&data);
-                serialized[i]         = memory[sizeof(T) - 1 - i];
+                serialized[i] = memory[sizeof(T) - 1 - i];
             }
             return serialized;
         }
 
-        std::array<uint8_t, sizeof(T)> serialized{};
         for (std::size_t i = 0; i < serialized.size(); ++i)
         {
-            const uint8_t* memory = reinterpret_cast<const uint8_t*>(&data);
-            serialized[i]         = memory[i];
+            serialized[i] = memory[i];
         }
         return serialized;
     }

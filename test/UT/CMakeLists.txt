@@ -12,6 +12,7 @@ target_sources(msmp_tests
         PayloadReceiverTests.cpp
         PayloadTransmitterTests.cpp
         serializers/SerializersTests.cpp
+        serializers/DeserializersTests.cpp
 )
 
 target_include_directories(msmp_tests
@@ -27,7 +28,7 @@ target_link_libraries(msmp_tests
 )
 
 target_compile_options(msmp_tests PRIVATE
-    $<$<COMPILE_LANGUAGE:CXX>:-std=c++2a -fconcepts -Wall -Werror>
+    $<$<COMPILE_LANGUAGE:CXX>:-std=c++2a -fconcepts -Wall -Werror -Wpedantic -Wextra>
     $<$<CONFIG:DEBUG>:-Og -g>
     $<$<CONFIG:RELEASE>:-Os>
 )

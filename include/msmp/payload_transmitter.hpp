@@ -10,6 +10,7 @@
 
 #include <eul/container/ring_buffer.hpp>
 #include <eul/function.hpp>
+#include <eul/utils.hpp>
 
 #include "msmp/control_byte.hpp"
 #include "msmp/message_type.hpp"
@@ -74,6 +75,7 @@ public:
         Message msg{.transaction_id   = ++transaction_id_counter_,
                     .message_type     = static_cast<uint8_t>(MessageType::Data),
                     .message_id       = message_id,
+                    .payload          = {},
                     .failure_callback = callback,
                     .crc              = CRC::Calculate(payload.data(), payload.size(), CRC::CRC_32())};
 
@@ -86,7 +88,7 @@ public:
 
     TransmissionStatus send(const uint16_t message_id, const StreamType& payload)
     {
-        return send(message_id, payload, [](const messages::control::Nack& nack) {});
+        return send(message_id, payload, [](const messages::control::Nack& nack) { UNUSED(nack); });
     }
 
     void process_response(const messages::control::Ack& ack)
