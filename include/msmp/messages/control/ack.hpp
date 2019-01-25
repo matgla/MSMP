@@ -19,9 +19,7 @@ struct Ack
 
     std::array<uint8_t, 2> serialize() const
     {
-        return {
-            id,
-            transaction_id};
+        return {id, transaction_id};
     }
 };
 

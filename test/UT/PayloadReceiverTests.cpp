@@ -8,12 +8,15 @@
 
 #include <CRC.h>
 
+#include <eul/logger/logger_factory.hpp>
+
 #include "msmp/payload_receiver.hpp"
 #include "msmp/payload_transmitter.hpp"
 
-#include "stubs/TimeStub.hpp"
-#include "stubs/TimeoutTimerStub.hpp"
-#include "stubs/TimerManagerStub.hpp"
+#include "test/UT/stubs/StandardErrorStreamStub.hpp"
+#include "test/UT/stubs/TimeStub.hpp"
+#include "test/UT/stubs/TimeoutTimerStub.hpp"
+#include "test/UT/stubs/TimerManagerStub.hpp"
 
 namespace msmp
 {
@@ -24,7 +27,8 @@ class PayloadReceiverShould : public ::testing::Test
 {
 public:
     PayloadReceiverShould()
-        : timer_manager_(time_)
+        : logger_factory_(time_)
+        , timer_manager_(time_)
         , transmitter_callback_([this](const uint8_t byte) { transmitter_buffer_.push_back(byte); })
         , receiver_callback_([this](const gsl::span<const uint8_t>& payload) {
             receiver_buffer_.insert(receiver_buffer_.begin(), payload.begin(), payload.end());
@@ -35,6 +39,9 @@ public:
 
 protected:
     stubs::TimeStub time_;
+    using LoggerFactoryType = eul::logger::LoggerFactory<stubs::TimeStub, eul::logger::CurrentLoggingPolicy,
+                                                         stubs::StandardErrorStreamStub>;
+    LoggerFactoryType logger_factory_;
     stubs::TimerManagerStub<stubs::TimeStub> timer_manager_;
     std::vector<uint8_t> transmitter_buffer_;
     std::vector<uint8_t> receiver_buffer_;
@@ -45,7 +52,7 @@ protected:
 
 TEST_F(PayloadReceiverShould, NackWhenWrongMessageTypeReceived)
 {
-    PayloadReceiver sut(receiver_callback_, transmitter_);
+    PayloadReceiver sut(logger_factory_, receiver_callback_, transmitter_);
 
     EXPECT_THAT(transmitter_buffer_, ::testing::SizeIs(0));
     sut.receive(static_cast<uint8_t>(ControlByte::StartFrame));
@@ -66,7 +73,7 @@ TEST_F(PayloadReceiverShould, NackWhenWrongMessageTypeReceived)
 
 TEST_F(PayloadReceiverShould, ReceiveMessage)
 {
-    PayloadReceiver sut(receiver_callback_, transmitter_);
+    PayloadReceiver sut(logger_factory_, receiver_callback_, transmitter_);
 
     EXPECT_THAT(transmitter_buffer_, ::testing::IsEmpty());
 
@@ -110,7 +117,7 @@ TEST_F(PayloadReceiverShould, ReceiveMessage)
 
 TEST_F(PayloadReceiverShould, ReceiveMessageWithStuffedBytes)
 {
-    PayloadReceiver sut(receiver_callback_, transmitter_);
+    PayloadReceiver sut(logger_factory_, receiver_callback_, transmitter_);
 
     EXPECT_THAT(transmitter_buffer_, ::testing::IsEmpty());
 
@@ -165,7 +172,7 @@ TEST_F(PayloadReceiverShould, ReceiveMessageWithStuffedBytes)
 
 TEST_F(PayloadReceiverShould, ReceiveMessageAfterAbort)
 {
-    PayloadReceiver sut(receiver_callback_, transmitter_);
+    PayloadReceiver sut(logger_factory_, receiver_callback_, transmitter_);
 
     EXPECT_THAT(transmitter_buffer_, ::testing::IsEmpty());
 
@@ -222,7 +229,7 @@ TEST_F(PayloadReceiverShould, ReceiveMessageAfterAbort)
 
 TEST_F(PayloadReceiverShould, RespondNackWithCrcMismatch)
 {
-    PayloadReceiver sut(receiver_callback_, transmitter_);
+    PayloadReceiver sut(logger_factory_, receiver_callback_, transmitter_);
 
     constexpr uint8_t transaction_id    = 1;
     constexpr uint8_t message_id_higher = 0;

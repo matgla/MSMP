@@ -9,16 +9,12 @@
 
 #include <eul/container/static_vector.hpp>
 
+#include "msmp/serializer/endian_type_traits.hpp"
+
 namespace msmp
 {
 namespace serializer
 {
-
-template <std::endian a, std::endian b>
-struct is_same_endian
-{
-    constexpr static bool value = a == b;
-};
 
 template <std::endian Endian>
 struct Deserializers

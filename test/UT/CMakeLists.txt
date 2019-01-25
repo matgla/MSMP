@@ -7,17 +7,21 @@ target_sources(msmp_tests
         stubs/TimeoutTimerStub.hpp
         stubs/TimerManagerStub.hpp
         stubs/TimeStub.hpp
+        stubs/StandardErrorStreamStub.hpp
         # CPP
+        ConnectionTests.cpp
         main.cpp
         PayloadReceiverTests.cpp
         PayloadTransmitterTests.cpp
-        serializers/SerializersTests.cpp
         serializers/DeserializersTests.cpp
+        serializers/SerializersTests.cpp
+        messages/control/HandshakeTests.cpp
 )
 
 target_include_directories(msmp_tests
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/
+        ${PROJECT_SOURCE_DIR}/
 )
 
 target_link_libraries(msmp_tests

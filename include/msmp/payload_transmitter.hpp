@@ -173,17 +173,24 @@ public:
         }
     }
 
-    void send_control(const StreamType& payload)
+    template <typename T>
+    void send_control(const T& data)
     {
         send_byte(ControlByte::StartFrame);
         send_byte(MessageType::Control);
-        for (auto byte : payload)
+
+        for (auto byte : data.serialize())
         {
             send_byte(byte);
         }
         send_byte(ControlByte::StartFrame);
     }
 
+    // template <typename T>
+    // void send_control(const T& payload)
+    // {
+    //     send_control(StreamType{payload.begin(), payload.end()});
+    // }
 
 protected:
     void send_byte(const uint8_t byte) const

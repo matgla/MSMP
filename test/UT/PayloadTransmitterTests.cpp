@@ -205,8 +205,9 @@ TEST_F(PayloadTransmitterShould, TransmitControlMessage)
     using PayloadTransmitter = PayloadTransmitter<2, stubs::TimeoutTimerStub<stubs::TimeStub>>;
     PayloadTransmitter sut(transmitter_callback_, timer_manager_, time_);
 
-    auto serialized_ack = messages::control::Ack().serialize();
-    sut.send_control(serialized_ack);
+    const auto ack      = messages::control::Ack();
+    auto serialized_ack = ack.serialize();
+    sut.send_control(messages::control::Ack());
 
     EXPECT_THAT(transmitter_buffer_, ::testing::ElementsAreArray({
                                          static_cast<uint8_t>(ControlByte::StartFrame),
