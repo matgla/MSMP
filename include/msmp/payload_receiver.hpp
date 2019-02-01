@@ -10,9 +10,8 @@
 #include <eul/logger/logger.hpp>
 
 #include "msmp/control_byte.hpp"
+#include "msmp/default_configuration.hpp"
 #include "msmp/message_type.hpp"
-#include "msmp/messages/control/ack.hpp"
-#include "msmp/messages/control/nack.hpp"
 #include "msmp/serializer/deserializers.hpp"
 
 
@@ -40,55 +39,22 @@ using namespace std::chrono_literals;
 
 constexpr auto TransmissionTimeout = 2s;
 
-template <typename LoggerFactory, typename PayloadTransmitter, std::size_t BufferSize = 255>
+template <typename LoggerFactory, typename Configuration = DefaultConfiguration>
 class PayloadReceiver
 {
 public:
-    constexpr static std::size_t max_payload_size = BufferSize;
+    constexpr static std::size_t max_payload_size = Configuration::max_payload_size;
     using StreamType                              = gsl::span<const uint8_t>;
-    using WriterCallback                          = eul::function<void(const StreamType&), sizeof(void*)>;
-    using TransmitCallback                        = eul::function<void(const StreamType&), sizeof(void*)>;
-    PayloadReceiver(const LoggerFactory& loggerFactory, const WriterCallback& writer,
-                    PayloadTransmitter& transmitter)
-        : logger_(loggerFactory.create("PayloadReceiver"))
-        , writer_(writer)
-        , transmitter_(transmitter)
-        , transaction_id_(0)
-        , payload_length_(0)
-        , state_(States::Idle)
-        , receiving_special_character_(false)
-    {
-    }
+    using OnTransmissionFailed                    = eul::function<void(), sizeof(void*)>;
+    using OnTransmissionSucceeded                 = eul::function<void(const uint8_t transaction_id,
+                                                       const uint16_t message_id, const StreamType& payload),
+                                                  sizeof(void*)>;
 
-    void receive(const auto& payload)
-    {
-        for (const auto byte : payload)
-        {
-            receive(byte);
-        }
-    }
+    PayloadReceiver(const LoggerFactory& loggerFactory);
 
-    void receive(const uint8_t byte)
-    {
-        if (receiving_special_character_ != true)
-        {
-            if (byte == static_cast<uint8_t>(ControlByte::EscapeCode))
-            {
-                receiving_special_character_ = true;
-                return;
-            }
-        }
+    void receive(const StreamType& payload);
 
-        if (byte == static_cast<uint8_t>(ControlByte::StartFrame) && receiving_special_character_ == false)
-        {
-            logger_.trace() << "Start frame byte received";
-            state_ = States::StartTransmission;
-        }
-
-        receiving_special_character_ = false;
-
-        process_state(byte);
-    }
+    void receive_byte(const uint8_t byte);
 
     void on_control_message(const WriterCallback& on_control_message_callback)
     {
@@ -174,7 +140,6 @@ private:
                 }
                 buffer_.clear();
                 transaction_id_ = 0;
-                payload_length_ = 0;
                 message_id_     = 0;
                 state_          = States::ReceivingMessageType;
                 return;
@@ -214,44 +179,60 @@ private:
         }
     }
 
-    void respond_nack(const messages::control::Nack::Reason reason) const
-    {
-        // clang-format off
-        transmitter_.send_control(
-            messages::control::Nack{
-                .transaction_id = transaction_id_,
-                .reason = reason
-            });
-        // clang-format on
-    }
-
-    void respond_ack() const
-    {
-        logger_.trace() << "Responding ack";
-
-        // clang-format off
-        transmitter_.send_control(
-            messages::control::Ack{
-                .transaction_id = transaction_id_,
-            });
-        // clang-format on
-    }
-
     typename LoggerFactory::LoggerType logger_;
     WriterCallback writer_;
     WriterCallback on_control_message_callback_;
 
-    PayloadTransmitter& transmitter_;
 
     eul::container::static_vector<uint8_t, BufferSize + 4> buffer_;
     eul::container::static_vector<uint8_t, 2> message_id_buffer_;
 
     uint8_t transaction_id_;
-    uint8_t payload_length_;
     States state_;
     MessageType type_;
     bool receiving_special_character_;
     uint16_t message_id_;
 };
+
+template <typename LoggerFactory, typename Configuration>
+PayloadReceiver<LoggerFactory, Configuration>::PayloadReceiver(const LoggerFactory& loggerFactory)
+    : logger_(loggerFactory.create("PayloadReceiver"))
+    , transaction_id_(0)
+    , state_(States::Idle)
+    , receiving_special_character_(false)
+{
+}
+
+template <typename LoggerFactory, typename Configuration>
+void PayloadReceiver<LoggerFactory, Configuration>::receive(const StreamType& payload)
+{
+    for (const auto byte : payload)
+    {
+        receive(byte);
+    }
+}
+
+template <typename LoggerFactory, typename Configuration>
+void PayloadReceiver<LoggerFactory, Configuration>::receive_byte(const uint8_t byte)
+{
+    if (receiving_special_character_ != true)
+    {
+        if (byte == static_cast<uint8_t>(ControlByte::EscapeCode))
+        {
+            receiving_special_character_ = true;
+            return;
+        }
+    }
+
+    if (byte == static_cast<uint8_t>(ControlByte::StartFrame) && receiving_special_character_ == false)
+    {
+        logger_.trace() << "Start frame byte received";
+        state_ = States::StartTransmission;
+    }
+
+    receiving_special_character_ = false;
+
+    process_state(byte);
+}
 
 } // namespace msmp
