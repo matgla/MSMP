@@ -16,6 +16,7 @@ target_sources(msmp_tests
         serializers/DeserializersTests.cpp
         serializers/SerializersTests.cpp
         messages/control/HandshakeTests.cpp
+        DataLinkTransmitterTests.cpp
 )
 
 target_include_directories(msmp_tests
