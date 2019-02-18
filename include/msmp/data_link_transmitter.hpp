@@ -15,7 +15,7 @@ class DataLinkTransmitter
 public:
     using StreamType = gsl::span<const uint8_t>;
 
-    DataLinkTransmitter(LoggerFactory& loggerFactory, const WriterType& writer);
+    DataLinkTransmitter(LoggerFactory& logger_factory, const WriterType& writer);
 
     bool start_transmission();
     bool end_transmission();
@@ -37,7 +37,7 @@ private:
         Idle
     };
 
-    auto& create_logger(LoggerFactory& loggerFactory);
+    auto& create_logger(LoggerFactory& logger_factory);
     bool send_byte(ControlByte byte);
 
     typename LoggerFactory::LoggerType& logger_;
@@ -46,9 +46,9 @@ private:
 };
 
 template <typename LoggerFactory, typename WriterType>
-DataLinkTransmitter<LoggerFactory, WriterType>::DataLinkTransmitter(LoggerFactory& loggerFactory,
+DataLinkTransmitter<LoggerFactory, WriterType>::DataLinkTransmitter(LoggerFactory& logger_factory,
                                                                     const WriterType& writer)
-    : logger_(create_logger(loggerFactory)), writer_(writer), state_(State::Idle)
+    : logger_(create_logger(logger_factory)), writer_(writer), state_(State::Idle)
 {
 }
 
@@ -120,11 +120,10 @@ bool DataLinkTransmitter<LoggerFactory, WriterType>::send_byte(ControlByte byte)
     return writer_(static_cast<uint8_t>(byte));
 }
 
-
 template <typename LoggerFactory, typename WriterType>
-auto& DataLinkTransmitter<LoggerFactory, WriterType>::create_logger(LoggerFactory& loggerFactory)
+auto& DataLinkTransmitter<LoggerFactory, WriterType>::create_logger(LoggerFactory& logger_factory)
 {
-    static auto logger = loggerFactory.create("DataLinkTransmitter");
+    static auto logger = logger_factory.create("DataLinkTransmitter");
     return logger;
 }
 

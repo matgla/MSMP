@@ -6,6 +6,8 @@ add_library(${library_name} INTERFACE)
 target_sources(${library_name}
     INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/control_byte.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/data_link_receiver.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/data_link_transmitter.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/message_type.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/payload_receiver.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/payload_transmitter.hpp
