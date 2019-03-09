@@ -18,6 +18,7 @@ target_sources(msmp_tests
         messages/control/HandshakeTests.cpp
         DataLinkReceiverTests.cpp
         DataLinkTransmitterTests.cpp
+        TransportTransmitterTests.cpp
 )
 
 target_include_directories(msmp_tests
