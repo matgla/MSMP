@@ -11,6 +11,7 @@
 #include "test/UT/stubs/StandardErrorStreamStub.hpp"
 #include "test/UT/stubs/TimeStub.hpp"
 #include "test/UT/stubs/TimerManagerStub.hpp"
+#include "test/UT/stubs/WriterForTest.hpp"
 
 namespace msmp
 {
@@ -27,7 +28,7 @@ protected:
     using LoggerFactoryType = eul::logger::LoggerFactory<stubs::TimeStub, eul::logger::CurrentLoggingPolicy,
                                                          stubs::StandardErrorStreamStub>;
     LoggerFactoryType logger_factory_;
-    std::vector<uint8_t> transmitter_buffer_;
+    WriterForTest<DefaultConfiguration> writer_;
 };
 
 struct SmallBufferConfiguration
@@ -40,43 +41,36 @@ struct SmallBufferConfiguration
 
 TEST_F(DataLinkTransmitterShould, StartTransmission)
 {
-    DataLinkTransmitter sut(logger_factory_, [this](uint8_t byte) {
-        transmitter_buffer_.push_back(byte);
-        return true;
-    });
+    DataLinkTransmitter sut(logger_factory_, writer_);
 
     using DataLinkTransmitterType = decltype(sut);
 
     EXPECT_EQ(sut.send(1), DataLinkTransmitterType::TransmissionStatus::Ok);
     sut.run();
-    EXPECT_THAT(transmitter_buffer_,
+    EXPECT_THAT(writer_.get_buffer(),
                 ::testing::ElementsAreArray({static_cast<uint8_t>(ControlByte::StartFrame)}));
 }
 
 TEST_F(DataLinkTransmitterShould, EndTransmission)
 {
-    DataLinkTransmitter sut(logger_factory_, [this](uint8_t byte) {
-        transmitter_buffer_.push_back(byte);
-        return true;
-    });
+    DataLinkTransmitter sut(logger_factory_, writer_);
+
     using DataLinkTransmitterType = decltype(sut);
 
     EXPECT_EQ(sut.send(std::array<uint8_t, 0>{}), DataLinkTransmitterType::TransmissionStatus::Ok);
     sut.run();
-    EXPECT_THAT(transmitter_buffer_,
+    EXPECT_THAT(writer_.get_buffer(),
                 ::testing::ElementsAreArray({static_cast<uint8_t>(ControlByte::StartFrame)}));
-    transmitter_buffer_.clear();
+    writer_.get_buffer().clear();
     sut.run();
-    EXPECT_THAT(transmitter_buffer_,
+    EXPECT_THAT(writer_.get_buffer(),
                 ::testing::ElementsAreArray({static_cast<uint8_t>(ControlByte::StartFrame)}));
 }
 
 TEST_F(DataLinkTransmitterShould, SendByte)
 {
-    DataLinkTransmitter sut(logger_factory_, [this](uint8_t byte) {
-        transmitter_buffer_.push_back(byte);
-        return true;
-    });
+    DataLinkTransmitter sut(logger_factory_, writer_);
+
 
     constexpr uint8_t byte1 = 0x12;
     constexpr uint8_t byte2 = 0xab;
@@ -84,37 +78,30 @@ TEST_F(DataLinkTransmitterShould, SendByte)
     sut.send(byte1);
     sut.send(byte2);
     sut.run(); // start transmission
-    transmitter_buffer_.clear();
+    writer_.get_buffer().clear();
     sut.run();
     sut.run();
-    EXPECT_THAT(transmitter_buffer_, ::testing::ElementsAreArray({byte1, byte2}));
+    EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({byte1, byte2}));
 }
 
 TEST_F(DataLinkTransmitterShould, TransmitArrayOfData)
 {
-    DataLinkTransmitter sut(logger_factory_, [this](uint8_t byte) {
-        transmitter_buffer_.push_back(byte);
-        return true;
-    });
-
+    DataLinkTransmitter sut(logger_factory_, writer_);
 
     const uint8_t byte1 = 0x12;
     const uint8_t byte2 = 0xab;
     sut.send(std::vector<uint8_t>{byte1, byte2});
     sut.run();
-    transmitter_buffer_.clear();
+    writer_.get_buffer().clear();
 
     sut.run();
     sut.run();
-    EXPECT_THAT(transmitter_buffer_, ::testing::ElementsAreArray({byte1, byte2}));
+    EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({byte1, byte2}));
 }
 
 TEST_F(DataLinkTransmitterShould, StuffBytes)
 {
-    DataLinkTransmitter sut(logger_factory_, [this](uint8_t byte) {
-        transmitter_buffer_.push_back(byte);
-        return true;
-    });
+    DataLinkTransmitter sut(logger_factory_, writer_);
 
     const uint8_t byte1       = static_cast<uint8_t>(ControlByte::EscapeCode);
     const uint8_t byte2       = static_cast<uint8_t>(ControlByte::StartFrame);
@@ -122,47 +109,43 @@ TEST_F(DataLinkTransmitterShould, StuffBytes)
 
     sut.send(std::vector<uint8_t>{byte1, byte2});
     sut.run();
-    transmitter_buffer_.clear();
+    writer_.get_buffer().clear();
     sut.run();
     sut.run();
     sut.run();
     sut.run();
-    EXPECT_THAT(transmitter_buffer_, ::testing::ElementsAreArray({escape_byte, byte1, escape_byte, byte2}));
+    EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({escape_byte, byte1, escape_byte, byte2}));
     sut.run(); // end byte
-    transmitter_buffer_.clear();
+    writer_.get_buffer().clear();
     sut.send(byte1);
     sut.run(); // start byte
-    transmitter_buffer_.clear();
+    writer_.get_buffer().clear();
     sut.run();
     sut.run();
-    EXPECT_THAT(transmitter_buffer_, ::testing::ElementsAreArray({escape_byte, byte1}));
+    EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({escape_byte, byte1}));
 }
 
 TEST_F(DataLinkTransmitterShould, RejectWhenToMuchPayload)
 {
 
-    DataLinkTransmitter sut(logger_factory_,
-                            [this](uint8_t byte) {
-                                transmitter_buffer_.push_back(byte);
-                                return true;
-                            },
-                            SmallBufferConfiguration{});
+    DataLinkTransmitter sut(logger_factory_, writer_, SmallBufferConfiguration{});
     using DataLinkTransmitterType = decltype(sut);
 
     const uint8_t byte1 = static_cast<uint8_t>(ControlByte::EscapeCode);
     const uint8_t byte2 = static_cast<uint8_t>(ControlByte::StartFrame);
 
     EXPECT_EQ(sut.send(std::vector<uint8_t>{byte1, byte2}),
-              DataLinkTransmitterType::TransmissionStatus::TooMuchPayload);
+              DataLinkTransmitterType::TransmissionStatus::TooBigPayload);
 }
 
 TEST_F(DataLinkTransmitterShould, ReportWriterFailure)
 {
-
-    DataLinkTransmitter sut(logger_factory_, [this](uint8_t byte) {
-        transmitter_buffer_.push_back(byte);
+    auto writer = [this](uint8_t byte) {
+        UNUSED(byte);
         return false;
-    });
+    };
+
+    DataLinkTransmitter sut(logger_factory_, writer);
     using DataLinkTransmitterType = decltype(sut);
 
     const uint8_t byte1 = static_cast<uint8_t>(ControlByte::EscapeCode);
@@ -183,10 +166,7 @@ TEST_F(DataLinkTransmitterShould, ReportWriterFailure)
 
 TEST_F(DataLinkTransmitterShould, NotifySuccess)
 {
-    DataLinkTransmitter sut(logger_factory_, [this](uint8_t byte) {
-        transmitter_buffer_.push_back(byte);
-        return true;
-    });
+    DataLinkTransmitter sut(logger_factory_, writer_);
     using DataLinkTransmitterType = decltype(sut);
 
     bool success = false;

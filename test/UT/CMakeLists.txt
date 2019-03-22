@@ -8,6 +8,7 @@ target_sources(msmp_tests
         stubs/TimerManagerStub.hpp
         stubs/TimeStub.hpp
         stubs/StandardErrorStreamStub.hpp
+        stubs/WriterForTest.hpp
         # CPP
         ConnectionTests.cpp
         main.cpp
