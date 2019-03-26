@@ -12,6 +12,7 @@ add_subdirectory(include/msmp)
 
 target_link_libraries(msmp INTERFACE eul gsl crcpp msmp_source)
 
-if (BUILD_UT)
+if (BUILD_TESTS)
+    enable_testing()
     add_subdirectory(test)
 endif ()

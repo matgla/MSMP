@@ -6,11 +6,9 @@
 
 #include <eul/container/static_deque.hpp>
 #include <eul/function.hpp>
-#include <eul/utils.hpp>
 
 #include "msmp/control_byte.hpp"
 #include "msmp/default_configuration.hpp"
-#include "msmp/transmission_status.hpp"
 
 namespace msmp
 {
@@ -19,14 +17,20 @@ template <typename LoggerFactory, typename WriterType, typename Configuration = 
 class DataLinkTransmitter
 {
 public:
-    using TransmissionStatus = msmp::TransmissionStatus;
+    enum class TransmissionStatus : uint8_t
+    {
+        Ok,
+        NotStarted,
+        WriterReportFailure,
+        TooMuchPayload
+    };
 
     using StreamType            = gsl::span<const uint8_t>;
     using OnSuccessCallbackType = eul::function<void(), sizeof(void*)>;
     using OnFailureCallbackType = eul::function<void(TransmissionStatus), sizeof(void*)>;
 
 public:
-    DataLinkTransmitter(LoggerFactory& logger_factory, WriterType& writer,
+    DataLinkTransmitter(LoggerFactory& logger_factory, const WriterType& writer,
                         Configuration configuration = Configuration{});
 
     TransmissionStatus send(uint8_t byte);
@@ -56,7 +60,7 @@ private:
     void send_next_byte();
 
     typename LoggerFactory::LoggerType& logger_;
-    WriterType& writer_;
+    WriterType writer_;
     State state_;
     OnSuccessCallbackType on_success_;
     OnFailureCallbackType on_failure_;
@@ -65,10 +69,9 @@ private:
 
 template <typename LoggerFactory, typename WriterType, typename Configuration>
 DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::DataLinkTransmitter(
-    LoggerFactory& logger_factory, WriterType& writer, Configuration configuration)
+    LoggerFactory& logger_factory, const WriterType& writer, Configuration)
     : logger_(create_logger(logger_factory)), writer_(writer), state_(State::Idle)
 {
-    UNUSED(configuration);
 }
 
 template <typename LoggerFactory, typename WriterType, typename Configuration>
@@ -99,10 +102,9 @@ template <typename LoggerFactory, typename WriterType, typename Configuration>
 typename DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::TransmissionStatus
     DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::send(const StreamType& bytes)
 {
-    logger_.trace() << "Sending data";
     if (static_cast<std::size_t>(bytes.size()) >= buffer_.max_size())
     {
-        return TransmissionStatus::TooBigPayload;
+        return TransmissionStatus::TooMuchPayload;
     }
 
     if (!buffer_.empty())
@@ -157,13 +159,10 @@ void DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::run()
     {
         case State::Idle:
         {
-            logger_.trace() << "Run in state: Idle";
-
             return;
         }
         case State::StartingTransmission:
         {
-            logger_.trace() << "Run in state: StartingTransmission";
             if (start_transmission())
             {
                 if (buffer_.empty())
@@ -179,8 +178,6 @@ void DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::run()
         break;
         case State::TransmittingPayload:
         {
-            logger_.trace() << "Run in state: TransmittingPayload";
-
             if (is_control_byte(buffer_.front()))
             {
                 if (!send_byte(ControlByte::EscapeCode))
@@ -195,16 +192,12 @@ void DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::run()
         break;
         case State::TransmittedSpecialByte:
         {
-            logger_.trace() << "Run in state: TransmittedSpecialByte";
-
             state_ = State::TransmittingPayload;
             send_next_byte();
         }
         break;
         case State::EndingTransmission:
         {
-            logger_.trace() << "Run in state: EndingTransmission";
-
             if (end_transmission())
             {
                 if (on_success_)

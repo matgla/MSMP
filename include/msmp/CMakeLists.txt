@@ -16,6 +16,7 @@ target_sources(${library_name}
 target_include_directories(${library_name} INTERFACE "${PROJECT_SOURCE_DIR}/include")
 
 add_subdirectory(messages)
+add_subdirectory(serializer)
 
 target_link_libraries(${library_name}
     INTERFACE
@@ -23,6 +24,7 @@ target_link_libraries(${library_name}
         eul
         crcpp
         msmp_messages
+        msmp_serializer
 )
 
 target_compile_options(${library_name} INTERFACE

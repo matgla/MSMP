@@ -1,6 +1,6 @@
 message("-- Adding libraries")
-remove_definitions(-DBUILD_TESTS)
-remove_definitions(-DBUILD_UT)
+set(BUILD_TESTS OFF)
+set(BUILD_UT OFF)
 
 if (NOT TARGET eul)
     add_subdirectory(eul)

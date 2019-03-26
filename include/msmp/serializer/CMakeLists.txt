@@ -1,15 +1,18 @@
-set(library_name "msmp_messages")
+set(library_name "msmp_serializer")
 
 add_library(${library_name} INTERFACE)
 
-add_subdirectory(control)
+target_sources(${library_name}
+    INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}/deserializers.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/endian_type_traits.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/serializers.hpp
+)
 
 target_link_libraries(${library_name}
     INTERFACE
         gsl
         eul
-
-        msmp_control_messages
 )
 
 target_compile_options(${library_name} INTERFACE
