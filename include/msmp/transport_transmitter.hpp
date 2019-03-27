@@ -55,7 +55,12 @@ TransportTransmitter<LoggerFactory, DataLinkTransmitter, Configuration>::Transpo
     , current_byte_(0)
 {
     logger_.trace() << "Created";
-    // data_link_transmitter_.on
+    // data_link_transmitter_.on_success([this](){
+    //     send_next_frame();
+    // });
+    // data_link_transmitter_.on_failure([this](){
+    //     retransmit_failed_frame();
+    // });
 }
 
 template <typename LoggerFactory, typename DataLinkTransmitter, typename Configuration>
@@ -76,16 +81,7 @@ TransmissionStatus TransportTransmitter<LoggerFactory, DataLinkTransmitter, Conf
 template <typename LoggerFactory, typename DataLinkTransmitter, typename Configuration>
 void TransportTransmitter<LoggerFactory, DataLinkTransmitter, Configuration>::run()
 {
-    // if (current_byte_ == 0)
-    // {
-    //     data_link_transmitter_.start_transmission();
-    // }
-    // data_.send(buffer_.front()[current_byte_]);
-    // ++current_byte_;
-    // if (current_byte_ == buffer_.front().size() - 1)
-    // {
-    //     data_link_transmitter_.end_transmission();
-    // }
+
 }
 
 template <typename LoggerFactory, typename DataLinkTransmitter, typename Configuration>
