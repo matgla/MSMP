@@ -5,6 +5,8 @@
 #include <gsl/span>
 
 #include <eul/container/static_deque.hpp>
+#include <eul/timer/ITimeProvider.hpp>
+#include <eul/timer/timeout_timer.hpp>
 #include <eul/function.hpp>
 
 #include "msmp/control_byte.hpp"
@@ -30,7 +32,7 @@ public:
     using OnFailureCallbackType = eul::function<void(TransmissionStatus), sizeof(void*)>;
 
 public:
-    DataLinkTransmitter(LoggerFactory& logger_factory, WriterType& writer,
+    DataLinkTransmitter(LoggerFactory& logger_factory, WriterType& writer, const eul::timer::ITimeProvider& time_provider,
                         Configuration configuration = Configuration{});
 
     TransmissionStatus send(uint8_t byte);
@@ -65,6 +67,7 @@ private:
 
     typename LoggerFactory::LoggerType& logger_;
     WriterType& writer_;
+    eul::timer::timeout_timer timer_;
     State state_;
     OnSuccessCallbackType on_success_;
     OnFailureCallbackType on_failure_;
@@ -76,9 +79,10 @@ private:
 
 template <typename LoggerFactory, typename WriterType, typename Configuration>
 DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::DataLinkTransmitter(
-    LoggerFactory& logger_factory, WriterType& writer, Configuration)
-    : logger_(create_logger(logger_factory)), writer_(writer), state_(State::Idle), current_byte_(0)
+    LoggerFactory& logger_factory, WriterType& writer, const eul::timer::ITimeProvider& time_provider, Configuration)
+    : logger_(create_logger(logger_factory)), writer_(writer), timer_(time_provider), state_(State::Idle), current_byte_(0)
 {
+    Configuration::timer_manager.register_timer(timer_);
     writer_.on_success([this](){
         do_on_succeeded();
         run();
@@ -122,6 +126,16 @@ void DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::send_byte(ui
 {
     logger_.trace() << "Byte will be transmitted: " << static_cast<int>(byte);
     writer_.write(byte);
+    timer_.start([this]
+    {
+        if (retries_counter_ == 0)
+        {
+            report_failure(TransmissionStatus::WriterReportFailure);
+            return;
+        }
+        --retries_counter_;
+        send_byte_async(current_byte_);
+    }, std::chrono::milliseconds(500));
 }
 
 template <typename LoggerFactory, typename WriterType, typename Configuration>

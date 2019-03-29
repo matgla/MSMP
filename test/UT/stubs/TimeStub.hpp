@@ -2,10 +2,12 @@
 
 #include <chrono>
 
+#include <eul/timer/ITimeProvider.hpp>
+
 namespace stubs
 {
 
-class TimeStub
+class TimeStub : public eul::timer::ITimeProvider
 {
 public:
     TimeStub() : time_(0)
@@ -29,7 +31,7 @@ public:
         return *this;
     }
 
-    std::chrono::milliseconds milliseconds() const
+    std::chrono::milliseconds milliseconds() const override
     {
         return time_;
     }

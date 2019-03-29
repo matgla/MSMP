@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include <eul/logger/logger_factory.hpp>
+#include <eul/timer/timer_manager.hpp>
 
 #include "msmp/data_link_transmitter.hpp"
 #include "msmp/default_configuration.hpp"
@@ -113,12 +114,13 @@ struct SmallBufferConfiguration
     using ExecutionQueueType = eul::execution_queue<eul::function<void(), sizeof(void*) * 10>, 20>;
     using LifetimeType = ExecutionQueueType::LifetimeNodeType;
     inline static ExecutionQueueType execution_queue;
+    inline static eul::timer::timer_manager timer_manager;
 };
 
 
 TEST_F(DataLinkTransmitterShould, StartTransmissionAndFinishTransmission)
 {
-    DataLinkTransmitter sut(logger_factory_, writer_);
+    DataLinkTransmitter sut(logger_factory_, writer_, time_);
 
     using DataLinkTransmitterType = decltype(sut);
 
@@ -135,7 +137,7 @@ TEST_F(DataLinkTransmitterShould, StartTransmissionAndFinishTransmission)
 
 TEST_F(DataLinkTransmitterShould, SendByte)
 {
-    DataLinkTransmitter sut(logger_factory_, writer_);
+    DataLinkTransmitter sut(logger_factory_, writer_, time_);
 
     constexpr uint8_t byte1 = 0x12;
     constexpr uint8_t byte2 = 0xab;
@@ -155,7 +157,7 @@ TEST_F(DataLinkTransmitterShould, SendByte)
 
 TEST_F(DataLinkTransmitterShould, TransmitArrayOfData)
 {
-    DataLinkTransmitter sut(logger_factory_, writer_);
+    DataLinkTransmitter sut(logger_factory_, writer_, time_);
 
     const uint8_t byte1 = 0x12;
     const uint8_t byte2 = 0xab;
@@ -174,7 +176,7 @@ TEST_F(DataLinkTransmitterShould, TransmitArrayOfData)
 
 TEST_F(DataLinkTransmitterShould, StuffBytes)
 {
-    DataLinkTransmitter sut(logger_factory_, writer_);
+    DataLinkTransmitter sut(logger_factory_, writer_, time_);
 
     const uint8_t byte1       = static_cast<uint8_t>(ControlByte::EscapeCode);
     const uint8_t byte2       = static_cast<uint8_t>(ControlByte::StartFrame);
@@ -213,7 +215,7 @@ TEST_F(DataLinkTransmitterShould, StuffBytes)
 TEST_F(DataLinkTransmitterShould, RejectWhenToMuchPayload)
 {
 
-    DataLinkTransmitter sut(logger_factory_, writer_, SmallBufferConfiguration{});
+    DataLinkTransmitter sut(logger_factory_, writer_, time_, SmallBufferConfiguration{});
     using DataLinkTransmitterType = decltype(sut);
 
     const uint8_t byte1 = static_cast<uint8_t>(ControlByte::EscapeCode);
@@ -226,7 +228,7 @@ TEST_F(DataLinkTransmitterShould, RejectWhenToMuchPayload)
 TEST_F(DataLinkTransmitterShould, ReportWriterFailure)
 {
 
-    DataLinkTransmitter sut(logger_factory_, writer_);
+    DataLinkTransmitter sut(logger_factory_, writer_, time_);
     using DataLinkTransmitterType = decltype(sut);
 
     const uint8_t byte1 = static_cast<uint8_t>(ControlByte::EscapeCode);
@@ -253,7 +255,7 @@ TEST_F(DataLinkTransmitterShould, ReportWriterFailure)
 
 TEST_F(DataLinkTransmitterShould, NotifySuccess)
 {
-    DataLinkTransmitter sut(logger_factory_, writer_);
+    DataLinkTransmitter sut(logger_factory_, writer_, time_);
     using DataLinkTransmitterType = decltype(sut);
 
     bool success = false;
@@ -270,7 +272,7 @@ TEST_F(DataLinkTransmitterShould, NotifySuccess)
 
 TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterTimeout)
 {
-    DataLinkTransmitter sut(logger_factory_, writer_);
+    DataLinkTransmitter sut(logger_factory_, writer_, time_);
     using DataLinkTransmitterType = decltype(sut);
 
     bool success = false;
@@ -289,29 +291,62 @@ TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterTimeout)
 
     sut.run();
     DefaultConfiguration::execution_queue.run();
-
+    DefaultConfiguration::timer_manager.run();
     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray(
     {
         static_cast<int>(ControlByte::StartFrame)
     }));
 
+    time_ += std::chrono::milliseconds(501);
+    DefaultConfiguration::timer_manager.run();
+    DefaultConfiguration::execution_queue.run();
 
-    EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray(
-    {
+    EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
         static_cast<int>(ControlByte::StartFrame),
-        static_cast<int>(ControlByte::StartFrame),
-        static_cast<int>(ControlByte::StartFrame),
-        1,
         static_cast<int>(ControlByte::StartFrame)
     }));
 
-    EXPECT_TRUE(success);
+    time_ += std::chrono::milliseconds(501);
+    DefaultConfiguration::timer_manager.run();
+    DefaultConfiguration::execution_queue.run();
+
+    EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
+        static_cast<int>(ControlByte::StartFrame),
+        static_cast<int>(ControlByte::StartFrame),
+        static_cast<int>(ControlByte::StartFrame)
+    }));
+
+    time_ += std::chrono::milliseconds(501);
+    DefaultConfiguration::timer_manager.run();
+    DefaultConfiguration::execution_queue.run();
+
+    EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
+        static_cast<int>(ControlByte::StartFrame),
+        static_cast<int>(ControlByte::StartFrame),
+        static_cast<int>(ControlByte::StartFrame),
+        static_cast<int>(ControlByte::StartFrame)
+    }));
     EXPECT_FALSE(failure);
+
+
+    time_ += std::chrono::milliseconds(501);
+    DefaultConfiguration::timer_manager.run();
+    DefaultConfiguration::execution_queue.run();
+
+    EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
+        static_cast<int>(ControlByte::StartFrame),
+        static_cast<int>(ControlByte::StartFrame),
+        static_cast<int>(ControlByte::StartFrame),
+        static_cast<int>(ControlByte::StartFrame)
+    }));
+
+    EXPECT_FALSE(success);
+    EXPECT_TRUE(failure);
 }
 
 TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterFail)
 {
-    DataLinkTransmitter sut(logger_factory_, writer_);
+    DataLinkTransmitter sut(logger_factory_, writer_, time_);
     using DataLinkTransmitterType = decltype(sut);
 
     bool success = false;
