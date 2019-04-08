@@ -15,18 +15,20 @@
 namespace msmp
 {
 
+enum class TransmissionStatus : uint8_t
+{
+    Ok,
+    NotStarted,
+    WriterReportFailure,
+    TooMuchPayload,
+    BufferFull,
+    ToBigPayload
+};
+
 template <typename LoggerFactory, typename WriterType, typename Configuration = DefaultConfiguration>
 class DataLinkTransmitter
 {
 public:
-    enum class TransmissionStatus : uint8_t
-    {
-        Ok,
-        NotStarted,
-        WriterReportFailure,
-        TooMuchPayload
-    };
-
     using StreamType            = gsl::span<const uint8_t>;
     using OnSuccessCallbackType = eul::function<void(), sizeof(void*)>;
     using OnFailureCallbackType = eul::function<void(TransmissionStatus), sizeof(void*)>;
@@ -100,15 +102,13 @@ DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::DataLinkTransmitt
 }
 
 template <typename LoggerFactory, typename WriterType, typename Configuration>
-typename DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::TransmissionStatus
-    DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::send(uint8_t byte)
+TransmissionStatus DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::send(uint8_t byte)
 {
     return send(std::array<uint8_t, 1>{byte});
 }
 
 template <typename LoggerFactory, typename WriterType, typename Configuration>
-typename DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::TransmissionStatus
-    DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::send(const StreamType& bytes)
+TransmissionStatus DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::send(const StreamType& bytes)
 {
     const std::size_t free_size = buffer_.max_size() - buffer_.size();
     if (static_cast<std::size_t>(bytes.size()) > free_size)
@@ -225,7 +225,10 @@ void DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::do_on_succee
             {
                 on_success_();
             }
-            state_ = State::Idle;
+            if (state_ == State::EndingTransmission)
+            {
+                state_ = State::Idle;
+            }
             return;
         }
         break;

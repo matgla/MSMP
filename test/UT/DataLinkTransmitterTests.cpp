@@ -14,83 +14,10 @@
 #include "test/UT/stubs/StandardErrorStreamStub.hpp"
 #include "test/UT/stubs/TimeStub.hpp"
 #include "test/UT/stubs/TimerManagerStub.hpp"
+#include "test/UT/stubs/WriterStub.hpp"
 
 namespace msmp
 {
-
-struct WriterStub
-{
-    using CallbackType = std::function<void()>;
-
-    void disable_responses()
-    {
-        block_responses_ = true;
-    }
-
-    void fail_next_transmission()
-    {
-       ++number_bytes_to_fail_;
-    }
-
-    void fail_transmissions(int amount)
-    {
-        number_bytes_to_fail_ = amount;
-    }
-
-    bool write(const uint8_t byte)
-    {
-        buffer_.push_back(byte);
-        if (block_responses_)
-        {
-            return true;
-        }
-
-        if (number_bytes_to_fail_)
-        {
-            if (on_failure_)
-            {
-                on_failure_();
-            }
-            --number_bytes_to_fail_;
-            return true;
-        }
-
-        if (on_success_)
-        {
-            on_success_();
-        }
-
-        return true;
-    }
-
-    void clear()
-    {
-        buffer_.clear();
-    }
-
-    const std::vector<uint8_t>& get_buffer() const
-    {
-        return buffer_;
-    }
-
-    void on_success(const CallbackType& callback)
-    {
-        on_success_ = callback;
-    }
-
-    void on_failure(const CallbackType& callback)
-    {
-        on_failure_ = callback;
-    }
-
-private:
-    std::vector<uint8_t> buffer_;
-
-    CallbackType on_success_;
-    CallbackType on_failure_;
-    int number_bytes_to_fail_ = 0;
-    bool block_responses_ = false;
-};
 
 class DataLinkTransmitterShould : public ::testing::Test
 {
@@ -104,7 +31,7 @@ protected:
     using LoggerFactoryType = eul::logger::LoggerFactory<stubs::TimeStub, eul::logger::CurrentLoggingPolicy,
                                                          stubs::StandardErrorStreamStub>;
     LoggerFactoryType logger_factory_;
-    WriterStub writer_;
+    test::stub::WriterStub writer_;
 };
 
 struct SmallBufferConfiguration
@@ -122,9 +49,7 @@ TEST_F(DataLinkTransmitterShould, StartTransmissionAndFinishTransmission)
 {
     DataLinkTransmitter sut(logger_factory_, writer_, time_);
 
-    using DataLinkTransmitterType = decltype(sut);
-
-    EXPECT_EQ(sut.send(1), DataLinkTransmitterType::TransmissionStatus::Ok);
+    EXPECT_EQ(sut.send(1), TransmissionStatus::Ok);
     sut.run();
     DefaultConfiguration::execution_queue.run();
     // clang-format off
@@ -214,22 +139,18 @@ TEST_F(DataLinkTransmitterShould, StuffBytes)
 
 TEST_F(DataLinkTransmitterShould, RejectWhenToMuchPayload)
 {
-
     DataLinkTransmitter sut(logger_factory_, writer_, time_, SmallBufferConfiguration{});
-    using DataLinkTransmitterType = decltype(sut);
 
     const uint8_t byte1 = static_cast<uint8_t>(ControlByte::EscapeCode);
     const uint8_t byte2 = static_cast<uint8_t>(ControlByte::StartFrame);
 
     EXPECT_EQ(sut.send(std::vector<uint8_t>{byte1, byte2}),
-              DataLinkTransmitterType::TransmissionStatus::TooMuchPayload);
+              TransmissionStatus::TooMuchPayload);
 }
 
 TEST_F(DataLinkTransmitterShould, ReportWriterFailure)
 {
-
     DataLinkTransmitter sut(logger_factory_, writer_, time_);
-    using DataLinkTransmitterType = decltype(sut);
 
     const uint8_t byte1 = static_cast<uint8_t>(ControlByte::EscapeCode);
     const uint8_t byte2 = static_cast<uint8_t>(ControlByte::StartFrame);
@@ -237,14 +158,14 @@ TEST_F(DataLinkTransmitterShould, ReportWriterFailure)
     bool failed = false;
     writer_.fail_transmissions(6);
 
-    sut.on_failure([&failed](DataLinkTransmitterType::TransmissionStatus status) {
-        if (status == DataLinkTransmitterType::TransmissionStatus::WriterReportFailure)
+    sut.on_failure([&failed](TransmissionStatus status) {
+        if (status == TransmissionStatus::WriterReportFailure)
         {
             failed = true;
         }
     });
 
-    EXPECT_EQ(sut.send(std::vector<uint8_t>{byte1, byte2}), DataLinkTransmitterType::TransmissionStatus::Ok);
+    EXPECT_EQ(sut.send(std::vector<uint8_t>{byte1, byte2}), TransmissionStatus::Ok);
     EXPECT_FALSE(failed);
 
     sut.run();
@@ -256,12 +177,11 @@ TEST_F(DataLinkTransmitterShould, ReportWriterFailure)
 TEST_F(DataLinkTransmitterShould, NotifySuccess)
 {
     DataLinkTransmitter sut(logger_factory_, writer_, time_);
-    using DataLinkTransmitterType = decltype(sut);
 
     bool success = false;
     sut.on_success([&success]() { success = true; });
 
-    EXPECT_EQ(sut.send(1), DataLinkTransmitterType::TransmissionStatus::Ok);
+    EXPECT_EQ(sut.send(1), TransmissionStatus::Ok);
     EXPECT_FALSE(success);
 
     sut.run();
@@ -273,19 +193,18 @@ TEST_F(DataLinkTransmitterShould, NotifySuccess)
 TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterTimeout)
 {
     DataLinkTransmitter sut(logger_factory_, writer_, time_);
-    using DataLinkTransmitterType = decltype(sut);
 
     bool success = false;
     sut.on_success([&success]() { success = true; });
 
     bool failure = false;
-    sut.on_failure([&failure](DataLinkTransmitterType::TransmissionStatus status)
+    sut.on_failure([&failure](TransmissionStatus status)
     {
         UNUSED(status);
         failure = true;
     });
 
-    EXPECT_EQ(sut.send(1), DataLinkTransmitterType::TransmissionStatus::Ok);
+    EXPECT_EQ(sut.send(1), TransmissionStatus::Ok);
     EXPECT_FALSE(success);
     writer_.disable_responses();
 
@@ -328,7 +247,6 @@ TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterTimeout)
     }));
     EXPECT_FALSE(failure);
 
-
     time_ += std::chrono::milliseconds(501);
     DefaultConfiguration::timer_manager.run();
     DefaultConfiguration::execution_queue.run();
@@ -347,19 +265,18 @@ TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterTimeout)
 TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterFail)
 {
     DataLinkTransmitter sut(logger_factory_, writer_, time_);
-    using DataLinkTransmitterType = decltype(sut);
 
     bool success = false;
     sut.on_success([&success]() { success = true; });
 
     bool failure = false;
-    sut.on_failure([&failure](DataLinkTransmitterType::TransmissionStatus status)
+    sut.on_failure([&failure](TransmissionStatus status)
     {
         UNUSED(status);
         failure = true;
     });
 
-    EXPECT_EQ(sut.send(1), DataLinkTransmitterType::TransmissionStatus::Ok);
+    EXPECT_EQ(sut.send(1), TransmissionStatus::Ok);
     EXPECT_FALSE(success);
     writer_.fail_transmissions(2);
 
