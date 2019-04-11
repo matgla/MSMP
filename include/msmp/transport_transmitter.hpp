@@ -12,6 +12,8 @@
 
 #include "msmp/default_configuration.hpp"
 #include "msmp/message_type.hpp"
+#include "msmp/types.hpp"
+#include "msmp/transmission_status.hpp"
 
 namespace msmp
 {
@@ -24,7 +26,6 @@ template <typename LoggerFactory, typename DataLinkTransmitter, typename Configu
 class TransportTransmitter
 {
 public:
-    using StreamType = gsl::span<const uint8_t>;
     using CallbackType = eul::function<void(), sizeof(void*)>;
     TransportTransmitter(LoggerFactory& logger_factory, DataLinkTransmitter& data_link_transmitter);
 
@@ -146,7 +147,7 @@ TransmissionStatus
 
     if (Configuration::max_payload_size < (static_cast<std::size_t>(payload.size()) + 2 + 4))
     {
-        return TransmissionStatus::ToBigPayload;
+        return TransmissionStatus::TooMuchPayload;
     }
 
     frames_.push_back(Frame{});

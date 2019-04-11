@@ -11,7 +11,7 @@ enum class TransmissionStatus : uint8_t
     NotStarted,
     WriterReportFailure,
     BufferFull,
-    TooBigPayload
+    TooMuchPayload
 };
 
 } // namespace msmp

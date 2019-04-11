@@ -11,19 +11,10 @@
 
 #include "msmp/control_byte.hpp"
 #include "msmp/default_configuration.hpp"
+#include "msmp/transmission_status.hpp"
 
 namespace msmp
 {
-
-enum class TransmissionStatus : uint8_t
-{
-    Ok,
-    NotStarted,
-    WriterReportFailure,
-    TooMuchPayload,
-    BufferFull,
-    ToBigPayload
-};
 
 template <typename LoggerFactory, typename WriterType, typename Configuration = DefaultConfiguration>
 class DataLinkTransmitter

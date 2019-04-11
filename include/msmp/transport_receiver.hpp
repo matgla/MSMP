@@ -13,39 +13,22 @@
 
 #include "msmp/default_configuration.hpp"
 #include "msmp/message_type.hpp"
+#include "msmp/transport_frame.hpp"
+#include "msmp/types.hpp"
 
 namespace msmp
 {
-
-using StreamType = gsl::span<const uint8_t>;
-
-enum class FrameStatus : uint8_t
-{
-    Ok,
-    CrcMismatch,
-    WrongMessageType
-};
-template <typename Configuration = DefaultConfiguration>
-using FrameBuffer = eul::container::static_vector<uint8_t, Configuration::max_payload_size>;
-
-template <typename Configuration = DefaultConfiguration>
-struct Frame
-{
-    FrameBuffer<Configuration> buffer;
-    uint8_t transaction_id;
-    FrameStatus status;
-};
 
 template <typename LoggerFactory, typename DataLinkReceiver, typename Configuration = DefaultConfiguration>
 class TransportReceiver
 {
 public:
-    using CallbackType = eul::function<void(const Frame<Configuration>&), sizeof(void*)>;
+    using Frame = TransportFrame<Configuration>;
+    using CallbackType = eul::function<void(const Frame&), sizeof(void*)>;
 
-    TransportReceiver(LoggerFactory& logger_factory, DataLinkReceiver& data_link_receiver, Configuration c = DefaultConfiguration{})
+    TransportReceiver(LoggerFactory& logger_factory, DataLinkReceiver& data_link_receiver)
         : logger_(create_logger(logger_factory))
     {
-        UNUSED(c);
         data_link_receiver.on_data([this](const StreamType& payload)
         {
             receive_frame(payload);
@@ -68,7 +51,7 @@ public:
     }
 
 protected:
-    void notify_failure(const Frame<Configuration>& frame)
+    void notify_failure(const Frame& frame)
     {
         if (on_failure_)
         {
@@ -76,7 +59,7 @@ protected:
         }
     }
 
-    void notify_data(const Frame<Configuration>& frame)
+    void notify_data(const Frame& frame)
     {
         if (on_data_frame_)
         {
@@ -84,7 +67,7 @@ protected:
         }
     }
 
-    void notify_control(const Frame<Configuration>& frame)
+    void notify_control(const Frame& frame)
     {
         if (on_control_frame_)
         {
@@ -111,7 +94,7 @@ protected:
 
         if (crc != received_crc)
         {
-            frame.status = FrameStatus::CrcMismatch;
+            frame.status = TransportFrameStatus::CrcMismatch;
             notify_failure(frame);
         }
 
@@ -120,17 +103,17 @@ protected:
         {
             case MessageType::Control:
             {
-                frame.status = FrameStatus::Ok;
+                frame.status = TransportFrameStatus::Ok;
                 notify_control(frame);
             } break;
             case MessageType::Data:
             {
-                frame.status = FrameStatus::Ok;
+                frame.status = TransportFrameStatus::Ok;
                 notify_data(frame);
             } break;
             default:
             {
-                frame.status = FrameStatus::WrongMessageType;
+                frame.status = TransportFrameStatus::WrongMessageType;
                 notify_failure(frame);
             }
         }
@@ -144,7 +127,7 @@ private:
     }
 
     typename LoggerFactory::LoggerType& logger_;
-    eul::container::ring_buffer<Frame<Configuration>, Configuration::rx_buffer_frames_size> frames_;
+    eul::container::ring_buffer<Frame, Configuration::rx_buffer_frames_size> frames_;
     CallbackType on_control_frame_;
     CallbackType on_data_frame_;
     CallbackType on_failure_;
