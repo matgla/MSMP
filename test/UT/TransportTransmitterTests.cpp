@@ -51,6 +51,7 @@ TEST_F(TransportTransmitterTests, SendPayload)
     );
 
     data_link_transmitter_.emit_success();
+    sut.confirm_frame_transmission(1);
 
     EXPECT_THAT(data_link_transmitter_.get_buffer(),
         ::testing::ElementsAreArray({

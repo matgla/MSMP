@@ -18,8 +18,6 @@ public:
     using SuccessCallbackType = std::function<void()>;
     using FailureCallbackType = std::function<void(msmp::TransmissionStatus)>;
 
-
-
     void on_success(const SuccessCallbackType& callback)
     {
         on_success_ = callback;

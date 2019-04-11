@@ -18,6 +18,8 @@ namespace msmp
 
 const auto dummy = []{};
 
+// TODO: states to prevent acknowledge before callback from transmitter
+
 template <typename LoggerFactory, typename DataLinkTransmitter, typename Configuration = DefaultConfiguration>
 class TransportTransmitter
 {
@@ -29,14 +31,21 @@ public:
     TransmissionStatus send_control(const StreamType& payload, const CallbackType& on_success = dummy, const CallbackType& on_failure = dummy);
     TransmissionStatus send(const StreamType& payload, const CallbackType& on_success = dummy, const CallbackType& on_failure = dummy);
     void run();
+    bool confirm_frame_transmission(uint8_t transaction_id)
+    {
+        if (frames_.front().transaction_id == transaction_id)
+        {
+            frames_.pop_front();
+            if (frames_.size())
+            {
+                send_next_frame();
+            }
+            return true;
+        }
+        return false;
+    }
 
 private:
-    enum class State : uint8_t
-    {
-        Idle,
-        WaitingForResponse
-    };
-
     auto& create_logger(LoggerFactory& logger_factory);
 
     TransmissionStatus send(MessageType type, const StreamType& payload, const CallbackType& on_success, const CallbackType& on_failure);
@@ -53,9 +62,9 @@ private:
         FrameBuffer buffer;
         CallbackType on_success;
         CallbackType on_failure;
+        uint8_t transaction_id;
     };
     eul::container::static_deque<Frame, Configuration::tx_buffer_frames_size> frames_;
-    State state_;
     typename Configuration::LifetimeType lifetime_;
     uint8_t retransmission_counter_;
 };
@@ -67,18 +76,12 @@ TransportTransmitter<LoggerFactory, DataLinkTransmitter, Configuration>::Transpo
     , logger_(create_logger(logger_factory))
     , data_link_transmitter_(data_link_transmitter)
     , current_byte_(0)
-    , state_(State::Idle)
     , retransmission_counter_(0)
 {
     logger_.trace() << "Created";
     data_link_transmitter_.on_success([this]() {
         auto callback = frames_.front().on_success;
         retransmission_counter_ = 0;
-        frames_.pop_front();
-        if (frames_.size())
-        {
-            send_next_frame();
-        }
         callback();
     });
 
@@ -151,6 +154,7 @@ TransmissionStatus
     auto& buffer = frame.buffer;
     buffer.push_back(static_cast<uint8_t>(type));
     buffer.push_back(++transaction_id_counter_);
+    frame.transaction_id = transaction_id_counter_;
     std::copy(payload.begin(), payload.end(), std::back_inserter(buffer));
     const uint32_t crc = CRC::Calculate(buffer.data(), buffer.size(), CRC::CRC_32());
     buffer.push_back((crc >> 24) & 0xff);

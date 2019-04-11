@@ -13,6 +13,8 @@ target_sources(msmp_tests
 
         DataLinkReceiverTests.cpp
         DataLinkTransmitterTests.cpp
+        TransportReceiverTests.cpp
+        TransportTransceiverTests.cpp
         TransportTransmitterTests.cpp
 )
 
