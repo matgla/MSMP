@@ -34,8 +34,6 @@ public:
     void on_success(const OnSuccessCallbackType& callback);
     void on_failure(const OnFailureCallbackType& callback);
 
-    void run();
-
 private:
     enum class State : uint8_t
     {
@@ -57,6 +55,7 @@ private:
     void report_failure(TransmissionStatus status);
     void send_next_byte();
     void do_on_succeeded();
+    void run();
 
     typename LoggerFactory::LoggerType& logger_;
     WriterType& writer_;
@@ -109,6 +108,9 @@ TransmissionStatus DataLinkTransmitter<LoggerFactory, WriterType, Configuration>
 
     std::copy(bytes.begin(), bytes.end(), std::back_inserter(buffer_));
     state_ = State::StartingTransmission;
+    Configuration::execution_queue.push_front(lifetime_, [this]{
+        run();
+    });
     return TransmissionStatus::Ok;
 }
 

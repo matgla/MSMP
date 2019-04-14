@@ -33,6 +33,11 @@ public:
         return buffer_;
     }
 
+    void clear_buffer()
+    {
+        buffer_.clear();
+    }
+
     void run()
     {
 
@@ -54,10 +59,23 @@ public:
         }
     }
 
-
     void send(const gsl::span<uint8_t>& payload)
     {
         std::copy(payload.begin(), payload.end(), std::back_inserter(buffer_));
+        if (auto_emit_)
+        {
+            emit_success();
+        }
+    }
+
+    void enable_auto_emitting()
+    {
+        auto_emit_ = true;
+    }
+
+    void disable_auto_emitting()
+    {
+        auto_emit_ = false;
     }
 
 private:
@@ -65,6 +83,7 @@ private:
     FailureCallbackType on_failure_;
 
     std::vector<uint8_t> buffer_;
+    bool auto_emit_ = false;
 
 };
 

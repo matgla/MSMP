@@ -14,6 +14,12 @@ enum class TransportFrameStatus : uint8_t
     WrongMessageType
 };
 
+enum class TransportFrameType : uint8_t
+{
+    Data,
+    Control
+};
+
 
 template <typename Configuration>
 struct TransportFrame
@@ -21,6 +27,7 @@ struct TransportFrame
     TransportFrameBuffer<Configuration> buffer;
     uint8_t transaction_id;
     TransportFrameStatus status;
+    TransportFrameType type;
 };
 
 } // namespace msmp

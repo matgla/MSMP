@@ -77,25 +77,32 @@ protected:
 
     void receive_frame(const gsl::span<const uint8_t>& payload)
     {
-        frames_.push(Frame{});
+        logger_.trace() << "Received frame: " << payload;
+
+        auto& frame = frames_.push(Frame{});
         // -- get transaction id --
-        auto& frame = frames_.front();
         frame.transaction_id = payload[1];
-        std::copy(payload.begin() + 2, payload.end() - 4, std::back_inserter(frames_.front().buffer));
+        std::copy(payload.begin() + 2, payload.end() - 4, std::back_inserter(frame.buffer));
 
         // -- CRC validation, last 4 bytes are CRC --
         const uint32_t crc = CRC::Calculate(payload.data(), payload.size() - 4, CRC::CRC_32());
-        const std::size_t crc_iterator = payload.size() - 5;
+        const std::size_t crc_iterator = payload.size() - 4;
         const uint32_t received_crc =
-              payload[crc_iterator] >> 24
-            | payload[crc_iterator + 1] >> 16
-            | payload[crc_iterator + 2] >> 8
+              payload[crc_iterator] << 24
+            | payload[crc_iterator + 1] << 16
+            | payload[crc_iterator + 2] << 8
             | payload[crc_iterator + 3];
 
         if (crc != received_crc)
         {
+            char crc_received[9];
+            char crc_expected[9];
+            eul::utils::itoa(received_crc, crc_received, 16);
+            eul::utils::itoa(crc, crc_expected, 16);
+            logger_.trace() << "Crc mismatch expected: 0x" << crc_expected << ", but received: 0x" << crc_received;
             frame.status = TransportFrameStatus::CrcMismatch;
             notify_failure(frame);
+            return;
         }
 
         const auto message_type = static_cast<MessageType>(payload[0]);
@@ -104,16 +111,25 @@ protected:
             case MessageType::Control:
             {
                 frame.status = TransportFrameStatus::Ok;
+                frame.type = TransportFrameType::Control;
+                logger_.trace() << "Received control frame: " << gsl::make_span(frame.buffer.begin(), frame.buffer.end());
+
                 notify_control(frame);
             } break;
             case MessageType::Data:
             {
                 frame.status = TransportFrameStatus::Ok;
+                frame.type = TransportFrameType::Data;
+
+                logger_.trace() << "Received data frame: " << gsl::make_span(frame.buffer.begin(), frame.buffer.end());
+
                 notify_data(frame);
             } break;
             default:
             {
                 frame.status = TransportFrameStatus::WrongMessageType;
+                logger_.trace() << "Wrong message type received";
+
                 notify_failure(frame);
             }
         }

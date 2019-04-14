@@ -130,7 +130,7 @@ TEST_F(TransportReceiverTests, ReportWrongMessageTypeMismatch)
         3,
         2, // transaction id
         0xd, 0x0, 0xd, 0xa,
-        0xd, 0x6e, 0x3, 0x3,
+        0xea, 0x87, 0xcf, 0xe3,
     };
     data_link_receiver_.receive(data);
 

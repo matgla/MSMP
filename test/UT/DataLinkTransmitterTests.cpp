@@ -50,7 +50,6 @@ TEST_F(DataLinkTransmitterShould, StartTransmissionAndFinishTransmission)
     DataLinkTransmitter sut(logger_factory_, writer_, time_);
 
     EXPECT_EQ(sut.send(1), TransmissionStatus::Ok);
-    sut.run();
     DefaultConfiguration::execution_queue.run();
     // clang-format off
     EXPECT_THAT(writer_.get_buffer(),
@@ -70,7 +69,6 @@ TEST_F(DataLinkTransmitterShould, SendByte)
     sut.send(byte1);
     sut.send(byte2);
 
-    sut.run();
     DefaultConfiguration::execution_queue.run();
 
     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
@@ -88,7 +86,6 @@ TEST_F(DataLinkTransmitterShould, TransmitArrayOfData)
     const uint8_t byte2 = 0xab;
     sut.send(std::vector<uint8_t>{byte1, byte2});
 
-    sut.run();
     DefaultConfiguration::execution_queue.run();
 
     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
@@ -108,7 +105,6 @@ TEST_F(DataLinkTransmitterShould, StuffBytes)
     const uint8_t escape_byte = static_cast<uint8_t>(ControlByte::EscapeCode);
 
     sut.send(std::vector<uint8_t>{1, byte1, 2, byte2, 3});
-    sut.run();
     DefaultConfiguration::execution_queue.run();
 
     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray(
@@ -125,7 +121,6 @@ TEST_F(DataLinkTransmitterShould, StuffBytes)
 
     sut.send(byte1);
     writer_.clear();
-    sut.run();
     DefaultConfiguration::execution_queue.run();
 
     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray(
@@ -168,7 +163,6 @@ TEST_F(DataLinkTransmitterShould, ReportWriterFailure)
     EXPECT_EQ(sut.send(std::vector<uint8_t>{byte1, byte2}), TransmissionStatus::Ok);
     EXPECT_FALSE(failed);
 
-    sut.run();
     DefaultConfiguration::execution_queue.run();
 
     EXPECT_TRUE(failed);
@@ -184,7 +178,6 @@ TEST_F(DataLinkTransmitterShould, NotifySuccess)
     EXPECT_EQ(sut.send(1), TransmissionStatus::Ok);
     EXPECT_FALSE(success);
 
-    sut.run();
     DefaultConfiguration::execution_queue.run();
 
     EXPECT_TRUE(success);
@@ -208,7 +201,6 @@ TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterTimeout)
     EXPECT_FALSE(success);
     writer_.disable_responses();
 
-    sut.run();
     DefaultConfiguration::execution_queue.run();
     DefaultConfiguration::timer_manager.run();
     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray(
@@ -280,7 +272,6 @@ TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterFail)
     EXPECT_FALSE(success);
     writer_.fail_transmissions(2);
 
-    sut.run();
     DefaultConfiguration::execution_queue.run();
 
     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray(

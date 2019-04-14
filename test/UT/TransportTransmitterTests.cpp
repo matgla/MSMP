@@ -32,17 +32,22 @@ protected:
 
 TEST_F(TransportTransmitterTests, SendPayload)
 {
-    TransportTransmitter sut(logger_factory_, data_link_transmitter_);
+    TransportTransmitter sut(logger_factory_, data_link_transmitter_, time_);
     std::vector<uint8_t> data{1, 2, 3, 4};
+    std::vector<uint8_t> data2{3, 4};
     sut.send(data);
+    sut.send(data2);
     std::vector<uint8_t> control_data {0xd, 0x0, 0xd, 0xa};
     sut.send_control(control_data);
 
-    sut.run();
     DefaultConfiguration::execution_queue.run();
 
     EXPECT_THAT(data_link_transmitter_.get_buffer(),
         ::testing::ElementsAreArray({
+            static_cast<int>(MessageType::Control),
+            3,
+            0xd, 0x0, 0xd, 0xa,
+            0x9a, 0x2f, 0x47, 0x58,
             static_cast<int>(MessageType::Data),
             1, // transaction id
             1, 2, 3, 4, // data
@@ -50,31 +55,25 @@ TEST_F(TransportTransmitterTests, SendPayload)
         })
     );
 
-    data_link_transmitter_.emit_success();
+    data_link_transmitter_.clear_buffer();
     sut.confirm_frame_transmission(1);
+    DefaultConfiguration::execution_queue.run();
 
     EXPECT_THAT(data_link_transmitter_.get_buffer(),
         ::testing::ElementsAreArray({
             static_cast<int>(MessageType::Data),
-            1, // transaction id
-            1, 2, 3, 4, // data
-            0x56, 0x12, 0x0d, 0xc9, // crc
-            static_cast<int>(MessageType::Control),
-            2, // transaction id
-            0xd, 0x0, 0xd, 0xa,
-            0xa7, 0x4f, 0x6e, 0xe8,
+            2,
+            3, 4,
+            0xa4, 0x89, 0x54, 0x23
         }));
 }
 
 TEST_F(TransportTransmitterTests, RetransmitAfterFailure)
 {
-    TransportTransmitter sut(logger_factory_, data_link_transmitter_);
+    TransportTransmitter sut(logger_factory_, data_link_transmitter_, time_);
     std::vector<uint8_t> data{1, 2, 3, 4};
     sut.send(data);
-    std::vector<uint8_t> control_data {0xd, 0x0, 0xd, 0xa};
-    sut.send_control(control_data);
 
-    sut.run();
     DefaultConfiguration::execution_queue.run();
 
     EXPECT_THAT(data_link_transmitter_.get_buffer(),
@@ -87,6 +86,7 @@ TEST_F(TransportTransmitterTests, RetransmitAfterFailure)
     );
 
     data_link_transmitter_.emit_failure(msmp::TransmissionStatus::BufferFull);
+    DefaultConfiguration::execution_queue.run();
 
     EXPECT_THAT(data_link_transmitter_.get_buffer(),
         ::testing::ElementsAreArray({
@@ -104,16 +104,13 @@ TEST_F(TransportTransmitterTests, RetransmitAfterFailure)
 
 TEST_F(TransportTransmitterTests, ReportFailureWhenRetransmissionFailedThreeTimes)
 {
-    TransportTransmitter sut(logger_factory_, data_link_transmitter_);
+    TransportTransmitter sut(logger_factory_, data_link_transmitter_, time_);
 
     std::vector<uint8_t> data{1, 2, 3, 4};
     bool success = false;
     bool failure = false;
     sut.send(data, [&success]{success = true;}, [&failure]{failure = true;});
-    std::vector<uint8_t> control_data {0xd, 0x0, 0xd, 0xa};
-    sut.send_control(control_data);
 
-    sut.run();
     DefaultConfiguration::execution_queue.run();
 
     EXPECT_THAT(data_link_transmitter_.get_buffer(),
