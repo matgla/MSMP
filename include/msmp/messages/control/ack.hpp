@@ -7,6 +7,7 @@
 
 #include "msmp/messages/control/messages_ids.hpp"
 #include "msmp/serializer/serialized_message.hpp"
+#include "msmp/serializer/message_deserializer.hpp"
 
 namespace msmp
 {
@@ -30,7 +31,9 @@ struct Ack
 
     static Ack deserialize(const gsl::span<const uint8_t>& payload)
     {
-        return Ack {.transaction_id = payload[1]};
+        serializer::MessageDeserializer message(payload);
+        message.drop_u8();
+        return Ack {.transaction_id = message.decompose_u8()};
     }
 };
 

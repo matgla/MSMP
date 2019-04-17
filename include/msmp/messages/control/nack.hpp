@@ -6,6 +6,8 @@
 #include <gsl/span>
 
 #include "msmp/messages/control/messages_ids.hpp"
+#include "msmp/serializer/serialized_message.hpp"
+#include "msmp/serializer/message_deserializer.hpp"
 
 namespace msmp
 {
@@ -27,15 +29,22 @@ struct Nack
 
     static Nack deserialize(const gsl::span<const uint8_t>& payload)
     {
+        serializer::MessageDeserializer message(payload);
+        message.drop_u8();
+
         return Nack{
-            .transaction_id = payload[0],
-            .reason         = static_cast<Reason>(payload[1])
+            .transaction_id = message.decompose_u8(),
+            .reason         = static_cast<Reason>(message.decompose_u8())
         };
     }
 
-    std::array<uint8_t, 3> serialize() const
+    auto serialize() const
     {
-        return {id, transaction_id, reason};
+        return serializer::SerializedMessage{}
+            .compose_u8(id)
+            .compose_u8(transaction_id)
+            .compose_u8(reason)
+            .build();
     }
 
     uint8_t transaction_id;

@@ -27,6 +27,19 @@ public:
     {
     }
 
+    template <typename T>
+    void decompose(T& data)
+    {
+        data = decompose_impl<T>();
+    }
+
+    template <std::size_t Size>
+    void decompose(char (&data)[Size])
+    {
+        auto deserialized_string = decompose_string<Size>();
+        std::copy(deserialized_string.begin(), deserialized_string.end(), data);
+    }
+
     uint8_t decompose_u8()
     {
         return decompose_impl<uint8_t>();
@@ -42,11 +55,34 @@ public:
         return decompose_impl<uint32_t>();
     }
 
+    template <std::size_t Size>
+    std::string_view decompose_string()
+    {
+        const std::string_view str(reinterpret_cast<const char*>(buffer_.data()) + position_, Size);
+        position_ += Size;
+        return str;
+    }
+
     std::string_view decompose_string()
     {
         const std::string_view str(reinterpret_cast<const char*>(buffer_.data()) + position_, eul::utils::strlen(buffer_.subspan(position_, buffer_.size() - position_)));
         position_ += str.size() + 1;
         return str;
+    }
+
+    void drop_u8()
+    {
+        position_ += 1;
+    }
+
+    void drop_u16()
+    {
+        position_ += 2;
+    }
+
+    void drop_u32()
+    {
+        position_ += 4;
     }
 private:
     template <typename T>
