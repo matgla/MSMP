@@ -4,6 +4,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "msmp/serializer/endian.hpp"
 #include "msmp/serializer/serializers.hpp"
 
 namespace msmp
@@ -17,7 +18,7 @@ class SerializerShould : public ::testing::Test
 
 TEST_F(SerializerShould, SerializeUint8InBigEndian)
 {
-    using Serializers = Serializers<std::endian::big>;
+    using Serializers = Serializers<Endian::Big>;
     const auto data   = Serializers::serialize((uint8_t)0x32);
     const auto data2  = Serializers::serialize((uint8_t)0xff);
     const auto data3  = Serializers::serialize((uint8_t)0x00);
@@ -33,7 +34,7 @@ TEST_F(SerializerShould, SerializeUint8InBigEndian)
 
 TEST_F(SerializerShould, SerializeUint16InBigEndian)
 {
-    using Serializers = Serializers<std::endian::big>;
+    using Serializers = Serializers<Endian::Big>;
     const auto data   = Serializers::serialize((uint16_t)0x1234);
     const auto data2  = Serializers::serialize((uint16_t)0xffff);
     const auto data3  = Serializers::serialize((uint16_t)0x0000);
@@ -49,7 +50,7 @@ TEST_F(SerializerShould, SerializeUint16InBigEndian)
 
 TEST_F(SerializerShould, SerializeInt32InBigEndian)
 {
-    using Serializers = Serializers<std::endian::big>;
+    using Serializers = Serializers<Endian::Big>;
     const auto data   = Serializers::serialize((int32_t)0x12345678);
     const auto data2  = Serializers::serialize((int32_t)0xffff0000);
     const auto data3  = Serializers::serialize((int32_t)0x0000dddd);
@@ -65,7 +66,7 @@ TEST_F(SerializerShould, SerializeInt32InBigEndian)
 
 TEST_F(SerializerShould, SerializeFloatInBigEndian)
 {
-    using Serializers = Serializers<std::endian::big>;
+    using Serializers = Serializers<Endian::Big>;
     const auto data   = Serializers::serialize((float)0x12345678);
     const auto data2  = Serializers::serialize((float)0xffff0000);
     const auto data3  = Serializers::serialize((float)0x0000dddd);
@@ -81,7 +82,7 @@ TEST_F(SerializerShould, SerializeFloatInBigEndian)
 
 TEST_F(SerializerShould, SerializeUint8InLittleEndian)
 {
-    using Serializers = Serializers<std::endian::little>;
+    using Serializers = Serializers<Endian::Little>;
     const auto data   = Serializers::serialize((uint8_t)0x32);
     const auto data2  = Serializers::serialize((uint8_t)0xff);
     const auto data3  = Serializers::serialize((uint8_t)0x00);
@@ -97,7 +98,7 @@ TEST_F(SerializerShould, SerializeUint8InLittleEndian)
 
 TEST_F(SerializerShould, SerializeUint16InLittleEndian)
 {
-    using Serializers = Serializers<std::endian::little>;
+    using Serializers = Serializers<Endian::Little>;
     const auto data   = Serializers::serialize((uint16_t)0x1234);
     const auto data2  = Serializers::serialize((uint16_t)0xffff);
     const auto data3  = Serializers::serialize((uint16_t)0x0000);
@@ -113,7 +114,7 @@ TEST_F(SerializerShould, SerializeUint16InLittleEndian)
 
 TEST_F(SerializerShould, SerializeInt32InLittleEndian)
 {
-    using Serializers = Serializers<std::endian::little>;
+    using Serializers = Serializers<Endian::Little>;
     const auto data   = Serializers::serialize((int32_t)0x12345678);
     const auto data2  = Serializers::serialize((int32_t)0xffff0000);
     const auto data3  = Serializers::serialize((int32_t)0x0000dddd);
@@ -129,7 +130,7 @@ TEST_F(SerializerShould, SerializeInt32InLittleEndian)
 
 TEST_F(SerializerShould, SerializeFloatInLittleEndian)
 {
-    using Serializers = Serializers<std::endian::little>;
+    using Serializers = Serializers<Endian::Little>;
     const auto data   = Serializers::serialize((float)0x12345678);
     const auto data2  = Serializers::serialize((float)0xffff0000);
     const auto data3  = Serializers::serialize((float)0x0000dddd);
@@ -145,7 +146,7 @@ TEST_F(SerializerShould, SerializeFloatInLittleEndian)
 
 TEST_F(SerializerShould, SerializeCStringWithData)
 {
-    using Serializers          = Serializers<std::endian::big>;
+    using Serializers          = Serializers<Endian::Big>;
     const auto data            = Serializers::serialize("hello world");
     char str1[]                = "abcdef";
     const auto data2           = Serializers::serialize(str1);
@@ -163,7 +164,7 @@ TEST_F(SerializerShould, SerializeCStringWithData)
 
 TEST_F(SerializerShould, SerializeCStringWithTerminator)
 {
-    using Serializers          = Serializers<std::endian::big>;
+    using Serializers          = Serializers<Endian::Big>;
     const auto data            = Serializers::serialize("hello\0wo\0rld\0");
     char str1[]                = "abcd\0ef\0";
     const auto data2           = Serializers::serialize(str1);
@@ -180,7 +181,7 @@ TEST_F(SerializerShould, SerializeCStringWithTerminator)
 
 TEST_F(SerializerShould, SerializeEmptyString)
 {
-    using Serializers          = Serializers<std::endian::big>;
+    using Serializers          = Serializers<Endian::Big>;
     const auto data            = Serializers::serialize("");
     char str1[]                = "";
     const auto data2           = Serializers::serialize(str1);

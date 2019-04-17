@@ -7,6 +7,7 @@
 
 #include <eul/container/static_vector.hpp>
 
+#include "msmp/serializer/endian.hpp"
 #include "msmp/serializer/endian_type_traits.hpp"
 
 namespace msmp
@@ -14,7 +15,7 @@ namespace msmp
 namespace serializer
 {
 
-template <std::endian Endian>
+template <Endian endian>
 struct Serializers
 {
     template <typename T, typename E = std::enable_if_t<std::conjunction_v<std::is_fundamental<T>>>>
@@ -23,10 +24,10 @@ struct Serializers
         std::array<uint8_t, sizeof(T)> serialized{};
         const uint8_t* memory = reinterpret_cast<const uint8_t*>(&data);
 
-        if constexpr ((Endian == std::endian::big &&
-                       is_same_endian<std::endian::native, std::endian::little>::value) ||
-                      (Endian == std::endian::little &&
-                       is_same_endian<std::endian::native, std::endian::big>::value))
+        if constexpr ((endian == Endian::Big &&
+                       is_same_endian<Endian::Native, Endian::Little>::value) ||
+                      (endian == Endian::Little &&
+                       is_same_endian<Endian::Native, Endian::Big>::value))
         {
             for (std::size_t i = 0; i < serialized.size(); ++i)
             {

@@ -2,12 +2,14 @@
 
 #include <type_traits>
 
+#include "msmp/serializer/endian.hpp"
+
 namespace msmp
 {
 namespace serializer
 {
 
-template <std::endian a, std::endian b>
+template <Endian a, Endian b>
 struct is_same_endian
 {
     constexpr static bool value = a == b;

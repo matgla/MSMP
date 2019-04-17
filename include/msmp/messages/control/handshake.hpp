@@ -28,7 +28,7 @@ struct Handshake
 
     auto serialize() const
     {
-        using Serializers = serializer::Serializers<std::endian::big>;
+        using Serializers = serializer::Serializers<serializer::Endian::Big>;
 
         eul::container::static_vector<uint8_t, sizeof(Handshake) + 2> payload;
         const auto serialized_id = Serializers::serialize(id);
@@ -46,7 +46,7 @@ struct Handshake
 
     static Handshake deserialize(const gsl::span<const uint8_t>& payload)
     {
-        using Deserializers = serializer::Deserializers<std::endian::big>;
+        using Deserializers = serializer::Deserializers<serializer::Endian::Big>;
 
         const uint32_t max_payload_size =
             Deserializers::deserialize<uint32_t>(payload.subspan(payload.size() - 4));

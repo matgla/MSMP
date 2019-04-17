@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 
 #include "msmp/serializer/deserializers.hpp"
+#include "msmp/serializer/endian.hpp"
 
 namespace msmp
 {
@@ -17,7 +18,7 @@ class DeserializerShould : public ::testing::Test
 
 TEST_F(DeserializerShould, DeserializeUint8FromBigEndian)
 {
-    using Deserializers = Deserializers<std::endian::big>;
+    using Deserializers = Deserializers<Endian::Big>;
     constexpr std::array<uint8_t, 1> data1{0x32};
     constexpr std::array<uint8_t, 2> data2{0xff};
     constexpr std::array<uint8_t, 3> data3{0x00};
@@ -29,7 +30,7 @@ TEST_F(DeserializerShould, DeserializeUint8FromBigEndian)
 
 TEST_F(DeserializerShould, DeserializeUint16FromBigEndian)
 {
-    using Deserializers = Deserializers<std::endian::big>;
+    using Deserializers = Deserializers<Endian::Big>;
     constexpr std::array<uint8_t, 2> data1{0x12, 0x34};
     constexpr std::array<uint8_t, 2> data2{0xff, 0xff};
     constexpr std::array<uint8_t, 2> data3{0x00, 0x00};
@@ -41,7 +42,7 @@ TEST_F(DeserializerShould, DeserializeUint16FromBigEndian)
 
 TEST_F(DeserializerShould, DeserializeInt32FromBigEndian)
 {
-    using Deserializers = Deserializers<std::endian::big>;
+    using Deserializers = Deserializers<Endian::Big>;
     constexpr std::array<uint8_t, 4> data1{0x12, 0x34, 0x56, 0x78};
     constexpr std::array<uint8_t, 4> data2{0xff, 0xff, 0x00, 0x00};
     constexpr std::array<uint8_t, 4> data3{0x00, 0x00, 0xdd, 0xdd};
@@ -53,7 +54,7 @@ TEST_F(DeserializerShould, DeserializeInt32FromBigEndian)
 
 TEST_F(DeserializerShould, DeserializeFloatFromBigEndian)
 {
-    using Deserializers = Deserializers<std::endian::big>;
+    using Deserializers = Deserializers<Endian::Big>;
 
     constexpr std::array<uint8_t, 4> data1{0x4d, 0x91, 0xa2, 0xb4};
     constexpr std::array<uint8_t, 4> data2{0x4f, 0x7f, 0xff, 0x00};
@@ -67,7 +68,7 @@ TEST_F(DeserializerShould, DeserializeFloatFromBigEndian)
 
 TEST_F(DeserializerShould, DeserializeUint8FromLittleEndian)
 {
-    using Deserializers = Deserializers<std::endian::little>;
+    using Deserializers = Deserializers<Endian::Little>;
     constexpr std::array<uint8_t, 1> data1{0x32};
     constexpr std::array<uint8_t, 2> data2{0xff};
     constexpr std::array<uint8_t, 3> data3{0x00};
@@ -79,7 +80,7 @@ TEST_F(DeserializerShould, DeserializeUint8FromLittleEndian)
 
 TEST_F(DeserializerShould, DeserializeUint16FromLittleEndian)
 {
-    using Deserializers = Deserializers<std::endian::little>;
+    using Deserializers = Deserializers<Endian::Little>;
     constexpr std::array<uint8_t, 2> data1{0x12, 0x34};
     constexpr std::array<uint8_t, 2> data2{0xff, 0xff};
     constexpr std::array<uint8_t, 2> data3{0x00, 0x00};
@@ -91,7 +92,7 @@ TEST_F(DeserializerShould, DeserializeUint16FromLittleEndian)
 
 TEST_F(DeserializerShould, DeserializeInt32FromLittleEndian)
 {
-    using Deserializers = Deserializers<std::endian::little>;
+    using Deserializers = Deserializers<Endian::Little>;
     constexpr std::array<uint8_t, 4> data1{0x12, 0x34, 0x56, 0x78};
     constexpr std::array<uint8_t, 4> data2{0xff, 0xff, 0x00, 0x00};
     constexpr std::array<uint8_t, 4> data3{0x00, 0x00, 0xdd, 0xdd};
@@ -103,7 +104,7 @@ TEST_F(DeserializerShould, DeserializeInt32FromLittleEndian)
 
 TEST_F(DeserializerShould, DeserializeFloatFromLittleEndian)
 {
-    using Deserializers = Deserializers<std::endian::little>;
+    using Deserializers = Deserializers<Endian::Little>;
 
     constexpr std::array<uint8_t, 4> data1{0xb4, 0xa2, 0x91, 0x4d};
     constexpr std::array<uint8_t, 4> data2{0x00, 0xff, 0x7f, 0x4f};

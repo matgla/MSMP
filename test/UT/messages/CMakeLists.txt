@@ -12,6 +12,7 @@ target_link_libraries(msmp_messages_ut
         gmock
 
         msmp_messages
+        msmp_serializer
 )
 
 target_include_directories(msmp_messages_ut
