@@ -11,6 +11,7 @@ target_sources(msmp_tests
         PayloadReceiverTests.cpp
         PayloadTransmitterTests.cpp
 
+        MessageBrokerTests.cpp
         DataLinkReceiverTests.cpp
         DataLinkTransmitterTests.cpp
         TransportReceiverTests.cpp
