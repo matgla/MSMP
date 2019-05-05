@@ -9,8 +9,11 @@
 
 #include <eul/container/static_deque.hpp>
 #include <eul/container/static_vector.hpp>
-#include <eul/timer/ITimeProvider.hpp>
+#include <eul/logger/logger_factory.hpp>
+#include <eul/logger/logger.hpp>
+#include <eul/time/i_time_provider.hpp>
 #include <eul/timer/timeout_timer.hpp>
+#include <eul/utils/unused.hpp>
 
 #include "msmp/default_configuration.hpp"
 #include "msmp/message_type.hpp"
@@ -24,12 +27,12 @@ const auto dummy = []{};
 
 // TODO: states to prevent acknowledge before callback from transmitter
 
-template <typename LoggerFactory, typename DataLinkTransmitter, typename Configuration = DefaultConfiguration>
+template <typename DataLinkTransmitter, typename Configuration = DefaultConfiguration>
 class TransportTransmitter
 {
 public:
     using CallbackType = eul::function<void(), sizeof(void*)>;
-    TransportTransmitter(LoggerFactory& logger_factory, DataLinkTransmitter& data_link_transmitter, const eul::timer::ITimeProvider& time_provider);
+    TransportTransmitter(eul::logger::logger_factory& logger_factory, DataLinkTransmitter& data_link_transmitter, const eul::time::i_time_provider& time_provider);
 
     TransmissionStatus send_control(const StreamType& payload, const CallbackType& on_success = dummy, const CallbackType& on_failure = dummy);
     TransmissionStatus send(const StreamType& payload, const CallbackType& on_success = dummy, const CallbackType& on_failure = dummy);
@@ -77,14 +80,14 @@ public:
     }
 
 private:
-    auto& create_logger(LoggerFactory& logger_factory);
+    auto& create_logger(eul::logger::logger_factory& logger_factory);
 
     TransmissionStatus send(MessageType type, const StreamType& payload, const CallbackType& on_success, const CallbackType& on_failure);
     void send_next_frame();
     void retransmit_failed_frame();
 
     uint8_t transaction_id_counter_;
-    typename LoggerFactory::LoggerType& logger_;
+    eul::logger::logger& logger_;
     DataLinkTransmitter& data_link_transmitter_;
     std::size_t current_byte_;
     using FrameBuffer = eul::container::static_vector<uint8_t, Configuration::max_payload_size>;
@@ -110,9 +113,9 @@ private:
     eul::timer::timeout_timer timer_;
 };
 
-template <typename LoggerFactory, typename DataLinkTransmitter, typename Configuration>
-TransportTransmitter<LoggerFactory, DataLinkTransmitter, Configuration>::TransportTransmitter(
-    LoggerFactory& logger_factory, DataLinkTransmitter& data_link_transmitter, const eul::timer::ITimeProvider& time_provider)
+template <typename DataLinkTransmitter, typename Configuration>
+TransportTransmitter<DataLinkTransmitter, Configuration>::TransportTransmitter(
+    eul::logger::logger_factory& logger_factory, DataLinkTransmitter& data_link_transmitter, const eul::time::i_time_provider& time_provider)
     : transaction_id_counter_(0)
     , logger_(create_logger(logger_factory))
     , data_link_transmitter_(data_link_transmitter)
@@ -158,16 +161,17 @@ TransportTransmitter<LoggerFactory, DataLinkTransmitter, Configuration>::Transpo
     Configuration::timer_manager.register_timer(timer_);
 }
 
-template <typename LoggerFactory, typename DataLinkTransmitter, typename Configuration>
-auto& TransportTransmitter<LoggerFactory, DataLinkTransmitter, Configuration>::create_logger(
-    LoggerFactory& logger_factory)
+template <typename DataLinkTransmitter, typename Configuration>
+auto& TransportTransmitter<DataLinkTransmitter, Configuration>::create_logger(
+    eul::logger::logger_factory& logger_factory)
 {
     static auto logger = logger_factory.create("TransportTransmitter");
+    logger.set_time_provider(logger_factory.get_time_provider());
     return logger;
 }
 
-template <typename LoggerFactory, typename DataLinkTransmitter, typename Configuration>
-TransmissionStatus TransportTransmitter<LoggerFactory, DataLinkTransmitter, Configuration>::send_control(
+template <typename DataLinkTransmitter, typename Configuration>
+TransmissionStatus TransportTransmitter<DataLinkTransmitter, Configuration>::send_control(
     const StreamType& payload, const CallbackType& on_success, const CallbackType& on_failure)
 {
     logger_.trace() << "Sending control message: " << payload;
@@ -210,18 +214,18 @@ TransmissionStatus TransportTransmitter<LoggerFactory, DataLinkTransmitter, Conf
     return TransmissionStatus::Ok;
 }
 
-template <typename LoggerFactory, typename DataLinkTransmitter, typename Configuration>
+template <typename DataLinkTransmitter, typename Configuration>
 TransmissionStatus
-    TransportTransmitter<LoggerFactory, DataLinkTransmitter, Configuration>::send(const StreamType& payload, const CallbackType& on_success, const CallbackType& on_failure)
+    TransportTransmitter<DataLinkTransmitter, Configuration>::send(const StreamType& payload, const CallbackType& on_success, const CallbackType& on_failure)
 {
     logger_.trace() << "Sending message: " << payload;
 
     return send(MessageType::Data, payload, on_success, on_failure);
 }
 
-template <typename LoggerFactory, typename DataLinkTransmitter, typename Configuration>
+template <typename DataLinkTransmitter, typename Configuration>
 TransmissionStatus
-    TransportTransmitter<LoggerFactory, DataLinkTransmitter, Configuration>::send(MessageType type,
+    TransportTransmitter<DataLinkTransmitter, Configuration>::send(MessageType type,
                                                                                   const StreamType& payload,
                                                                                   const CallbackType& on_success,
                                                                                   const CallbackType& on_failure)
@@ -262,8 +266,8 @@ TransmissionStatus
     return TransmissionStatus::Ok;
 }
 
-template <typename LoggerFactory, typename DataLinkTransmitter, typename Configuration>
-void TransportTransmitter<LoggerFactory, DataLinkTransmitter, Configuration>::send_next_frame()
+template <typename DataLinkTransmitter, typename Configuration>
+void TransportTransmitter<DataLinkTransmitter, Configuration>::send_next_frame()
 {
     Configuration::execution_queue.push_front(lifetime_, [this]
     {

@@ -30,6 +30,7 @@ target_link_libraries(${library_name}
     INTERFACE
         gsl
         eul
+        eul_logger
         crcpp
         msmp_messages
         msmp_serializer

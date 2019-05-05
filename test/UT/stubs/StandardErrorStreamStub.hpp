@@ -4,30 +4,18 @@
 
 #include <gsl/span>
 
+#include "eul/logger/logger_stream.hpp"
+
 namespace stubs
 {
 
-struct StandardErrorStreamStub
+struct StandardErrorStreamStub : public eul::logger::logger_stream
 {
-    static void write(const std::string_view& data)
+    void write(const std::string_view& data) override
     {
         if (std::getenv("ENABLE_LOGGING"))
         {
             std::cerr << data;
-        }
-    }
-
-    template <typename T>
-    static void write(const gsl::span<T>& data)
-    {
-        if (std::getenv("ENABLE_LOGGING"))
-        {
-            std::cerr << "{";
-            for (typename gsl::span<T>::index_type i = 0; i < data.size() - 1; ++i)
-            {
-                std::cerr << static_cast<int>(data[i]) << ", ";
-            }
-            std::cerr << static_cast<int>(data[data.size() - 1]) << "}";
         }
     }
 };

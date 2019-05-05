@@ -9,7 +9,6 @@
 #include <gsl/span>
 
 #include <eul/container/static_vector.hpp>
-#include <eul/utils.hpp>
 
 #include "msmp/messages/control/messages_ids.hpp"
 #include "msmp/serializer/serialized_message.hpp"

@@ -6,6 +6,8 @@
 
 #include <eul/container/static_vector.hpp>
 #include <eul/function.hpp>
+#include <eul/logger/logger.hpp>
+#include <eul/logger/logger_factory.hpp>
 
 #include "msmp/control_byte.hpp"
 #include "msmp/default_configuration.hpp"
@@ -13,7 +15,7 @@
 namespace msmp
 {
 
-template <typename LoggerFactory, typename Configuration = DefaultConfiguration>
+template <typename Configuration = DefaultConfiguration>
 class DataLinkReceiver
 {
 public:
@@ -29,7 +31,7 @@ public:
     using OnFailure =
         eul::function<void(const StreamType& payload, const ErrorCode error), sizeof(std::size_t)>;
 
-    DataLinkReceiver(LoggerFactory& logger_factory);
+    DataLinkReceiver(eul::logger::logger_factory& logger_factory);
 
     void receive(const StreamType& stream);
     void receive_byte(const uint8_t byte);
@@ -37,7 +39,7 @@ public:
     void on_failure(const OnFailure& on_failure_callback);
 
 private:
-    auto& create_logger(LoggerFactory& logger_factory);
+    auto& create_logger(eul::logger::logger_factory& logger_factory);
 
     enum class State : uint8_t
     {
@@ -46,22 +48,22 @@ private:
         ReceivingEscapedByte
     };
 
-    typename LoggerFactory::LoggerType& logger_;
+    eul::logger::logger& logger_;
     eul::container::static_vector<uint8_t, max_payload_size> buffer_;
     State state_;
     OnDataReceived on_data_callback_;
     OnFailure on_failure_callback_;
 };
 
-template <typename LoggerFactory, typename Configuration>
-DataLinkReceiver<LoggerFactory, Configuration>::DataLinkReceiver(LoggerFactory& logger_factory)
+template <typename Configuration>
+DataLinkReceiver<Configuration>::DataLinkReceiver(eul::logger::logger_factory& logger_factory)
     : logger_(create_logger(logger_factory)), state_(State::Idle)
 {
     logger_.debug() << "Created";
 }
 
-template <typename LoggerFactory, typename Configuration>
-void DataLinkReceiver<LoggerFactory, Configuration>::receive(const StreamType& stream)
+template <typename Configuration>
+void DataLinkReceiver<Configuration>::receive(const StreamType& stream)
 {
     for (const auto byte : stream)
     {
@@ -69,8 +71,8 @@ void DataLinkReceiver<LoggerFactory, Configuration>::receive(const StreamType& s
     }
 }
 
-template <typename LoggerFactory, typename Configuration>
-void DataLinkReceiver<LoggerFactory, Configuration>::receive_byte(const uint8_t byte)
+template <typename Configuration>
+void DataLinkReceiver<Configuration>::receive_byte(const uint8_t byte)
 {
     switch (state_)
     {
@@ -147,22 +149,23 @@ void DataLinkReceiver<LoggerFactory, Configuration>::receive_byte(const uint8_t 
     }
 }
 
-template <typename LoggerFactory, typename Configuration>
-void DataLinkReceiver<LoggerFactory, Configuration>::on_data(const OnDataReceived& on_data_callback)
+template <typename Configuration>
+void DataLinkReceiver<Configuration>::on_data(const OnDataReceived& on_data_callback)
 {
     on_data_callback_ = on_data_callback;
 }
 
-template <typename LoggerFactory, typename Configuration>
-void DataLinkReceiver<LoggerFactory, Configuration>::on_failure(const OnFailure& on_failure_callback)
+template <typename Configuration>
+void DataLinkReceiver<Configuration>::on_failure(const OnFailure& on_failure_callback)
 {
     on_failure_callback_ = on_failure_callback;
 }
 
-template <typename LoggerFactory, typename WriterType>
-auto& DataLinkReceiver<LoggerFactory, WriterType>::create_logger(LoggerFactory& logger_factory)
+template <typename WriterType>
+auto& DataLinkReceiver<WriterType>::create_logger(eul::logger::logger_factory& logger_factory)
 {
     static auto logger = logger_factory.create("DataLinkReceiver");
+    logger.set_time_provider(logger_factory.get_time_provider());
     return logger;
 }
 

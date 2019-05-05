@@ -5,9 +5,11 @@
 #include <gsl/span>
 
 #include <eul/container/static_deque.hpp>
-#include <eul/timer/ITimeProvider.hpp>
-#include <eul/timer/timeout_timer.hpp>
 #include <eul/function.hpp>
+#include <eul/logger/logger_factory.hpp>
+#include <eul/logger/logger.hpp>
+#include <eul/time/i_time_provider.hpp>
+#include <eul/timer/timeout_timer.hpp>
 
 #include "msmp/control_byte.hpp"
 #include "msmp/default_configuration.hpp"
@@ -16,7 +18,7 @@
 namespace msmp
 {
 
-template <typename LoggerFactory, typename WriterType, typename Configuration = DefaultConfiguration>
+template <typename WriterType, typename Configuration = DefaultConfiguration>
 class DataLinkTransmitter
 {
 public:
@@ -25,7 +27,7 @@ public:
     using OnFailureCallbackType = eul::function<void(TransmissionStatus), sizeof(void*)>;
 
 public:
-    DataLinkTransmitter(LoggerFactory& logger_factory, WriterType& writer, const eul::timer::ITimeProvider& time_provider,
+    DataLinkTransmitter(eul::logger::logger_factory& logger_factory, WriterType& writer, const eul::time::i_time_provider& time_provider,
                         Configuration configuration = Configuration{});
 
     TransmissionStatus send(uint8_t byte);
@@ -47,7 +49,7 @@ private:
 
     bool start_transmission();
     bool end_transmission();
-    auto& create_logger(LoggerFactory& logger_factory);
+    auto& create_logger(eul::logger::logger_factory& logger_factory);
     void send_byte(ControlByte byte);
     void send_byte(uint8_t byte);
     void send_byte_async(ControlByte byte);
@@ -57,7 +59,7 @@ private:
     void do_on_succeeded();
     void run();
 
-    typename LoggerFactory::LoggerType& logger_;
+    eul::logger::logger& logger_;
     WriterType& writer_;
     eul::timer::timeout_timer timer_;
     State state_;
@@ -69,9 +71,9 @@ private:
     uint8_t retries_counter_;
 };
 
-template <typename LoggerFactory, typename WriterType, typename Configuration>
-DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::DataLinkTransmitter(
-    LoggerFactory& logger_factory, WriterType& writer, const eul::timer::ITimeProvider& time_provider, Configuration)
+template <typename WriterType, typename Configuration>
+DataLinkTransmitter<WriterType, Configuration>::DataLinkTransmitter(
+    eul::logger::logger_factory& logger_factory, WriterType& writer, const eul::time::i_time_provider& time_provider, Configuration)
     : logger_(create_logger(logger_factory)), writer_(writer), timer_(time_provider), state_(State::Idle), current_byte_(0)
 {
     Configuration::timer_manager.register_timer(timer_);
@@ -91,14 +93,14 @@ DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::DataLinkTransmitt
     });
 }
 
-template <typename LoggerFactory, typename WriterType, typename Configuration>
-TransmissionStatus DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::send(uint8_t byte)
+template <typename WriterType, typename Configuration>
+TransmissionStatus DataLinkTransmitter<WriterType, Configuration>::send(uint8_t byte)
 {
     return send(std::array<uint8_t, 1>{byte});
 }
 
-template <typename LoggerFactory, typename WriterType, typename Configuration>
-TransmissionStatus DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::send(const StreamType& bytes)
+template <typename WriterType, typename Configuration>
+TransmissionStatus DataLinkTransmitter<WriterType, Configuration>::send(const StreamType& bytes)
 {
     const std::size_t free_size = buffer_.max_size() - buffer_.size();
     if (static_cast<std::size_t>(bytes.size()) > free_size)
@@ -114,8 +116,8 @@ TransmissionStatus DataLinkTransmitter<LoggerFactory, WriterType, Configuration>
     return TransmissionStatus::Ok;
 }
 
-template <typename LoggerFactory, typename WriterType, typename Configuration>
-void DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::send_byte(uint8_t byte)
+template <typename WriterType, typename Configuration>
+void DataLinkTransmitter<WriterType, Configuration>::send_byte(uint8_t byte)
 {
     logger_.trace() << "Byte will be transmitted: " << static_cast<int>(byte);
     writer_.write(byte);
@@ -131,8 +133,8 @@ void DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::send_byte(ui
     }, std::chrono::milliseconds(500));
 }
 
-template <typename LoggerFactory, typename WriterType, typename Configuration>
-void DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::send_byte_async(uint8_t byte)
+template <typename WriterType, typename Configuration>
+void DataLinkTransmitter<WriterType, Configuration>::send_byte_async(uint8_t byte)
 {
     current_byte_ = byte;
     Configuration::execution_queue.push_front(lifetime_, [this](){
@@ -140,37 +142,38 @@ void DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::send_byte_as
     });
 }
 
-template <typename LoggerFactory, typename WriterType, typename Configuration>
-void DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::send_byte_async(ControlByte byte)
+template <typename WriterType, typename Configuration>
+void DataLinkTransmitter<WriterType, Configuration>::send_byte_async(ControlByte byte)
 {
     send_byte_async(static_cast<uint8_t>(byte));
 }
 
 
-template <typename LoggerFactory, typename WriterType, typename Configuration>
-auto& DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::create_logger(
-    LoggerFactory& logger_factory)
+template <typename WriterType, typename Configuration>
+auto& DataLinkTransmitter<WriterType, Configuration>::create_logger(
+    eul::logger::logger_factory& logger_factory)
 {
     static auto logger = logger_factory.create("DataLinkTransmitter");
+    logger.set_time_provider(logger_factory.get_time_provider());
     return logger;
 }
 
-template <typename LoggerFactory, typename WriterType, typename Configuration>
-void DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::on_success(
+template <typename WriterType, typename Configuration>
+void DataLinkTransmitter<WriterType, Configuration>::on_success(
     const OnSuccessCallbackType& callback)
 {
     on_success_ = callback;
 }
 
-template <typename LoggerFactory, typename WriterType, typename Configuration>
-void DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::on_failure(
+template <typename WriterType, typename Configuration>
+void DataLinkTransmitter<WriterType, Configuration>::on_failure(
     const OnFailureCallbackType& callback)
 {
     on_failure_ = callback;
 }
 
-template <typename LoggerFactory, typename WriterType, typename Configuration>
-void DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::do_on_succeeded()
+template <typename WriterType, typename Configuration>
+void DataLinkTransmitter<WriterType, Configuration>::do_on_succeeded()
 {
     switch (state_)
     {
@@ -228,8 +231,8 @@ void DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::do_on_succee
     }
 }
 
-template <typename LoggerFactory, typename WriterType, typename Configuration>
-void DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::run()
+template <typename WriterType, typename Configuration>
+void DataLinkTransmitter<WriterType, Configuration>::run()
 {
     switch (state_)
     {
@@ -281,8 +284,8 @@ void DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::run()
     }
 }
 
-template <typename LoggerFactory, typename WriterType, typename Configuration>
-void DataLinkTransmitter<LoggerFactory, WriterType, Configuration>::report_failure(TransmissionStatus status)
+template <typename WriterType, typename Configuration>
+void DataLinkTransmitter<WriterType, Configuration>::report_failure(TransmissionStatus status)
 {
     if (on_failure_)
     {

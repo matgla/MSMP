@@ -6,7 +6,7 @@
 
 #include <gsl/span>
 
-#include <eul/utils.hpp>
+#include <eul/utils/string.hpp>
 
 #include "msmp/serializer/deserializers.hpp"
 

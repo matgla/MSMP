@@ -2,12 +2,12 @@
 
 #include <chrono>
 
-#include <eul/timer/ITimeProvider.hpp>
+#include <eul/time/i_time_provider.hpp>
 
 namespace stubs
 {
 
-class TimeStub : public eul::timer::ITimeProvider
+class TimeStub : public eul::time::i_time_provider
 {
 public:
     TimeStub() : time_(0)

@@ -7,6 +7,7 @@
 
 #include <eul/logger/logger_factory.hpp>
 #include <eul/timer/timer_manager.hpp>
+#include <eul/utils/unused.hpp>
 
 #include "msmp/data_link_transmitter.hpp"
 #include "msmp/default_configuration.hpp"
@@ -28,9 +29,7 @@ public:
 
 protected:
     stubs::TimeStub time_;
-    using LoggerFactoryType = eul::logger::LoggerFactory<stubs::TimeStub, eul::logger::CurrentLoggingPolicy,
-                                                         stubs::StandardErrorStreamStub>;
-    LoggerFactoryType logger_factory_;
+    eul::logger::logger_factory logger_factory_;
     test::stub::WriterStub writer_;
 };
 

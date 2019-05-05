@@ -29,12 +29,10 @@ public:
 
 protected:
     stubs::TimeStub time_;
-    using LoggerFactoryType = eul::logger::LoggerFactory<stubs::TimeStub, eul::logger::CurrentLoggingPolicy,
-                                                         stubs::StandardErrorStreamStub>;
-    LoggerFactoryType logger_factory_;
+    eul::logger::logger_factory logger_factory_;
     std::vector<uint8_t> buffer_;
 
-    using DataLinkReceiverType = DataLinkReceiver<LoggerFactoryType, SmallBufferConfiguration>;
+    using DataLinkReceiverType = DataLinkReceiver<SmallBufferConfiguration>;
     DataLinkReceiverType::ErrorCode error_code_;
 };
 

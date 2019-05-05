@@ -10,7 +10,7 @@ target_sources(msmp_tests
         ConnectionTests.cpp
         PayloadReceiverTests.cpp
         PayloadTransmitterTests.cpp
-
+        main.cpp
         DataLinkReceiverTests.cpp
         DataLinkTransmitterTests.cpp
         TransportReceiverTests.cpp
@@ -25,11 +25,12 @@ target_include_directories(msmp_tests
 )
 
 add_subdirectory(stubs)
-
 add_subdirectory(messages)
 add_subdirectory(serializers)
 
 target_link_libraries(msmp_tests
+    PUBLIC
+        eul_logger
     PRIVATE
         msmp
 

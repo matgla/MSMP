@@ -5,6 +5,8 @@
 #include <gsl/span>
 
 #include <eul/function.hpp>
+#include <eul/logger/logger.hpp>
+#include <eul/logger/logger_factory.hpp>
 
 #include "msmp/messages/control/ack.hpp"
 #include "msmp/messages/control/nack.hpp"
@@ -13,7 +15,7 @@
 namespace msmp
 {
 
-template <typename LoggerFactory, typename TransportReceiver, typename TransportTransmitter>
+template <typename TransportReceiver, typename TransportTransmitter>
 class TransportTransceiver
 {
 public:
@@ -22,7 +24,7 @@ public:
     using TransmitterCallbackType = typename TransportTransmitter::CallbackType;
     using Frame = typename TransportReceiver::Frame;
 
-    TransportTransceiver(LoggerFactory& logger_factory, TransportReceiver& transport_receiver, TransportTransmitter& transport_transmitter)
+    TransportTransceiver(eul::logger::logger_factory& logger_factory, TransportReceiver& transport_receiver, TransportTransmitter& transport_transmitter)
         : logger_(create_logger(logger_factory))
         , transport_receiver_(transport_receiver)
         , transport_transmitter_(transport_transmitter)
@@ -94,9 +96,10 @@ public:
     }
 
 private:
-    static auto& create_logger(LoggerFactory& logger_factory)
+    static auto& create_logger(eul::logger::logger_factory& logger_factory)
     {
         static auto logger = logger_factory.create("TransportTransceiver");
+        logger.set_time_provider(logger_factory.get_time_provider());
         return logger;
     }
 
@@ -136,7 +139,7 @@ private:
         }
     }
 
-    typename LoggerFactory::LoggerType& logger_;
+    eul::logger::logger& logger_;
     TransportReceiver& transport_receiver_;
     TransportTransmitter& transport_transmitter_;
 

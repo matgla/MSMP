@@ -6,10 +6,12 @@
 
 #include <CRC.h>
 
-#include <eul/function.hpp>
 #include <eul/container/ring_buffer.hpp>
 #include <eul/container/static_vector.hpp>
-#include <eul/utils.hpp>
+#include <eul/function.hpp>
+#include <eul/logger/logger_factory.hpp>
+#include <eul/logger/logger.hpp>
+#include <eul/utils/string.hpp>
 
 #include "msmp/default_configuration.hpp"
 #include "msmp/message_type.hpp"
@@ -19,14 +21,14 @@
 namespace msmp
 {
 
-template <typename LoggerFactory, typename DataLinkReceiver, typename Configuration = DefaultConfiguration>
+template <typename DataLinkReceiver, typename Configuration = DefaultConfiguration>
 class TransportReceiver
 {
 public:
     using Frame = TransportFrame<Configuration>;
     using CallbackType = eul::function<void(const Frame&), sizeof(void*)>;
 
-    TransportReceiver(LoggerFactory& logger_factory, DataLinkReceiver& data_link_receiver)
+    TransportReceiver(eul::logger::logger_factory& logger_factory, DataLinkReceiver& data_link_receiver)
         : logger_(create_logger(logger_factory))
     {
         data_link_receiver.on_data([this](const StreamType& payload)
@@ -136,13 +138,14 @@ protected:
     }
 
 private:
-    auto& create_logger(LoggerFactory& logger_factory)
+    auto& create_logger(eul::logger::logger_factory& logger_factory)
     {
         static auto logger = logger_factory.create("TransportReceiver");
+        logger.set_time_provider(logger_factory.get_time_provider());
         return logger;
     }
 
-    typename LoggerFactory::LoggerType& logger_;
+    eul::logger::logger& logger_;
     eul::container::ring_buffer<Frame, Configuration::rx_buffer_frames_size> frames_;
     CallbackType on_control_frame_;
     CallbackType on_data_frame_;
