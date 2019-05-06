@@ -1,13 +1,19 @@
 [submodule "lib/eul"]
 	path = lib/eul
 	url = https://github.com/matgla/EmbeddedUtilityLibraries.git
+	branch = master
+	
 [submodule "lib/crcpp/crcpp"]
 	path = lib/crcpp/crcpp
 	url = https://github.com/d-bahr/CRCpp
+	branch = master
 [submodule "lib/gsl/gsl"]
 	path = lib/gsl/gsl
 	url = https://github.com/Microsoft/GSL.git
+	branch = master
 
 [submodule "test/lib/googletest"]
 	path = test/lib/googletest
 	url = https://github.com/google/googletest.git
+	branch = master
+	
