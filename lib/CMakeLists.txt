@@ -1,15 +1,5 @@
-message("-- Adding libraries")
-set(BUILD_TESTS OFF)
-set(BUILD_UT OFF)
+include (../cmake/GitModules.cmake)
 
-if (NOT TARGET eul)
-    add_subdirectory(eul)
-endif ()
-
-if (NOT TARGET gsl)
-    add_subdirectory(gsl)
-endif ()
-
-if (NOT TARGET crcpp)
-    add_subdirectory(crcpp)
-endif ()
+fetch_module_with_path(lib/eul ${PROJECT_SOURCE_DIR}/lib/eul ${PROJECT_SOURCE_DIR})
+fetch_module_with_path(lib/gsl/gsl ${PROJECT_SOURCE_DIR}/lib/gsl ${PROJECT_SOURCE_DIR})
+fetch_module_with_path(lib/crcpp/crcpp ${PROJECT_SOURCE_DIR}/lib/crcpp ${PROJECT_SOURCE_DIR})
