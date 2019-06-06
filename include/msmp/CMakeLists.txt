@@ -10,6 +10,7 @@ target_sources(${library_name}
         ${CMAKE_CURRENT_SOURCE_DIR}/data_link_receiver.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/data_link_transmitter.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/default_configuration.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/message_handler.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/message_type.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/message_broker.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/transmission_status.hpp
@@ -23,6 +24,7 @@ target_include_directories(${library_name} INTERFACE "${PROJECT_SOURCE_DIR}/incl
 
 add_subdirectory(messages)
 add_subdirectory(serializer)
+add_subdirectory(layers)
 
 target_link_libraries(${library_name}
     INTERFACE
@@ -32,6 +34,7 @@ target_link_libraries(${library_name}
         crcpp
         msmp_messages
         msmp_serializer
+        msmp_layers
 )
 
 target_compile_options(${library_name} INTERFACE

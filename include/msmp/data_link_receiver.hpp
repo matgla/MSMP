@@ -111,6 +111,7 @@ void DataLinkReceiver<Configuration>::receive_byte(const uint8_t byte)
                             on_data_callback_(span);
                             buffer_.clear();
                         }
+                        return;
                     }
                 }
             }
