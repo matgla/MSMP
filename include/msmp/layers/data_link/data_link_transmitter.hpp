@@ -12,13 +12,17 @@
 #include <eul/timer/timeout_timer.hpp>
 
 #include "msmp/control_byte.hpp"
-#include "msmp/default_configuration.hpp"
+#include "msmp/configuration/configuration.hpp"
 #include "msmp/transmission_status.hpp"
 
 namespace msmp
 {
+namespace layers
+{
+namespace data_link
+{
 
-template <typename WriterType, typename Configuration = DefaultConfiguration>
+template <typename WriterType, typename Configuration = configuration::Configuration>
 class DataLinkTransmitter
 {
 public:
@@ -294,4 +298,6 @@ void DataLinkTransmitter<WriterType, Configuration>::report_failure(Transmission
     state_ = State::Idle;
 }
 
+} // namespace data_link
+} // namespace layers
 } // namespace msmp

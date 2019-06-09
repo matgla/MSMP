@@ -15,7 +15,7 @@
 #include <eul/timer/timeout_timer.hpp>
 #include <eul/utils/unused.hpp>
 
-#include "msmp/default_configuration.hpp"
+#include "msmp/configuration/configuration.hpp"
 #include "msmp/message_type.hpp"
 #include "msmp/types.hpp"
 #include "msmp/transmission_status.hpp"
@@ -27,7 +27,7 @@ const auto dummy = []{};
 
 // TODO: states to prevent acknowledge before callback from transmitter
 
-template <typename DataLinkTransmitter, typename Configuration = DefaultConfiguration>
+template <typename DataLinkTransmitter, typename Configuration = configuration::Configuration>
 class TransportTransmitter
 {
 public:

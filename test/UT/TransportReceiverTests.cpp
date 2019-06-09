@@ -4,7 +4,7 @@
 #include <eul/logger/logger_factory.hpp>
 
 #include "msmp/transport_receiver.hpp"
-#include "msmp/default_configuration.hpp"
+#include "msmp/configuration/configuration.hpp"
 
 #include "test/UT/stubs/StandardErrorStreamStub.hpp"
 #include "test/UT/stubs/TimeStub.hpp"

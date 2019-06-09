@@ -5,7 +5,7 @@
 #include <functional>
 #include <vector>
 
-#include "msmp/data_link_transmitter.hpp"
+#include "msmp/layers/data_link/data_link_transmitter.hpp"
 
 namespace test
 {

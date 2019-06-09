@@ -13,7 +13,7 @@
 #include <eul/logger/logger.hpp>
 #include <eul/utils/string.hpp>
 
-#include "msmp/default_configuration.hpp"
+#include "msmp/configuration/configuration.hpp"
 #include "msmp/message_type.hpp"
 #include "msmp/transport_frame.hpp"
 #include "msmp/types.hpp"
@@ -21,7 +21,7 @@
 namespace msmp
 {
 
-template <typename DataLinkReceiver, typename Configuration = DefaultConfiguration>
+template <typename DataLinkReceiver, typename Configuration = configuration::Configuration>
 class TransportReceiver
 {
 public:

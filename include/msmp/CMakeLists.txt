@@ -7,9 +7,6 @@ target_sources(${library_name}
     INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/connection.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/control_byte.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/data_link_receiver.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/data_link_transmitter.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/default_configuration.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/message_handler.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/message_type.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/message_broker.hpp
@@ -22,6 +19,7 @@ target_sources(${library_name}
 
 target_include_directories(${library_name} INTERFACE "${PROJECT_SOURCE_DIR}/include")
 
+add_subdirectory(configuration)
 add_subdirectory(messages)
 add_subdirectory(serializer)
 add_subdirectory(layers)
@@ -32,6 +30,7 @@ target_link_libraries(${library_name}
         eul
         eul_logger
         crcpp
+        msmp_configuration
         msmp_messages
         msmp_serializer
         msmp_layers

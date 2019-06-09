@@ -1,9 +1,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "msmp/data_link_transmitter.hpp"
+#include "msmp/layers/data_link/data_link_transmitter.hpp"
 #include "msmp/transport_transmitter.hpp"
-#include "msmp/default_configuration.hpp"
+#include "msmp/configuration/configuration.hpp"
 
 #include "test/UT/stubs/StandardErrorStreamStub.hpp"
 #include "test/UT/stubs/TimeStub.hpp"
@@ -36,7 +36,7 @@ TEST_F(TransportTransmitterTests, SendPayload)
     std::vector<uint8_t> control_data {0xd, 0x0, 0xd, 0xa};
     sut.send_control(control_data);
 
-    DefaultConfiguration::execution_queue.run();
+    configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(data_link_transmitter_.get_buffer(),
         ::testing::ElementsAreArray({
@@ -53,7 +53,7 @@ TEST_F(TransportTransmitterTests, SendPayload)
 
     data_link_transmitter_.clear_buffer();
     sut.confirm_frame_transmission(1);
-    DefaultConfiguration::execution_queue.run();
+    configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(data_link_transmitter_.get_buffer(),
         ::testing::ElementsAreArray({
@@ -70,7 +70,7 @@ TEST_F(TransportTransmitterTests, RetransmitAfterFailure)
     std::vector<uint8_t> data{1, 2, 3, 4};
     sut.send(data);
 
-    DefaultConfiguration::execution_queue.run();
+    configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(data_link_transmitter_.get_buffer(),
         ::testing::ElementsAreArray({
@@ -82,7 +82,7 @@ TEST_F(TransportTransmitterTests, RetransmitAfterFailure)
     );
 
     data_link_transmitter_.emit_failure(msmp::TransmissionStatus::BufferFull);
-    DefaultConfiguration::execution_queue.run();
+    configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(data_link_transmitter_.get_buffer(),
         ::testing::ElementsAreArray({
@@ -107,7 +107,7 @@ TEST_F(TransportTransmitterTests, ReportFailureWhenRetransmissionFailedThreeTime
     bool failure = false;
     sut.send(data, [&success]{success = true;}, [&failure]{failure = true;});
 
-    DefaultConfiguration::execution_queue.run();
+    configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(data_link_transmitter_.get_buffer(),
         ::testing::ElementsAreArray({

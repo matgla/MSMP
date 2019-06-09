@@ -66,8 +66,8 @@ protected:
 
     test::stubs::DataLinkTransmitterStub data_link_transmitter_;
     test::stubs::DataLinkReceiverStub data_link_receiver_;
-    TransportTransmitter<test::stubs::DataLinkTransmitterStub, DefaultConfiguration> transport_transmitter_;
-    TransportReceiver<test::stubs::DataLinkReceiverStub, DefaultConfiguration> transport_receiver_;
+    TransportTransmitter<test::stubs::DataLinkTransmitterStub, configuration::Configuration> transport_transmitter_;
+    TransportReceiver<test::stubs::DataLinkReceiverStub, configuration::Configuration> transport_receiver_;
 };
 
 TEST_F(TransportTransceiverTests, SendMessages)
@@ -76,7 +76,7 @@ TEST_F(TransportTransceiverTests, SendMessages)
     sut.send(std::vector<uint8_t>{1, 2, 3, 4, 5});
     sut.send(std::vector<uint8_t>{3, 4});
 
-    DefaultConfiguration::execution_queue.run();
+    configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2,
@@ -89,7 +89,7 @@ TEST_F(TransportTransceiverTests, SendMessages)
     data_link_transmitter_.clear_buffer();
 
     data_link_receiver_.receive(ack1);
-    DefaultConfiguration::execution_queue.run();
+    configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2,
@@ -116,7 +116,7 @@ TEST_F(TransportTransceiverTests, ReceiveMessages)
     };
 
     data_link_receiver_.receive(data);
-    DefaultConfiguration::execution_queue.run();
+    configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(buffer, ::testing::ElementsAreArray({1, 2, 3, 4, 5}));
 }
@@ -133,7 +133,7 @@ TEST_F(TransportTransceiverTests, RespondNackForCrcMismatch)
 
     data_link_receiver_.receive(data);
 
-    DefaultConfiguration::execution_queue.run();
+    configuration::Configuration::execution_queue.run();
     EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2, 1,
         static_cast<int>(messages::control::Nack::id),
@@ -154,7 +154,7 @@ TEST_F(TransportTransceiverTests, RespondNackForWrongMessageType)
 
     data_link_receiver_.receive(data);
 
-    DefaultConfiguration::execution_queue.run();
+    configuration::Configuration::execution_queue.run();
     EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2, 1,
         static_cast<int>(messages::control::Nack::id),
@@ -171,7 +171,7 @@ TEST_F(TransportTransceiverTests, RetransmitAfterNack)
     sut.send(std::vector<uint8_t>{1, 2, 3, 4, 5}, [&success]{ success = true; }, [&failure]{ failure = true;});
     sut.send(std::vector<uint8_t>{3, 4});
 
-    DefaultConfiguration::execution_queue.run();
+    configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2,
@@ -183,7 +183,7 @@ TEST_F(TransportTransceiverTests, RetransmitAfterNack)
     auto nack = generate_nack(1);
     data_link_transmitter_.clear_buffer();
     data_link_receiver_.receive(nack);
-    DefaultConfiguration::execution_queue.run();
+    configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2,
@@ -196,7 +196,7 @@ TEST_F(TransportTransceiverTests, RetransmitAfterNack)
     EXPECT_FALSE(success);
     data_link_transmitter_.clear_buffer();
     data_link_receiver_.receive(ack);
-    DefaultConfiguration::execution_queue.run();
+    configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2,
@@ -217,7 +217,7 @@ TEST_F(TransportTransceiverTests, NotifyFailureWhenRetransmissionExceeded)
     sut.send(std::vector<uint8_t>{1, 2, 3, 4, 5}, [&success]{ success = true; }, [&failure](){ failure = true;});
     sut.send(std::vector<uint8_t>{3, 4});
 
-    DefaultConfiguration::execution_queue.run();
+    configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2,
@@ -226,11 +226,11 @@ TEST_F(TransportTransceiverTests, NotifyFailureWhenRetransmissionExceeded)
         0x40, 0x86, 0x73, 0x1b
     }));
 
-    for (std::size_t i = 0; i < DefaultConfiguration::max_retransmission_tries + 1; ++i)
+    for (std::size_t i = 0; i < configuration::Configuration::max_retransmission_tries + 1; ++i)
     {
         auto nack = generate_nack(1);
         data_link_receiver_.receive(nack);
-        DefaultConfiguration::execution_queue.run();
+        configuration::Configuration::execution_queue.run();
     }
     EXPECT_TRUE(failure);
     EXPECT_FALSE(success);
@@ -242,7 +242,7 @@ TEST_F(TransportTransceiverTests, RetransmitAfterTimeout)
     bool success = false;
     bool failure = false;
     sut.send(std::vector<uint8_t>{1, 2}, [&success]{ success = true; }, [&failure](){ failure = true;});
-    DefaultConfiguration::execution_queue.run();
+    configuration::Configuration::execution_queue.run();
     EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2,
         1,
@@ -251,11 +251,11 @@ TEST_F(TransportTransceiverTests, RetransmitAfterTimeout)
     }));
 
     data_link_transmitter_.clear_buffer();
-    time_ += DefaultConfiguration::timeout_for_transmission;
+    time_ += configuration::Configuration::timeout_for_transmission;
     time_ += std::chrono::milliseconds(1);
 
-    DefaultConfiguration::timer_manager.run();
-    DefaultConfiguration::execution_queue.run();
+    configuration::Configuration::timer_manager.run();
+    configuration::Configuration::execution_queue.run();
     EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2,
         1,

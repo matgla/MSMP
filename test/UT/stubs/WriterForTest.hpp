@@ -7,12 +7,12 @@
 
 #include <gsl/span>
 
-#include "msmp/default_configuration.hpp"
+#include "msmp/configuration/configuration.hpp"
 
 namespace msmp
 {
 
-template <typename Configuration = DefaultConfiguration>
+template <typename Configuration = configuration::Configuration>
 class WriterForTest
 {
 public:

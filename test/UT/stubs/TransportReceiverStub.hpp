@@ -4,14 +4,14 @@
 
 #include "msmp/transport_frame.hpp"
 
-#include "msmp/default_configuration.hpp"
+#include "msmp/configuration/configuration.hpp"
 
 namespace test
 {
 namespace stubs
 {
 
-template <typename Configuration = msmp::DefaultConfiguration>
+template <typename Configuration = msmp::configuration::Configuration>
 class TransportReceiverStub
 {
 public:

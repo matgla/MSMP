@@ -6,13 +6,17 @@
 
 #include <eul/logger/logger_factory.hpp>
 
-#include "msmp/data_link_receiver.hpp"
+#include "msmp/layers/data_link/data_link_receiver.hpp"
 
 #include "test/UT/stubs/StandardErrorStreamStub.hpp"
 #include "test/UT/stubs/TimeStub.hpp"
 #include "test/UT/stubs/TimerManagerStub.hpp"
 
 namespace msmp
+{
+namespace layers
+{
+namespace data_link
 {
 
 struct SmallBufferConfiguration
@@ -32,16 +36,15 @@ protected:
     eul::logger::logger_factory logger_factory_;
     std::vector<uint8_t> buffer_;
 
-    using DataLinkReceiverType = DataLinkReceiver<SmallBufferConfiguration>;
-    DataLinkReceiverType::ErrorCode error_code_;
+    DataLinkReceiver::ErrorCode error_code_;
 };
 
 
 TEST_F(DataLinkReceiverShould, ReportBufferOverflow)
 {
-    DataLinkReceiverType sut_(logger_factory_);
+    DataLinkReceiver sut_(logger_factory_);
     sut_.on_failure(
-        [this](const DataLinkReceiverType::StreamType& stream, const DataLinkReceiverType::ErrorCode ec) {
+        [this](const DataLinkReceiver::StreamType& stream, const DataLinkReceiver::ErrorCode ec) {
             buffer_.insert(buffer_.end(), stream.begin(), stream.end());
             error_code_ = ec;
         });
@@ -55,13 +58,13 @@ TEST_F(DataLinkReceiverShould, ReportBufferOverflow)
 
     EXPECT_THAT(buffer_, ::testing::ElementsAreArray({1, 1, 1, 1, 1}));
 
-    EXPECT_EQ(error_code_, DataLinkReceiverType::ErrorCode::MessageBufferOverflow);
+    EXPECT_EQ(error_code_, DataLinkReceiver::ErrorCode::MessageBufferOverflow);
 }
 
 TEST_F(DataLinkReceiverShould, ReceiveData)
 {
-    DataLinkReceiverType sut_(logger_factory_);
-    sut_.on_data([this](const DataLinkReceiverType::StreamType& stream) {
+    DataLinkReceiver sut_(logger_factory_);
+    sut_.on_data([this](const DataLinkReceiver::StreamType& stream) {
         buffer_.insert(buffer_.end(), stream.begin(), stream.end());
     });
     sut_.receive_byte(static_cast<uint8_t>(ControlByte::StartFrame));
@@ -73,13 +76,13 @@ TEST_F(DataLinkReceiverShould, ReceiveData)
 
     EXPECT_THAT(buffer_, ::testing::ElementsAreArray({1, 2, 3, 4}));
 
-    EXPECT_EQ(error_code_, DataLinkReceiverType::ErrorCode::MessageBufferOverflow);
+    EXPECT_EQ(error_code_, DataLinkReceiver::ErrorCode::MessageBufferOverflow);
 }
 
 TEST_F(DataLinkReceiverShould, ReceiveStuffedData)
 {
-    DataLinkReceiverType sut_(logger_factory_);
-    sut_.on_data([this](const DataLinkReceiverType::StreamType& stream) {
+    DataLinkReceiver sut_(logger_factory_);
+    sut_.on_data([this](const DataLinkReceiver::StreamType& stream) {
         buffer_.insert(buffer_.end(), stream.begin(), stream.end());
     });
     sut_.receive_byte(static_cast<uint8_t>(ControlByte::StartFrame));
@@ -96,4 +99,6 @@ TEST_F(DataLinkReceiverShould, ReceiveStuffedData)
                                                       static_cast<int>(ControlByte::StartFrame)}));
 }
 
+} // namespace data_link
+} // namespace layers
 } // namespace msmp

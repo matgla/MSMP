@@ -5,14 +5,14 @@
 // #include <eul/logger/logger_factory.hpp>
 // #include <eul/logger/logger.hpp>
 
-// #include "msmp/default_configuration.hpp"
+// #include "msmp/configuration/configuration.hpp"
 // #include "msmp/types.hpp"
 
 
 // namespace msmp
 // {
 
-// template <typename Transceiver, typename Configuration = DefaultConfiguration, std::size_t QueueSize = 255>
+// template <typename Transceiver, typename Configuration = configuration::Configuration, std::size_t QueueSize = 255>
 // class MessageBroker
 // {
 // public:

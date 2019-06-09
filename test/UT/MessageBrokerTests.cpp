@@ -6,7 +6,7 @@
 // #include <eul/timer/timer_manager.hpp>
 
 // #include "msmp/message_broker.hpp"
-// #include "msmp/default_configuration.hpp"
+// #include "msmp/configuration/configuration.hpp"
 
 // #include "test/UT/stubs/StandardErrorStreamStub.hpp"
 // #include "test/UT/stubs/TimeStub.hpp"

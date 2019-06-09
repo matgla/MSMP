@@ -1,15 +1,14 @@
-set(library_name "msmp_layers")
+set(library_name "msmp_configuration")
 
 add_library(${library_name} INTERFACE)
 
-add_subdirectory(data_link)
-add_subdirectory(physical)
-
-target_link_libraries(${library_name}
+target_sources(${library_name}
     INTERFACE
-        msmp_layers_data
-        msmp_layers_physical
+        ${CMAKE_CURRENT_SOURCE_DIR}/configuration.hpp
+
 )
+
+target_include_directories(${library_name} INTERFACE "${PROJECT_SOURCE_DIR}/include")
 
 target_compile_options(${library_name} INTERFACE
     $<$<COMPILE_LANGUAGE:CXX>:-std=c++2a -fconcepts -Wall -Werror>
