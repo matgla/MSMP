@@ -5,10 +5,7 @@
 
 #include <eul/utils/call.hpp>
 
-#include "msmp/control_byte.hpp"
-#include "msmp/layers/data_link/data_link_receiver_events.hpp"
-#include "msmp/layers/data_link/data_link_receiver_guards.hpp"
-#include "msmp/layers/data_link/data_link_receiver_states.hpp"
+#include "msmp/layers/data_link/fwd.hpp"
 
 namespace msmp
 {
@@ -20,31 +17,17 @@ namespace data_link
 class DataLinkReceiverSm
 {
 public:
-    auto operator()() noexcept
-    {
-        using namespace boost::sml;
-        using namespace eul::utils;
+    DataLinkReceiverSm(DataLinkReceiver& backend);
+    auto operator()() noexcept;
 
-        return make_transition_table(
-            *state<Idle>                  + event<ByteReceived> [ call(IsStartByte)                                            ] / call(this, &DataLinkReceiverSm::startFrameReceiving) = state<ReceivingByte>
-            , state<ReceivingByte>        + event<ByteReceived> [  call(IsStartByte) && call(IsBufferEmpty)   ]                                                         = "Idle"_s
-            , state<ReceivingByte>        + event<ByteReceived> [          IsStartByte            ] / call(this, &DataLinkReceiverSm::processFrame)         = "Idle"_s
-            , state<ReceivingByte>        + event<ByteReceived> [          IsEscapeCode           ]                                                         = "ReceivingEscapedByte"_s
-            , state<ReceivingByte>        + event<ByteReceived> [ !IsControlByte && IsBufferFull  ] / call(this, &DataLinkReceiverSm::reportBufferOverflow) = "Idle"_s
-            , state<ReceivingByte>        + event<ByteReceived> [ !IsControlByte && !IsBufferFull ] / call(this, &DataLinkReceiverSm::storeByte)            = "ReceivingByte"_s
-            , state<ReceivingEscapedByte> + event<ByteReceived> [          IsBufferFull           ] / call(this, &DataLinkReceiverSm::reportBufferOverflow) = "Idle"_s
-            , state<ReceivingEscapedByte> + event<ByteReceived> [          !IsBufferFull          ] / call(this, &DataLinkReceiverSm::storeByte)            = "ReceivingByte"_s
+    bool isBufferEmpty() const;
+private:
+    void startFrameReceiving();
+    void processFrame();
+    void reportBufferOverflow();
+    void storeByte();
 
-        );
-    }
-
-    void startFrameReceiving()
-    {
-
-    }
-
-    bool isBufferEmpty() const { return true; }
-
+    DataLinkReceiver& backend_;
 };
 
 } // namespace data_link

@@ -8,7 +8,7 @@ namespace data_link
 {
 
 DataLinkReceiver::DataLinkReceiver(eul::logger::logger_factory& logger_factory)
-    : logger_(create_logger(logger_factory)), state_(State::Idle)
+    : logger_(create_logger(logger_factory)), state_(State::Idle), sm_(*this)
 {
 }
 

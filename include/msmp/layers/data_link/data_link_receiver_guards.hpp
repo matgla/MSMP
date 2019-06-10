@@ -12,7 +12,10 @@ namespace data_link
 {
 
 bool IsStartByte(const DataLinkReceiverSm&, const ByteReceived event);
+bool IsEscapeCode(const DataLinkReceiverSm&, const ByteReceived event);
+bool IsControlByte(const DataLinkReceiverSm&, const ByteReceived event);
 bool IsBufferEmpty(const DataLinkReceiverSm& sm);
+bool IsBufferFull(const DataLinkReceiverSm& sm);
 
 } // namespace data_link
 } // namespace layers

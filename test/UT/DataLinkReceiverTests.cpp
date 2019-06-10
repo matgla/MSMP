@@ -49,14 +49,10 @@ TEST_F(DataLinkReceiverShould, ReportBufferOverflow)
             error_code_ = ec;
         });
     sut_.receive_byte(static_cast<uint8_t>(ControlByte::StartFrame));
-    sut_.receive_byte(1);
-    sut_.receive_byte(1);
-    sut_.receive_byte(1);
-    sut_.receive_byte(1);
-    sut_.receive_byte(1);
-    sut_.receive_byte(1);
-
-    EXPECT_THAT(buffer_, ::testing::ElementsAreArray({1, 1, 1, 1, 1}));
+    for (std::size_t i = 0; i < configuration::Configuration::max_payload_size + 10; i++)
+    {
+        sut_.receive_byte(1);
+    }
 
     EXPECT_EQ(error_code_, DataLinkReceiver::ErrorCode::MessageBufferOverflow);
 }

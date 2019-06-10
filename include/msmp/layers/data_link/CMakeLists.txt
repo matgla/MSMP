@@ -13,6 +13,7 @@ target_sources(${library_name}
         ${CMAKE_CURRENT_SOURCE_DIR}/fwd.hpp
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/data_link_receiver.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/data_link_receiver_sm.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/data_link_transmitter.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/data_link_receiver_guards.cpp
 )
