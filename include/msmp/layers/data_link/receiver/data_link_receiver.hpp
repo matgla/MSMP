@@ -12,13 +12,15 @@
 
 #include "msmp/control_byte.hpp"
 #include "msmp/configuration/configuration.hpp"
-#include "msmp/layers/data_link/data_link_receiver_sm.hpp"
+#include "msmp/layers/data_link/receiver/data_link_receiver_sm.hpp"
 
 namespace msmp
 {
 namespace layers
 {
 namespace data_link
+{
+namespace receiver
 {
 
 class DataLinkReceiver
@@ -39,6 +41,7 @@ private:
     DataLinkReceiverSm& sm_data_;
 };
 
+} // namespace receiver
 } // namespace data_link
 } // namespace layers
 } // namespace msmp

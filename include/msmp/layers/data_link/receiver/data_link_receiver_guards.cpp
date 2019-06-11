@@ -1,11 +1,13 @@
-#include "msmp/layers/data_link/data_link_receiver_guards.hpp"
-#include "msmp/layers/data_link/data_link_receiver_sm.hpp"
+#include "msmp/layers/data_link/receiver/data_link_receiver_guards.hpp"
+#include "msmp/layers/data_link/receiver/data_link_receiver_sm.hpp"
 
 namespace msmp
 {
 namespace layers
 {
 namespace data_link
+{
+namespace receiver
 {
 
 bool IsStartByte(const ByteReceived event)
@@ -44,6 +46,7 @@ bool IsBufferFull::operator()() const
     return buffer_.size() >= buffer_.max_size();
 }
 
+} // namespace receiver
 } // namespace data_link
 } // namespace layers
 } // namespace msmp

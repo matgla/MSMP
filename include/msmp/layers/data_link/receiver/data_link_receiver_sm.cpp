@@ -1,4 +1,4 @@
-#include "msmp/layers/data_link/data_link_receiver_sm.hpp"
+#include "msmp/layers/data_link/receiver/data_link_receiver_sm.hpp"
 
 #include "msmp/control_byte.hpp"
 
@@ -7,6 +7,8 @@ namespace msmp
 namespace layers
 {
 namespace data_link
+{
+namespace receiver
 {
 
 DataLinkReceiverSm::DataLinkReceiverSm(eul::logger::logger_factory& logger_factory)
@@ -48,6 +50,7 @@ void DataLinkReceiverSm::storeByte(ByteReceived event)
     buffer_.push_back(event.byte);
 }
 
+} // namespace receiver
 } // namespace data_link
 } // namespace layers
 } // namespace msmp

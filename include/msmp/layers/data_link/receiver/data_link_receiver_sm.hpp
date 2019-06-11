@@ -12,10 +12,10 @@
 #include <eul/signals/signal.hpp>
 
 #include "msmp/configuration/configuration.hpp"
-#include "msmp/layers/data_link/data_link_receiver_events.hpp"
-#include "msmp/layers/data_link/data_link_receiver_guards.hpp"
-#include "msmp/layers/data_link/data_link_receiver_states.hpp"
-#include "msmp/layers/data_link/fwd.hpp"
+#include "msmp/layers/data_link/receiver/data_link_receiver_events.hpp"
+#include "msmp/layers/data_link/receiver/data_link_receiver_guards.hpp"
+#include "msmp/layers/data_link/receiver/data_link_receiver_states.hpp"
+#include "msmp/layers/data_link/receiver/fwd.hpp"
 #include "msmp/types.hpp"
 
 namespace msmp
@@ -23,6 +23,8 @@ namespace msmp
 namespace layers
 {
 namespace data_link
+{
+namespace receiver
 {
 
 class DataLinkReceiverSm
@@ -69,6 +71,7 @@ private:
     OnFailureSignal on_failure_;
 };
 
+} // namespace receiver
 } // namespace data_link
 } // namespace layers
 } // namespace msmp

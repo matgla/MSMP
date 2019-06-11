@@ -6,10 +6,14 @@ namespace layers
 {
 namespace data_link
 {
+namespace receiver
+{
 
-class DataLinkReceiverSm;
-class DataLinkReceiver;
+class Idle;
+class ReceivingByte;
+class ReceivingEscapedByte;
 
+} // namespace receiver
 } // namespace data_link
 } // namespace layers
 } // namespace msmp

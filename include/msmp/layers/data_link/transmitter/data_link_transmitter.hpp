@@ -21,6 +21,8 @@ namespace layers
 {
 namespace data_link
 {
+namespace transmitter
+{
 
 template <typename WriterType, typename Configuration = configuration::Configuration>
 class DataLinkTransmitter
@@ -298,6 +300,7 @@ void DataLinkTransmitter<WriterType, Configuration>::report_failure(Transmission
     state_ = State::Idle;
 }
 
+} // namespace transmitter
 } // namespace data_link
 } // namespace layers
 } // namespace msmp

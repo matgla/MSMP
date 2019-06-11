@@ -1,15 +1,16 @@
-set(library_name "msmp_layers_data")
+set(library_name "msmp_layers_data_link_transmitter")
 
 add_library(${library_name} STATIC)
 
-add_subdirectory(receiver)
-add_subdirectory(transmitter)
+target_sources(${library_name}
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/data_link_transmitter.hpp
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/data_link_transmitter.cpp
+)
 
 target_link_libraries(${library_name}
     PUBLIC
-        msmp_layers_data_link_receiver
-        msmp_layers_data_link_transmitter
-    PRIVATE
         gsl
         eul
         sml

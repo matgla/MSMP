@@ -1,7 +1,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "msmp/layers/data_link/data_link_transmitter.hpp"
+#include "msmp/layers/data_link/transmitter/data_link_transmitter.hpp"
 #include "msmp/transport_transmitter.hpp"
 #include "msmp/configuration/configuration.hpp"
 

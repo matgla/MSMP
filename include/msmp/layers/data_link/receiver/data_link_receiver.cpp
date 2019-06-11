@@ -1,6 +1,6 @@
-#include "msmp/layers/data_link/data_link_receiver.hpp"
+#include "msmp/layers/data_link/receiver/data_link_receiver.hpp"
 
-#include "msmp/layers/data_link/data_link_receiver_events.hpp"
+#include "msmp/layers/data_link/receiver/data_link_receiver_events.hpp"
 
 #include <boost/sml.hpp>
 #include <cassert>
@@ -12,6 +12,8 @@ namespace msmp
 namespace layers
 {
 namespace data_link
+{
+namespace receiver
 {
 
 DataLinkReceiver::DataLinkReceiver(eul::logger::logger_factory& logger_factory)
@@ -44,6 +46,7 @@ void DataLinkReceiver::doOnFailure(OnFailureSlot& on_failure)
     sm_data_.doOnFailure(on_failure);
 }
 
+} // namespace receiver
 } // namespace data_link
 } // namespace layers
 } // namespace msmp
