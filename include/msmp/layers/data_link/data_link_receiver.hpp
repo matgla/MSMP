@@ -35,8 +35,8 @@ public:
 
 private:
     eul::logger::logger logger_;
-    // boost::sml::sm<DataLinkReceiverSm> sm_{DataLinkReceiverSm{}};
-    // DataLinkReceiverSm& sm_data_;
+    boost::sml::sm<DataLinkReceiverSm> sm_;
+    DataLinkReceiverSm& sm_data_;
 };
 
 } // namespace data_link

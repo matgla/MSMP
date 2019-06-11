@@ -21,7 +21,7 @@ function (execute_command command_to_execute working_directory)
 
     if (NOT result EQUAL "0")
         message ("Failure: ${output}")
-        message (FATAL_ERROR "Failure: ${result}")
+        message (FATAL_ERROR "Failure: ${error}")
     endif ()
 endfunction()
 
@@ -58,9 +58,7 @@ function (fetch_module_with_path module_name module_path working_directory branc
         endif ()
 
         if (NOT ${module_path} STREQUAL "")
-            execute_command("git checkout ${branch}" ${module_path})
-            execute_command("git submodule foreach git pull" ${PROJECT_SOURCE_DIR})
-
+            execute_command("git checkout ${branch}" "${PROJECT_SOURCE_DIR}/${module_name}")
             add_subdirectory(${module_path})
         endif ()
     endif ()

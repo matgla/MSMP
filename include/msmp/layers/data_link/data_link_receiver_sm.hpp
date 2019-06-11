@@ -39,24 +39,22 @@ public:
     explicit DataLinkReceiverSm(eul::logger::logger_factory& logger_factory);
     auto operator()() noexcept
     {
-    using namespace boost::sml;
-    using namespace eul::utils;
+        using namespace boost::sml;
+        using namespace eul::utils;
 
-    return make_transition_table(
-    /*  |          from               |        when         |                     if                        |                              do                       |         to                   |*/
-        * state<Idle>                 + event<ByteReceived> [             call(IsStartByte)               ] / call(this, &DataLinkReceiverSm::startFrameReceiving)  = state<ReceivingByte>
-        , state<ReceivingByte>        + event<ByteReceived> [  call(IsStartByte) && call(IsBufferEmpty)   ]                                                         = state<Idle>
-        // , state<ReceivingByte>        + event<ByteReceived> [             call(IsStartByte)               ] / call(this, &DataLinkReceiverSm::processFrame)         = state<Idle>
-        // , state<ReceivingByte>        + event<ByteReceived> [             call(IsEscapeCode)              ]                                                         = state<ReceivingEscapedByte>
-        //  , state<ReceivingByte>        + event<ByteReceived> [ !call(IsControlByte) && call(IsBufferFull)  ] / call(this, &DataLinkReceiverSm::reportBufferOverflow) = state<Idle>
-        // , state<ReceivingByte>        + event<ByteReceived> [ !call(IsControlByte) && !call(IsBufferFull) ] / call(this, &DataLinkReceiverSm::storeByte)            = state<ReceivingByte>
-        // , state<ReceivingEscapedByte> + event<ByteReceived> [             call(IsBufferFull)              ] / call(this, &DataLinkReceiverSm::reportBufferOverflow) = state<Idle>
-        // , state<ReceivingEscapedByte> + event<ByteReceived> [             !call(IsBufferFull)             ] / call(this, &DataLinkReceiverSm::storeByte)            = state<ReceivingByte>
-    );
-}
+        return make_transition_table(
+        /*  |          from               |        when         |                     if                        |                              do                       |         to                   |*/
+            * state<Idle>                 + event<ByteReceived> [             call(IsStartByte)               ] / [this](){std::cerr << "start frame" << std::endl; startFrameReceiving();}  = state<ReceivingByte>
+            , state<ReceivingByte>        + event<ByteReceived> [  call(IsStartByte) && (IsBufferEmpty{buffer_})      ]  / [this]() { std::cerr << "s1" << std::endl;}                                                       = state<Idle>
+            , state<ReceivingByte>        + event<ByteReceived> [             call(IsStartByte)               ] / [this](){std::cerr << "process frame" << std::endl; processFrame();}         = state<Idle>
+            , state<ReceivingByte>        + event<ByteReceived> [             call(IsEscapeCode)              ]        / [this]() { std::cerr << "s2" << std::endl;}                                                    = state<ReceivingEscapedByte>
+            , state<ReceivingByte>        + event<ByteReceived> [ !call(IsControlByte) && (IsBufferFull{buffer_})  ] / [this](){std::cerr << "report overflow" << std::endl; reportBufferOverflow();} = state<Idle>
+            , state<ReceivingByte>        + event<ByteReceived> [ !call(IsControlByte) && !(IsBufferFull{buffer_}) ] / [this](ByteReceived event){std::cerr << "store byte" << std::endl; storeByte(event);}            = state<ReceivingByte>
+            , state<ReceivingEscapedByte> + event<ByteReceived> [             (IsBufferFull{buffer_})             ] / [this](){std::cerr << "report overflow" << std::endl; reportBufferOverflow();} = state<Idle>
+            , state<ReceivingEscapedByte> + event<ByteReceived> [             !(IsBufferFull{buffer_})            ] / [this](ByteReceived event){std::cerr << "store byte 2" << std::endl; storeByte(event);}            = state<ReceivingByte>
+        );
+    }
 
-    bool isBufferEmpty() const;
-    bool isBufferFull() const;
     void doOnFailure(OnFailureSlot& on_failure);
     void doOnData(OnDataSlot& on_data);
 private:
@@ -66,7 +64,7 @@ private:
     void storeByte(ByteReceived event);
 
     eul::logger::logger logger_;
-    eul::container::static_vector<uint8_t, max_payload_size> buffer_;
+    ReceiverBuffer buffer_;
     OnDataSignal on_data_;
     OnFailureSignal on_failure_;
 };

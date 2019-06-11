@@ -1,8 +1,6 @@
 #include "msmp/layers/data_link/data_link_receiver_guards.hpp"
 #include "msmp/layers/data_link/data_link_receiver_sm.hpp"
 
-#include <iostream>
-
 namespace msmp
 {
 namespace layers
@@ -15,6 +13,17 @@ bool IsStartByte(const ByteReceived event)
     return is_control_byte(event.byte) && static_cast<ControlByte>(event.byte) == ControlByte::StartFrame;
 }
 
+IsBufferEmpty::IsBufferEmpty(const ReceiverBuffer& buffer)
+    : buffer_(buffer)
+{
+}
+
+bool IsBufferEmpty::operator()() const
+{
+    return buffer_.empty();
+}
+
+
 bool IsEscapeCode(const ByteReceived event)
 {
     return is_control_byte(event.byte) && static_cast<ControlByte>(event.byte) == ControlByte::EscapeCode;
@@ -25,19 +34,14 @@ bool IsControlByte(const ByteReceived event)
     return is_control_byte(event.byte);
 }
 
-bool IsBufferEmpty(DataLinkReceiverSm& sm)
+IsBufferFull::IsBufferFull(const ReceiverBuffer& buffer)
+    : buffer_(buffer)
 {
-    std::cerr << "sm guard: " << &sm << std::endl;
-
-    // return sm.isBufferEmpty();
-    return true;
 }
 
-bool IsBufferFull(DataLinkReceiverSm& sm)
+bool IsBufferFull::operator()() const
 {
-    std::cerr << "sm guard: " << &sm << std::endl;
-    // return sm.isBufferFull();
-    return true;
+    return buffer_.size() >= buffer_.max_size();
 }
 
 } // namespace data_link

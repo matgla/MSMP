@@ -4,7 +4,9 @@
 
 #include <gsl/span>
 
-#include "eul/container/static_vector.hpp"
+#include <eul/container/static_vector.hpp>
+
+#include "msmp/configuration/configuration.hpp"
 
 namespace msmp
 {
@@ -19,5 +21,7 @@ enum class ErrorCode : uint8_t
     None,
     MessageBufferOverflow
 };
+
+using ReceiverBuffer = eul::container::static_vector<uint8_t, configuration::Configuration::max_payload_size>;
 
 } // namespace msmp

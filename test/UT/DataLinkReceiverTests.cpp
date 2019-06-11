@@ -77,8 +77,6 @@ TEST_F(DataLinkReceiverShould, ReceiveData)
     sut_.receiveByte(static_cast<uint8_t>(ControlByte::StartFrame));
 
     EXPECT_THAT(buffer_, ::testing::ElementsAreArray({1, 2, 3, 4}));
-
-    EXPECT_EQ(error_code_, ErrorCode::MessageBufferOverflow);
 }
 
 TEST_F(DataLinkReceiverShould, ReceiveStuffedData)
