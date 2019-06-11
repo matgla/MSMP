@@ -7,6 +7,7 @@
 #include <boost/sml.hpp>
 
 #include <eul/logger/logger.hpp>
+#include <eul/logger/logger_factory.hpp>
 #include <eul/utils/call.hpp>
 #include <eul/signals/signal.hpp>
 
@@ -35,7 +36,7 @@ public:
 
     constexpr static std::size_t max_payload_size = configuration::Configuration::max_payload_size;
 
-    DataLinkReceiverSm(eul::logger::logger& logger);
+    explicit DataLinkReceiverSm(eul::logger::logger_factory& logger_factory);
     auto operator()() noexcept
     {
     using namespace boost::sml;
@@ -45,12 +46,12 @@ public:
     /*  |          from               |        when         |                     if                        |                              do                       |         to                   |*/
         * state<Idle>                 + event<ByteReceived> [             call(IsStartByte)               ] / call(this, &DataLinkReceiverSm::startFrameReceiving)  = state<ReceivingByte>
         , state<ReceivingByte>        + event<ByteReceived> [  call(IsStartByte) && call(IsBufferEmpty)   ]                                                         = state<Idle>
-        , state<ReceivingByte>        + event<ByteReceived> [             call(IsStartByte)               ] / call(this, &DataLinkReceiverSm::processFrame)         = state<Idle>
-        , state<ReceivingByte>        + event<ByteReceived> [             call(IsEscapeCode)              ]                                                         = state<ReceivingEscapedByte>
-        , state<ReceivingByte>        + event<ByteReceived> [ !call(IsControlByte) && call(IsBufferFull)  ] / call(this, &DataLinkReceiverSm::reportBufferOverflow) = state<Idle>
-        , state<ReceivingByte>        + event<ByteReceived> [ !call(IsControlByte) && !call(IsBufferFull) ] / call(this, &DataLinkReceiverSm::storeByte)            = state<ReceivingByte>
-        , state<ReceivingEscapedByte> + event<ByteReceived> [             call(IsBufferFull)              ] / call(this, &DataLinkReceiverSm::reportBufferOverflow) = state<Idle>
-        , state<ReceivingEscapedByte> + event<ByteReceived> [             !call(IsBufferFull)             ] / call(this, &DataLinkReceiverSm::storeByte)            = state<ReceivingByte>
+        // , state<ReceivingByte>        + event<ByteReceived> [             call(IsStartByte)               ] / call(this, &DataLinkReceiverSm::processFrame)         = state<Idle>
+        // , state<ReceivingByte>        + event<ByteReceived> [             call(IsEscapeCode)              ]                                                         = state<ReceivingEscapedByte>
+        //  , state<ReceivingByte>        + event<ByteReceived> [ !call(IsControlByte) && call(IsBufferFull)  ] / call(this, &DataLinkReceiverSm::reportBufferOverflow) = state<Idle>
+        // , state<ReceivingByte>        + event<ByteReceived> [ !call(IsControlByte) && !call(IsBufferFull) ] / call(this, &DataLinkReceiverSm::storeByte)            = state<ReceivingByte>
+        // , state<ReceivingEscapedByte> + event<ByteReceived> [             call(IsBufferFull)              ] / call(this, &DataLinkReceiverSm::reportBufferOverflow) = state<Idle>
+        // , state<ReceivingEscapedByte> + event<ByteReceived> [             !call(IsBufferFull)             ] / call(this, &DataLinkReceiverSm::storeByte)            = state<ReceivingByte>
     );
 }
 
@@ -64,7 +65,7 @@ private:
     void reportBufferOverflow();
     void storeByte(ByteReceived event);
 
-    eul::logger::logger& logger_;
+    eul::logger::logger logger_;
     eul::container::static_vector<uint8_t, max_payload_size> buffer_;
     OnDataSignal on_data_;
     OnFailureSignal on_failure_;

@@ -10,30 +10,34 @@ namespace layers
 namespace data_link
 {
 
-bool IsStartByte(const DataLinkReceiverSm&, const ByteReceived event)
+bool IsStartByte(const ByteReceived event)
 {
     return is_control_byte(event.byte) && static_cast<ControlByte>(event.byte) == ControlByte::StartFrame;
 }
 
-bool IsEscapeCode(const DataLinkReceiverSm&, const ByteReceived event)
+bool IsEscapeCode(const ByteReceived event)
 {
     return is_control_byte(event.byte) && static_cast<ControlByte>(event.byte) == ControlByte::EscapeCode;
 }
 
-bool IsControlByte(const DataLinkReceiverSm&, const ByteReceived event)
+bool IsControlByte(const ByteReceived event)
 {
     return is_control_byte(event.byte);
 }
 
 bool IsBufferEmpty(DataLinkReceiverSm& sm)
 {
-    return sm.isBufferEmpty();
+    std::cerr << "sm guard: " << &sm << std::endl;
+
+    // return sm.isBufferEmpty();
+    return true;
 }
 
 bool IsBufferFull(DataLinkReceiverSm& sm)
 {
     std::cerr << "sm guard: " << &sm << std::endl;
-    return sm.isBufferFull();
+    // return sm.isBufferFull();
+    return true;
 }
 
 } // namespace data_link

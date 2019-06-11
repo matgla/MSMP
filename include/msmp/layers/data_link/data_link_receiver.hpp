@@ -28,7 +28,6 @@ public:
     using OnFailureSlot = DataLinkReceiverSm::OnFailureSlot;
 
     DataLinkReceiver(eul::logger::logger_factory& logger_factory);
-
     void receive(const StreamType& stream);
     void receiveByte(const uint8_t byte);
     void doOnData(OnDataSlot& on_data);
@@ -36,9 +35,8 @@ public:
 
 private:
     eul::logger::logger logger_;
-    DataLinkReceiverSm sm_data_;
-    boost::sml::sm<DataLinkReceiverSm> sm_;
-
+    // boost::sml::sm<DataLinkReceiverSm> sm_{DataLinkReceiverSm{}};
+    // DataLinkReceiverSm& sm_data_;
 };
 
 } // namespace data_link

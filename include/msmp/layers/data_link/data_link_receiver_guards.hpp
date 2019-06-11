@@ -11,9 +11,9 @@ namespace layers
 namespace data_link
 {
 
-bool IsStartByte(const DataLinkReceiverSm&, const ByteReceived event);
-bool IsEscapeCode(const DataLinkReceiverSm&, const ByteReceived event);
-bool IsControlByte(const DataLinkReceiverSm&, const ByteReceived event);
+bool IsStartByte(const ByteReceived event);
+bool IsEscapeCode(const ByteReceived event);
+bool IsControlByte(const ByteReceived event);
 bool IsBufferEmpty(DataLinkReceiverSm& sm);
 bool IsBufferFull(DataLinkReceiverSm& sm);
 
