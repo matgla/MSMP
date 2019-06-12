@@ -25,10 +25,10 @@ class TransportTransceiverTests : public ::testing::Test
 public:
     TransportTransceiverTests()
         : logger_factory_(time_)
-        , transport_transmitter_(logger_factory_, data_link_transmitter_, time_)
-        , transport_receiver_(logger_factory_, data_link_receiver_)
+        , transport_transmitter_(logger_factory_, datalink_transmitter_, time_)
+        , transport_receiver_(logger_factory_, datalink_receiver_)
     {
-        data_link_transmitter_.enable_auto_emitting();
+        datalink_transmitter_.enable_auto_emitting();
     }
 
     std::vector<uint8_t> generate_ack(uint8_t transaction_id)
@@ -64,8 +64,8 @@ protected:
     stubs::TimeStub time_;
     eul::logger::logger_factory logger_factory_;
 
-    test::stubs::DataLinkTransmitterStub data_link_transmitter_;
-    test::stubs::DataLinkReceiverStub data_link_receiver_;
+    test::stubs::DataLinkTransmitterStub datalink_transmitter_;
+    test::stubs::DataLinkReceiverStub datalink_receiver_;
     TransportTransmitter<test::stubs::DataLinkTransmitterStub, configuration::Configuration> transport_transmitter_;
     TransportReceiver<test::stubs::DataLinkReceiverStub, configuration::Configuration> transport_receiver_;
 };
@@ -78,7 +78,7 @@ TEST_F(TransportTransceiverTests, SendMessages)
 
     configuration::Configuration::execution_queue.run();
 
-    EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
+    EXPECT_THAT(datalink_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2,
         1,
         1, 2, 3, 4, 5,
@@ -86,12 +86,12 @@ TEST_F(TransportTransceiverTests, SendMessages)
     }));
 
     auto ack1 = generate_ack(1);
-    data_link_transmitter_.clear_buffer();
+    datalink_transmitter_.clear_buffer();
 
-    data_link_receiver_.receive(ack1);
+    datalink_receiver_.receive(ack1);
     configuration::Configuration::execution_queue.run();
 
-    EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
+    EXPECT_THAT(datalink_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2,
         2,
         3, 4,
@@ -115,7 +115,7 @@ TEST_F(TransportTransceiverTests, ReceiveMessages)
         0x40, 0x86, 0x73, 0x1b
     };
 
-    data_link_receiver_.receive(data);
+    datalink_receiver_.receive(data);
     configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(buffer, ::testing::ElementsAreArray({1, 2, 3, 4, 5}));
@@ -131,10 +131,10 @@ TEST_F(TransportTransceiverTests, RespondNackForCrcMismatch)
         0x75, 0xc0, 0xcc, 0x33
     };
 
-    data_link_receiver_.receive(data);
+    datalink_receiver_.receive(data);
 
     configuration::Configuration::execution_queue.run();
-    EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
+    EXPECT_THAT(datalink_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2, 1,
         static_cast<int>(messages::control::Nack::id),
         0, static_cast<int>(messages::control::Nack::Reason::CrcMismatch),
@@ -152,10 +152,10 @@ TEST_F(TransportTransceiverTests, RespondNackForWrongMessageType)
         0xd7, 0x0c, 0x20, 0x1a
     };
 
-    data_link_receiver_.receive(data);
+    datalink_receiver_.receive(data);
 
     configuration::Configuration::execution_queue.run();
-    EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
+    EXPECT_THAT(datalink_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2, 1,
         static_cast<int>(messages::control::Nack::id),
         0, static_cast<int>(messages::control::Nack::Reason::WrongMessageType),
@@ -173,7 +173,7 @@ TEST_F(TransportTransceiverTests, RetransmitAfterNack)
 
     configuration::Configuration::execution_queue.run();
 
-    EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
+    EXPECT_THAT(datalink_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2,
         1,
         1, 2, 3, 4, 5,
@@ -181,11 +181,11 @@ TEST_F(TransportTransceiverTests, RetransmitAfterNack)
     }));
 
     auto nack = generate_nack(1);
-    data_link_transmitter_.clear_buffer();
-    data_link_receiver_.receive(nack);
+    datalink_transmitter_.clear_buffer();
+    datalink_receiver_.receive(nack);
     configuration::Configuration::execution_queue.run();
 
-    EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
+    EXPECT_THAT(datalink_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2,
         1,
         1, 2, 3, 4, 5,
@@ -194,11 +194,11 @@ TEST_F(TransportTransceiverTests, RetransmitAfterNack)
     auto ack = generate_ack(1);
     EXPECT_FALSE(failure);
     EXPECT_FALSE(success);
-    data_link_transmitter_.clear_buffer();
-    data_link_receiver_.receive(ack);
+    datalink_transmitter_.clear_buffer();
+    datalink_receiver_.receive(ack);
     configuration::Configuration::execution_queue.run();
 
-    EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
+    EXPECT_THAT(datalink_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2,
         2,
         3, 4,
@@ -219,7 +219,7 @@ TEST_F(TransportTransceiverTests, NotifyFailureWhenRetransmissionExceeded)
 
     configuration::Configuration::execution_queue.run();
 
-    EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
+    EXPECT_THAT(datalink_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2,
         1,
         1, 2, 3, 4, 5,
@@ -229,7 +229,7 @@ TEST_F(TransportTransceiverTests, NotifyFailureWhenRetransmissionExceeded)
     for (std::size_t i = 0; i < configuration::Configuration::max_retransmission_tries + 1; ++i)
     {
         auto nack = generate_nack(1);
-        data_link_receiver_.receive(nack);
+        datalink_receiver_.receive(nack);
         configuration::Configuration::execution_queue.run();
     }
     EXPECT_TRUE(failure);
@@ -243,20 +243,20 @@ TEST_F(TransportTransceiverTests, RetransmitAfterTimeout)
     bool failure = false;
     sut.send(std::vector<uint8_t>{1, 2}, [&success]{ success = true; }, [&failure](){ failure = true;});
     configuration::Configuration::execution_queue.run();
-    EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
+    EXPECT_THAT(datalink_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2,
         1,
         1, 2,
         0x7d, 0x9a, 0x2d, 0xcd
     }));
 
-    data_link_transmitter_.clear_buffer();
+    datalink_transmitter_.clear_buffer();
     time_ += configuration::Configuration::timeout_for_transmission;
     time_ += std::chrono::milliseconds(1);
 
     configuration::Configuration::timer_manager.run();
     configuration::Configuration::execution_queue.run();
-    EXPECT_THAT(data_link_transmitter_.get_buffer(), ::testing::ElementsAreArray({
+    EXPECT_THAT(datalink_transmitter_.get_buffer(), ::testing::ElementsAreArray({
         2,
         1,
         1, 2,

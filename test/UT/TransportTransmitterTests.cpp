@@ -1,7 +1,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "msmp/layers/data_link/transmitter/data_link_transmitter.hpp"
+#include "msmp/layers/datalink/transmitter/datalink_transmitter.hpp"
 #include "msmp/transport_transmitter.hpp"
 #include "msmp/configuration/configuration.hpp"
 
@@ -23,12 +23,12 @@ public:
 protected:
     stubs::TimeStub time_;
     eul::logger::logger_factory logger_factory_;
-    test::stubs::DataLinkTransmitterStub data_link_transmitter_;
+    test::stubs::DataLinkTransmitterStub datalink_transmitter_;
 };
 
 TEST_F(TransportTransmitterTests, SendPayload)
 {
-    TransportTransmitter sut(logger_factory_, data_link_transmitter_, time_);
+    TransportTransmitter sut(logger_factory_, datalink_transmitter_, time_);
     std::vector<uint8_t> data{1, 2, 3, 4};
     std::vector<uint8_t> data2{3, 4};
     sut.send(data);
@@ -38,7 +38,7 @@ TEST_F(TransportTransmitterTests, SendPayload)
 
     configuration::Configuration::execution_queue.run();
 
-    EXPECT_THAT(data_link_transmitter_.get_buffer(),
+    EXPECT_THAT(datalink_transmitter_.get_buffer(),
         ::testing::ElementsAreArray({
             static_cast<int>(MessageType::Control),
             3,
@@ -51,11 +51,11 @@ TEST_F(TransportTransmitterTests, SendPayload)
         })
     );
 
-    data_link_transmitter_.clear_buffer();
+    datalink_transmitter_.clear_buffer();
     sut.confirm_frame_transmission(1);
     configuration::Configuration::execution_queue.run();
 
-    EXPECT_THAT(data_link_transmitter_.get_buffer(),
+    EXPECT_THAT(datalink_transmitter_.get_buffer(),
         ::testing::ElementsAreArray({
             static_cast<int>(MessageType::Data),
             2,
@@ -66,13 +66,13 @@ TEST_F(TransportTransmitterTests, SendPayload)
 
 TEST_F(TransportTransmitterTests, RetransmitAfterFailure)
 {
-    TransportTransmitter sut(logger_factory_, data_link_transmitter_, time_);
+    TransportTransmitter sut(logger_factory_, datalink_transmitter_, time_);
     std::vector<uint8_t> data{1, 2, 3, 4};
     sut.send(data);
 
     configuration::Configuration::execution_queue.run();
 
-    EXPECT_THAT(data_link_transmitter_.get_buffer(),
+    EXPECT_THAT(datalink_transmitter_.get_buffer(),
         ::testing::ElementsAreArray({
             static_cast<int>(MessageType::Data),
             1, // transaction id
@@ -81,10 +81,10 @@ TEST_F(TransportTransmitterTests, RetransmitAfterFailure)
         })
     );
 
-    data_link_transmitter_.emit_failure(msmp::TransmissionStatus::BufferFull);
+    datalink_transmitter_.emit_failure(msmp::TransmissionStatus::BufferFull);
     configuration::Configuration::execution_queue.run();
 
-    EXPECT_THAT(data_link_transmitter_.get_buffer(),
+    EXPECT_THAT(datalink_transmitter_.get_buffer(),
         ::testing::ElementsAreArray({
             static_cast<int>(MessageType::Data),
             1, // transaction id
@@ -100,7 +100,7 @@ TEST_F(TransportTransmitterTests, RetransmitAfterFailure)
 
 TEST_F(TransportTransmitterTests, ReportFailureWhenRetransmissionFailedThreeTimes)
 {
-    TransportTransmitter sut(logger_factory_, data_link_transmitter_, time_);
+    TransportTransmitter sut(logger_factory_, datalink_transmitter_, time_);
 
     std::vector<uint8_t> data{1, 2, 3, 4};
     bool success = false;
@@ -109,7 +109,7 @@ TEST_F(TransportTransmitterTests, ReportFailureWhenRetransmissionFailedThreeTime
 
     configuration::Configuration::execution_queue.run();
 
-    EXPECT_THAT(data_link_transmitter_.get_buffer(),
+    EXPECT_THAT(datalink_transmitter_.get_buffer(),
         ::testing::ElementsAreArray({
             static_cast<int>(MessageType::Data),
             1, // transaction id
@@ -118,11 +118,11 @@ TEST_F(TransportTransmitterTests, ReportFailureWhenRetransmissionFailedThreeTime
         })
     );
 
-    data_link_transmitter_.emit_failure(msmp::TransmissionStatus::BufferFull);
-    data_link_transmitter_.emit_failure(msmp::TransmissionStatus::BufferFull);
+    datalink_transmitter_.emit_failure(msmp::TransmissionStatus::BufferFull);
+    datalink_transmitter_.emit_failure(msmp::TransmissionStatus::BufferFull);
     EXPECT_FALSE(success);
     EXPECT_FALSE(failure);
-    data_link_transmitter_.emit_failure(msmp::TransmissionStatus::BufferFull);
+    datalink_transmitter_.emit_failure(msmp::TransmissionStatus::BufferFull);
     EXPECT_FALSE(success);
     EXPECT_TRUE(failure);
 }

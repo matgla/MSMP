@@ -7,7 +7,7 @@
 #include <eul/logger/logger_factory.hpp>
 #include <eul/signals/signal.hpp>
 
-#include "msmp/layers/data_link/receiver/data_link_receiver.hpp"
+#include "msmp/layers/datalink/receiver/datalink_receiver.hpp"
 #include "msmp/types.hpp"
 
 #include "test/UT/stubs/StandardErrorStreamStub.hpp"
@@ -18,7 +18,7 @@ namespace msmp
 {
 namespace layers
 {
-namespace data_link
+namespace datalink
 {
 namespace receiver
 {
@@ -103,6 +103,6 @@ TEST_F(DataLinkReceiverShould, ReceiveStuffedData)
 }
 
 } // namespace receiver
-} // namespace data_link
+} // namespace datalink
 } // namespace layers
 } // namespace msmp

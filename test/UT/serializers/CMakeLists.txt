@@ -19,7 +19,7 @@ target_link_libraries(msmp_serializers_ut
 
 target_include_directories(msmp_serializers_ut
     PUBLIC
-        ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/source
 )
 
 add_test(msmp_serializers_ut msmp_serializers_ut)

@@ -24,12 +24,12 @@ public:
 protected:
     stubs::TimeStub time_;
     eul::logger::logger_factory logger_factory_;
-    test::stubs::DataLinkReceiverStub data_link_receiver_;
+    test::stubs::DataLinkReceiverStub datalink_receiver_;
 };
 
 TEST_F(TransportReceiverTests, ReceiveDataPayload)
 {
-    TransportReceiver sut(logger_factory_, data_link_receiver_);
+    TransportReceiver sut(logger_factory_, datalink_receiver_);
     using Frame = typename decltype(sut)::Frame;
     Frame control_frame;
     Frame data_frame;
@@ -49,7 +49,7 @@ TEST_F(TransportReceiverTests, ReceiveDataPayload)
         1, 2, 3, 4,
         0x56, 0x12, 0x0d, 0xc9, // crc
         };
-    data_link_receiver_.receive(data);
+    datalink_receiver_.receive(data);
 
     EXPECT_THAT(data_frame.buffer, ::testing::ElementsAreArray({1, 2, 3, 4}));
     EXPECT_THAT(control_frame.buffer, ::testing::IsEmpty());
@@ -59,7 +59,7 @@ TEST_F(TransportReceiverTests, ReceiveDataPayload)
 
 TEST_F(TransportReceiverTests, ReceiveControlPayload)
 {
-    TransportReceiver sut(logger_factory_, data_link_receiver_);
+    TransportReceiver sut(logger_factory_, datalink_receiver_);
     using Frame = typename decltype(sut)::Frame;
     Frame control_frame;
     Frame data_frame;
@@ -79,7 +79,7 @@ TEST_F(TransportReceiverTests, ReceiveControlPayload)
         0xd, 0x0, 0xd, 0xa,
         0xa7, 0x4f, 0x6e, 0xe8,
     };
-    data_link_receiver_.receive(data);
+    datalink_receiver_.receive(data);
 
     EXPECT_THAT(control_frame.buffer, ::testing::ElementsAreArray({0xd, 0x0, 0xd, 0xa}));
     EXPECT_THAT(data_frame.buffer, ::testing::IsEmpty());
@@ -89,7 +89,7 @@ TEST_F(TransportReceiverTests, ReceiveControlPayload)
 
 TEST_F(TransportReceiverTests, ReportCrcMismatch)
 {
-    TransportReceiver sut(logger_factory_, data_link_receiver_);
+    TransportReceiver sut(logger_factory_, datalink_receiver_);
     using Frame = typename decltype(sut)::Frame;
 
     Frame failed_frame;
@@ -105,7 +105,7 @@ TEST_F(TransportReceiverTests, ReportCrcMismatch)
         0xd, 0x0, 0xd, 0xa,
         0x1, 0x2, 0x3, 0x4,
     };
-    data_link_receiver_.receive(data);
+    datalink_receiver_.receive(data);
 
     EXPECT_THAT(failed_frame.buffer, ::testing::ElementsAreArray({0xd, 0x0, 0xd, 0xa}));
     EXPECT_EQ(failed_frame.status, TransportFrameStatus::CrcMismatch);
@@ -114,7 +114,7 @@ TEST_F(TransportReceiverTests, ReportCrcMismatch)
 
 TEST_F(TransportReceiverTests, ReportWrongMessageTypeMismatch)
 {
-    TransportReceiver sut(logger_factory_, data_link_receiver_);
+    TransportReceiver sut(logger_factory_, datalink_receiver_);
     using Frame = typename decltype(sut)::Frame;
 
     Frame failed_frame;
@@ -130,7 +130,7 @@ TEST_F(TransportReceiverTests, ReportWrongMessageTypeMismatch)
         0xd, 0x0, 0xd, 0xa,
         0xea, 0x87, 0xcf, 0xe3,
     };
-    data_link_receiver_.receive(data);
+    datalink_receiver_.receive(data);
 
     EXPECT_THAT(failed_frame.buffer, ::testing::ElementsAreArray({0xd, 0x0, 0xd, 0xa}));
     EXPECT_EQ(failed_frame.status, TransportFrameStatus::WrongMessageType);

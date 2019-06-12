@@ -9,7 +9,7 @@
 #include <eul/timer/timer_manager.hpp>
 #include <eul/utils/unused.hpp>
 
-#include "msmp/layers/data_link/transmitter/data_link_transmitter.hpp"
+#include "msmp/layers/datalink/transmitter/datalink_transmitter.hpp"
 #include "msmp/configuration/configuration.hpp"
 
 #include "test/UT/stubs/StandardErrorStreamStub.hpp"
@@ -21,7 +21,7 @@ namespace msmp
 {
 namespace layers
 {
-namespace data_link
+namespace datalink
 {
 namespace transmitter
 {
@@ -293,6 +293,6 @@ TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterFail)
 }
 
 } // namespace transmitter
-} // namespace data_link
+} // namespace datalink
 } // namespace layers
 } // namespace msmp
