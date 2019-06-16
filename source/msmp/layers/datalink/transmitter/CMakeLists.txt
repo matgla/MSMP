@@ -4,8 +4,16 @@ add_library(${library_name} STATIC)
 
 target_sources(${library_name}
     PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/datalink_transmitter_events.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/datalink_transmitter_guards.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/datalink_transmitter_sm.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/datalink_transmitter_states.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/datalink_transmitter.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/fwd.hpp
     PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/datalink_transmitter_events.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/datalink_transmitter_guards.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/datalink_transmitter_sm.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/datalink_transmitter.cpp
 )
 

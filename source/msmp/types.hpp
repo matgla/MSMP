@@ -5,8 +5,10 @@
 #include <gsl/span>
 
 #include <eul/container/static_vector.hpp>
+#include <eul/signals/signal.hpp>
 
 #include "msmp/configuration/configuration.hpp"
+#include "msmp/transmission_status.hpp"
 
 namespace msmp
 {
@@ -23,5 +25,15 @@ enum class ErrorCode : uint8_t
 };
 
 using ReceiverBuffer = eul::container::static_vector<uint8_t, configuration::Configuration::max_payload_size>;
+using TransmitterBuffer = eul::container::static_deque<uint8_t, configuration::Configuration::max_payload_size>;
+
+using OnSuccessSignal = eul::signals::signal<void()>;
+using OnFailureSignal = eul::signals::signal<void(TransmissionStatus)>;
+
+using OnSuccessSlot = OnSuccessSignal::slot_t;
+using OnFailureSlot = OnFailureSignal::slot_t;
+
+using OnByteSentSignal = eul::signals::signal<void()>;
+using OnByteSentSlot = OnByteSentSignal::slot_t;
 
 } // namespace msmp

@@ -10,7 +10,7 @@ enum class TransmissionStatus : uint8_t
 {
     Ok,
     NotStarted,
-    WriterReportFailure,
+    WriterReportedFailure,
     BufferFull,
     TooMuchPayload
 };
@@ -21,7 +21,7 @@ constexpr std::string_view to_string(TransmissionStatus status)
     {
         case TransmissionStatus::Ok: return "Ok";
         case TransmissionStatus::NotStarted: return "NotStarted";
-        case TransmissionStatus::WriterReportFailure: return "WriterReportFailure";
+        case TransmissionStatus::WriterReportedFailure: return "WriterReportedFailure";
         case TransmissionStatus::BufferFull: return "BufferFull";
         case TransmissionStatus::TooMuchPayload: return "TooMuchPayload";
     }

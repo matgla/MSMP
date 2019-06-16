@@ -29,13 +29,15 @@ namespace transmitter
 class DataLinkTransmitterShould : public ::testing::Test
 {
 public:
-    DataLinkTransmitterShould() : logger_factory_(time_)
+    DataLinkTransmitterShould()
+        : logger_factory_(time_)
     {
     }
 
 protected:
     stubs::TimeStub time_;
     eul::logger::logger_factory logger_factory_;
+    eul::timer::timer_manager timer_manager_;
     test::stub::WriterStub writer_;
 };
 
@@ -52,9 +54,9 @@ struct SmallBufferConfiguration
 
 TEST_F(DataLinkTransmitterShould, StartTransmissionAndFinishTransmission)
 {
-    DataLinkTransmitter sut(logger_factory_, writer_, time_);
-
-    EXPECT_EQ(sut.send(1), TransmissionStatus::Ok);
+    DataLinkTransmitter sut(logger_factory_, writer_, timer_manager_, time_);
+    const uint8_t data[] = {1};
+    sut.send(data);
     configuration::Configuration::execution_queue.run();
     // clang-format off
     EXPECT_THAT(writer_.get_buffer(),
@@ -66,44 +68,24 @@ TEST_F(DataLinkTransmitterShould, StartTransmissionAndFinishTransmission)
 
 TEST_F(DataLinkTransmitterShould, SendByte)
 {
-    DataLinkTransmitter sut(logger_factory_, writer_, time_);
+    DataLinkTransmitter sut(logger_factory_, writer_, timer_manager_, time_);
 
-    constexpr uint8_t byte1 = 0x12;
-    constexpr uint8_t byte2 = 0xab;
+    constexpr uint8_t bytes[] = {0x12, 0xab};
 
-    sut.send(byte1);
-    sut.send(byte2);
+    sut.send(bytes);
 
     configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
         static_cast<uint8_t>(ControlByte::StartFrame),
-        byte1,
-        byte2,
+        bytes[0],
+        bytes[1],
         static_cast<uint8_t>(ControlByte::StartFrame)}));
 }
-
-TEST_F(DataLinkTransmitterShould, TransmitArrayOfData)
-{
-    DataLinkTransmitter sut(logger_factory_, writer_, time_);
-
-    const uint8_t byte1 = 0x12;
-    const uint8_t byte2 = 0xab;
-    sut.send(std::vector<uint8_t>{byte1, byte2});
-
-    configuration::Configuration::execution_queue.run();
-
-    EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
-        static_cast<uint8_t>(ControlByte::StartFrame),
-        byte1,
-        byte2,
-        static_cast<uint8_t>(ControlByte::StartFrame)}));
-}
-
 
 TEST_F(DataLinkTransmitterShould, StuffBytes)
 {
-    DataLinkTransmitter sut(logger_factory_, writer_, time_);
+    DataLinkTransmitter sut(logger_factory_, writer_, timer_manager_, time_);
 
     const uint8_t byte1       = static_cast<uint8_t>(ControlByte::EscapeCode);
     const uint8_t byte2       = static_cast<uint8_t>(ControlByte::StartFrame);
@@ -124,7 +106,8 @@ TEST_F(DataLinkTransmitterShould, StuffBytes)
         static_cast<uint8_t>(3),
         static_cast<uint8_t>(ControlByte::StartFrame)}));
 
-    sut.send(byte1);
+    const uint8_t bytes[] = {byte1};
+    sut.send(bytes);
     writer_.clear();
     configuration::Configuration::execution_queue.run();
 
@@ -139,18 +122,26 @@ TEST_F(DataLinkTransmitterShould, StuffBytes)
 
 TEST_F(DataLinkTransmitterShould, RejectWhenToMuchPayload)
 {
-    DataLinkTransmitter sut(logger_factory_, writer_, time_, SmallBufferConfiguration{});
+    DataLinkTransmitter sut(logger_factory_, writer_, timer_manager_, time_);
 
-    const uint8_t byte1 = static_cast<uint8_t>(ControlByte::EscapeCode);
-    const uint8_t byte2 = static_cast<uint8_t>(ControlByte::StartFrame);
+    std::vector<uint8_t> data;
+    data.resize(configuration::Configuration::max_payload_size + 10, 1);
 
-    EXPECT_EQ(sut.send(std::vector<uint8_t>{byte1, byte2}),
-              TransmissionStatus::TooMuchPayload);
+    TransmissionStatus status;
+    bool succeeded = false;
+    DataLinkTransmitter::OnSuccessSlot success_slot([&succeeded]{ succeeded = true;});
+    DataLinkTransmitter::OnFailureSlot failure_slot([&status](TransmissionStatus new_status) {
+        status = new_status;
+    });
+
+    sut.send(gsl::make_span(data), success_slot, failure_slot);
+    EXPECT_FALSE(succeeded);
+    EXPECT_EQ(status, TransmissionStatus::TooMuchPayload);
 }
 
 TEST_F(DataLinkTransmitterShould, ReportWriterFailure)
 {
-    DataLinkTransmitter sut(logger_factory_, writer_, time_);
+    DataLinkTransmitter sut(logger_factory_, writer_, timer_manager_, time_);
 
     const uint8_t byte1 = static_cast<uint8_t>(ControlByte::EscapeCode);
     const uint8_t byte2 = static_cast<uint8_t>(ControlByte::StartFrame);
@@ -158,29 +149,46 @@ TEST_F(DataLinkTransmitterShould, ReportWriterFailure)
     bool failed = false;
     writer_.fail_transmissions(6);
 
-    sut.on_failure([&failed](TransmissionStatus status) {
-        if (status == TransmissionStatus::WriterReportFailure)
+    DataLinkTransmitter::OnFailureSlot failure_slot([&failed](TransmissionStatus status) {
+        if (status == TransmissionStatus::WriterReportedFailure)
         {
             failed = true;
         }
     });
 
-    EXPECT_EQ(sut.send(std::vector<uint8_t>{byte1, byte2}), TransmissionStatus::Ok);
+    bool success;
+    DataLinkTransmitter::OnSuccessSlot success_slot([&success]{
+        success = true;
+    });
+    sut.send(std::vector<uint8_t>{byte1, byte2}, success_slot, failure_slot);
     EXPECT_FALSE(failed);
+    EXPECT_FALSE(success);
 
     configuration::Configuration::execution_queue.run();
 
     EXPECT_TRUE(failed);
+    EXPECT_FALSE(success);
 }
 
 TEST_F(DataLinkTransmitterShould, NotifySuccess)
 {
-    DataLinkTransmitter sut(logger_factory_, writer_, time_);
+    DataLinkTransmitter sut(logger_factory_, writer_, timer_manager_, time_);
 
-    bool success = false;
-    sut.on_success([&success]() { success = true; });
+    bool failed;
+    DataLinkTransmitter::OnFailureSlot failure_slot([&failed](TransmissionStatus status) {
+        if (status == TransmissionStatus::WriterReportedFailure)
+        {
+            failed = true;
+        }
+    });
 
-    EXPECT_EQ(sut.send(1), TransmissionStatus::Ok);
+    bool success;
+    DataLinkTransmitter::OnSuccessSlot success_slot([&success]{
+        success = true;
+    });
+
+    const uint8_t data[] = {0x1};
+    sut.send(data, success_slot, failure_slot);
     EXPECT_FALSE(success);
 
     configuration::Configuration::execution_queue.run();
@@ -190,31 +198,33 @@ TEST_F(DataLinkTransmitterShould, NotifySuccess)
 
 TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterTimeout)
 {
-    DataLinkTransmitter sut(logger_factory_, writer_, time_);
+    DataLinkTransmitter sut(logger_factory_, writer_, timer_manager_, time_);
 
-    bool success = false;
-    sut.on_success([&success]() { success = true; });
-
-    bool failure = false;
-    sut.on_failure([&failure](TransmissionStatus status)
-    {
+    bool failure;
+    DataLinkTransmitter::OnFailureSlot failure_slot([&failure](TransmissionStatus status) {
         UNUSED(status);
         failure = true;
     });
 
-    EXPECT_EQ(sut.send(1), TransmissionStatus::Ok);
+    bool success;
+    DataLinkTransmitter::OnSuccessSlot success_slot([&success]{
+        success = true;
+    });
+
+    const uint8_t data[] = {0x1};
+    sut.send(data, success_slot, failure_slot);
     EXPECT_FALSE(success);
     writer_.disable_responses();
 
     configuration::Configuration::execution_queue.run();
-    configuration::Configuration::timer_manager.run();
+    timer_manager_.run();
     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray(
     {
         static_cast<int>(ControlByte::StartFrame)
     }));
 
     time_ += std::chrono::milliseconds(501);
-    configuration::Configuration::timer_manager.run();
+    timer_manager_.run();
     configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
@@ -223,7 +233,7 @@ TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterTimeout)
     }));
 
     time_ += std::chrono::milliseconds(501);
-    configuration::Configuration::timer_manager.run();
+    timer_manager_.run();
     configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
@@ -233,7 +243,7 @@ TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterTimeout)
     }));
 
     time_ += std::chrono::milliseconds(501);
-    configuration::Configuration::timer_manager.run();
+    timer_manager_.run();
     configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
@@ -245,7 +255,7 @@ TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterTimeout)
     EXPECT_FALSE(failure);
 
     time_ += std::chrono::milliseconds(501);
-    configuration::Configuration::timer_manager.run();
+    timer_manager_.run();
     configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
@@ -261,19 +271,21 @@ TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterTimeout)
 
 TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterFail)
 {
-    DataLinkTransmitter sut(logger_factory_, writer_, time_);
+    DataLinkTransmitter sut(logger_factory_, writer_, timer_manager_, time_);
 
-    bool success = false;
-    sut.on_success([&success]() { success = true; });
-
-    bool failure = false;
-    sut.on_failure([&failure](TransmissionStatus status)
-    {
+    bool failure;
+    DataLinkTransmitter::OnFailureSlot failure_slot([&failure](TransmissionStatus status) {
         UNUSED(status);
         failure = true;
     });
 
-    EXPECT_EQ(sut.send(1), TransmissionStatus::Ok);
+    bool success;
+    DataLinkTransmitter::OnSuccessSlot success_slot([&success]{
+        success = true;
+    });
+
+    const uint8_t data[] = {0x01};
+    sut.send(data, success_slot, failure_slot);
     EXPECT_FALSE(success);
     writer_.fail_transmissions(2);
 

@@ -21,6 +21,7 @@ struct Configuration
     static constexpr std::size_t rx_buffer_frames_size = 5;
     static constexpr std::size_t max_retransmission_tries = 3;
     static constexpr std::chrono::milliseconds timeout_for_transmission = std::chrono::seconds(2);
+    static constexpr std::chrono::milliseconds timeout_for_byte_transmission = std::chrono::milliseconds(500);
     using ExecutionQueueType = eul::execution::execution_queue<20>;
     using LifetimeType = ExecutionQueueType::LifetimeNodeType;
     inline static ExecutionQueueType execution_queue;

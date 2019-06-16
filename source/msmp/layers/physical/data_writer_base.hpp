@@ -12,8 +12,8 @@ namespace physical
 class DataWriterBase : public IDataWriter
 {
 public:
-    void do_on_success(OnSuccessSlot& slot) override;
-    void do_on_failure(OnSuccessSlot& slot) override;
+    void doOnSuccess(OnSuccessSlot& slot) override;
+    void doOnFailure(OnFailureSlot& slot) override;
 
 protected:
     OnSuccessSignal on_success_;

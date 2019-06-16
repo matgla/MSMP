@@ -4,12 +4,16 @@
 #include <functional>
 #include <vector>
 
+#include <eul/utils/unused.hpp>
+
+#include "msmp/layers/physical/data_writer_base.hpp"
+
 namespace test
 {
 namespace stub
 {
 
-struct WriterStub
+struct WriterStub : public msmp::layers::physical::DataWriterBase
 {
     using CallbackType = std::function<void()>;
 
@@ -28,30 +32,21 @@ struct WriterStub
         number_bytes_to_fail_ = amount;
     }
 
-    bool write(const uint8_t byte)
+    void write(uint8_t byte) override
     {
         buffer_.push_back(byte);
-        if (block_responses_)
-        {
-            return true;
-        }
 
         if (number_bytes_to_fail_)
         {
-            if (on_failure_)
-            {
-                on_failure_();
-            }
+            on_failure_.emit();
             --number_bytes_to_fail_;
-            return true;
+            return;
         }
 
-        if (on_success_)
+        if (!block_responses_)
         {
-            on_success_();
+            on_success_.emit();
         }
-
-        return true;
     }
 
     void clear()
@@ -64,21 +59,9 @@ struct WriterStub
         return buffer_;
     }
 
-    void on_success(const CallbackType& callback)
-    {
-        on_success_ = callback;
-    }
-
-    void on_failure(const CallbackType& callback)
-    {
-        on_failure_ = callback;
-    }
-
 private:
     std::vector<uint8_t> buffer_;
 
-    CallbackType on_success_;
-    CallbackType on_failure_;
     int number_bytes_to_fail_ = 0;
     bool block_responses_ = false;
 };

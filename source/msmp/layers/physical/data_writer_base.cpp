@@ -7,14 +7,14 @@ namespace layers
 namespace physical
 {
 
-void DataWriterBase::do_on_success(OnSuccessSlot& slot)
+void DataWriterBase::doOnSuccess(OnSuccessSlot& slot)
 {
     on_success_.connect(slot);
 }
 
-void DataWriterBase::do_on_failure(OnSuccessSlot& slot)
+void DataWriterBase::doOnFailure(OnFailureSlot& slot)
 {
-    on_success_.connect(slot);
+    on_failure_.connect(slot);
 }
 
 } // namespace physical

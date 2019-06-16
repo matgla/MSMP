@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+
 #include <eul/signals/signal.hpp>
 
 namespace msmp
@@ -21,8 +23,8 @@ public:
     virtual ~IDataWriter() = default;
 
     virtual void write(uint8_t byte) = 0;
-    virtual void do_on_success(OnSuccessSlot& slot) = 0;
-    virtual void do_on_failure(OnSuccessSlot& slot) = 0;
+    virtual void doOnSuccess(OnSuccessSlot& slot) = 0;
+    virtual void doOnFailure(OnFailureSlot& slot) = 0;
 };
 
 } // namespace physical

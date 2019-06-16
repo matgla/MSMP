@@ -10,8 +10,9 @@ namespace transmitter
 {
 
 class Idle;
-class ReceivingByte;
-class ReceivingEscapedByte;
+class WaitingForStartByteAck;
+class TransmittedByte;
+class ForceSendNextByte;
 
 } // namespace transmitter
 } // namespace datalink

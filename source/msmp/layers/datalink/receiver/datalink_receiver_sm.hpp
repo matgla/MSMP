@@ -39,7 +39,7 @@ public:
     constexpr static std::size_t max_payload_size = configuration::Configuration::max_payload_size;
 
     explicit DataLinkReceiverSm(eul::logger::logger_factory& logger_factory);
-    auto operator()() const noexcept
+    auto operator()() noexcept
     {
         using namespace boost::sml;
         using namespace eul::utils;
