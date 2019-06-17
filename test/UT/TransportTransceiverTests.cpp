@@ -6,7 +6,7 @@
 #include <eul/logger/logger_factory.hpp>
 
 #include "msmp/transport_transceiver.hpp"
-#include "msmp/transport_receiver.hpp"
+#include "msmp/layers/transport/receiver/transport_receiver.hpp"
 #include "msmp/transport_transmitter.hpp"
 #include "msmp/messages/control/ack.hpp"
 
@@ -64,10 +64,10 @@ protected:
     stubs::TimeStub time_;
     eul::logger::logger_factory logger_factory_;
 
-    test::stubs::DataLinkTransmitterStub datalink_transmitter_;
+    ::test::stubs::DataLinkTransmitterStub datalink_transmitter_;
     test::stubs::DataLinkReceiverStub datalink_receiver_;
-    TransportTransmitter<test::stubs::DataLinkTransmitterStub, configuration::Configuration> transport_transmitter_;
-    TransportReceiver<test::stubs::DataLinkReceiverStub, configuration::Configuration> transport_receiver_;
+    TransportTransmitter<::test::stubs::DataLinkTransmitterStub, configuration::Configuration> transport_transmitter_;
+    layers::transport::receiver::TransportReceiver transport_receiver_;
 };
 
 TEST_F(TransportTransceiverTests, SendMessages)

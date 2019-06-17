@@ -15,6 +15,7 @@
 #include "msmp/layers/datalink/receiver/datalink_receiver_events.hpp"
 #include "msmp/layers/datalink/receiver/datalink_receiver_guards.hpp"
 #include "msmp/layers/datalink/receiver/datalink_receiver_states.hpp"
+#include "msmp/layers/datalink/receiver/datalink_receiver_types.hpp"
 #include "msmp/layers/datalink/receiver/fwd.hpp"
 #include "msmp/types.hpp"
 
@@ -29,13 +30,7 @@ namespace receiver
 
 class DataLinkReceiverSm
 {
-private:
-    using OnDataSignal = eul::signals::signal<void(const StreamType&)>;
-    using OnFailureSignal = eul::signals::signal<void(const StreamType&, ErrorCode)>;
 public:
-    using OnDataSlot = OnDataSignal::slot_t;
-    using OnFailureSlot = OnFailureSignal::slot_t;
-
     constexpr static std::size_t max_payload_size = configuration::Configuration::max_payload_size;
 
     explicit DataLinkReceiverSm(eul::logger::logger_factory& logger_factory);

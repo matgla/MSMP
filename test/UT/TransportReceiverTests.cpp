@@ -56,6 +56,7 @@ TEST_F(TransportReceiverTests, ReceiveDataPayload)
         0x56, 0x12, 0x0d, 0xc9, // crc
         };
     datalink_receiver_.receive(data);
+    datalink_receiver_.emitData();
 
     EXPECT_THAT(data_frame.buffer, ::testing::ElementsAreArray({1, 2, 3, 4}));
     EXPECT_THAT(control_frame.buffer, ::testing::IsEmpty());
@@ -86,6 +87,7 @@ TEST_F(TransportReceiverTests, ReceiveControlPayload)
         0xa7, 0x4f, 0x6e, 0xe8,
     };
     datalink_receiver_.receive(data);
+    datalink_receiver_.emitData();
 
     EXPECT_THAT(control_frame.buffer, ::testing::ElementsAreArray({0xd, 0x0, 0xd, 0xa}));
     EXPECT_THAT(data_frame.buffer, ::testing::IsEmpty());
@@ -112,6 +114,7 @@ TEST_F(TransportReceiverTests, ReportCrcMismatch)
         0x1, 0x2, 0x3, 0x4,
     };
     datalink_receiver_.receive(data);
+    datalink_receiver_.emitData();
 
     EXPECT_THAT(failed_frame.buffer, ::testing::ElementsAreArray({0xd, 0x0, 0xd, 0xa}));
     EXPECT_EQ(failed_frame.status, TransportFrameStatus::CrcMismatch);
@@ -137,6 +140,7 @@ TEST_F(TransportReceiverTests, ReportWrongMessageTypeMismatch)
         0xea, 0x87, 0xcf, 0xe3,
     };
     datalink_receiver_.receive(data);
+    datalink_receiver_.emitData();
 
     EXPECT_THAT(failed_frame.buffer, ::testing::ElementsAreArray({0xd, 0x0, 0xd, 0xa}));
     EXPECT_EQ(failed_frame.status, TransportFrameStatus::WrongMessageType);

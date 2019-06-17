@@ -9,6 +9,7 @@ target_sources(${library_name}
         ${CMAKE_CURRENT_SOURCE_DIR}/datalink_receiver_events.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/datalink_receiver_guards.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/datalink_receiver_states.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/datalink_receiver_types.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/fwd.hpp
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/datalink_receiver.cpp

@@ -3,50 +3,55 @@
 #include <algorithm>
 #include <cstdint>
 #include <functional>
+#include <vector>
 
 #include <gsl/span>
 
+#include "msmp/types.hpp"
+#include "msmp/layers/datalink/receiver/i_datalink_receiver.hpp"
+#include "msmp/layers/datalink/receiver/datalink_receiver_types.hpp"
+
+namespace msmp
+{
 namespace test
 {
 namespace stubs
 {
 
-class DataLinkReceiverStub
+class DataLinkReceiverStub : public msmp::layers::datalink::receiver::IDataLinkReceiver
 {
 public:
-    using StreamType                              = gsl::span<const uint8_t>;
-    using OnDataReceived = std::function<void(const StreamType& payload)>;
-
-    enum class ErrorCode : uint8_t
+    void receive(const StreamType& stream) override
     {
-        None,
-        MessageBufferOverflow
-    };
-    using OnFailure =
-        std::function<void(const StreamType& payload, const ErrorCode error)>;
-
-    void receive(const StreamType& stream)
-    {
-        if (on_data_)
-        {
-            on_data_(stream);
-        }
+        std::copy(stream.begin(), stream.end(), std::back_inserter(buffer_));
     }
 
-    void on_data(const OnDataReceived& on_data_callback)
+    void receiveByte(const uint8_t byte) override
     {
-        on_data_ = on_data_callback;
+        buffer_.push_back(byte);
     }
 
-    void on_failure(const OnFailure& on_failure_callback)
+    void doOnData(OnDataSlot& slot) override
     {
-        on_failure_ = on_failure_callback;
+        on_data_.connect(slot);
+    }
+
+    void doOnFailure(OnFailureSlot& slot) override
+    {
+        on_failure_.connect(slot);
+    }
+
+    void emitData()
+    {
+        on_data_.emit();
     }
 
 private:
-    OnDataReceived on_data_;
-    OnFailure on_failure_;
+    layers::datalink::receiver::OnDataSignal on_data_;
+    layers::datalink::receiver::OnFailureSignal on_failure_;
+    std::vector<uint8_t> buffer_;
 };
 
 } // namespace stubs
 } // namespace test
+} // namespace msmp

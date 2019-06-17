@@ -2,8 +2,8 @@
 
 #include <cstddef>
 
-#include "msmp/layers/datalink/receiver/datalink_receiver_sm.hpp"
 #include "msmp/types.hpp"
+#include "msmp/layers/datalink/receiver/datalink_receiver_types.hpp"
 
 namespace msmp
 {
@@ -17,8 +17,8 @@ namespace receiver
 class IDataLinkReceiver
 {
 public:
-    using OnDataSlot = DataLinkReceiverSm::OnDataSlot;
-    using OnFailureSlot = DataLinkReceiverSm::OnFailureSlot;
+    using OnDataSlot = msmp::layers::datalink::receiver::OnDataSlot;
+    using OnFailureSlot = msmp::layers::datalink::receiver::OnFailureSlot;
 
     virtual ~IDataLinkReceiver() = default;
     virtual void receive(const StreamType& stream) = 0;
