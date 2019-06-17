@@ -11,7 +11,6 @@ target_sources(${library_name}
         ${CMAKE_CURRENT_SOURCE_DIR}/message_type.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/message_broker.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/transmission_status.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/transport_receiver.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/transport_transmitter.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/transport_transceiver.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/version.hpp

@@ -3,7 +3,7 @@
 
 #include <eul/logger/logger_factory.hpp>
 
-#include "msmp/transport_receiver.hpp"
+#include "msmp/layers/transport/receiver/transport_receiver.hpp"
 #include "msmp/configuration/configuration.hpp"
 
 #include "test/UT/stubs/StandardErrorStreamStub.hpp"
@@ -12,6 +12,12 @@
 #include "test/UT/stubs/DataLinkReceiverStub.hpp"
 
 namespace msmp
+{
+namespace layers
+{
+namespace transport
+{
+namespace receiver
 {
 
 class TransportReceiverTests : public ::testing::Test
@@ -138,3 +144,6 @@ TEST_F(TransportReceiverTests, ReportWrongMessageTypeMismatch)
 }
 
 } // namespace msmp
+} // namespace receiver
+} // namespace transport
+} // namespace layers

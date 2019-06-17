@@ -13,6 +13,7 @@
 #include "msmp/control_byte.hpp"
 #include "msmp/configuration/configuration.hpp"
 #include "msmp/layers/datalink/receiver/datalink_receiver_sm.hpp"
+#include "msmp/layers/datalink/receiver/i_datalink_receiver.hpp"
 
 namespace msmp
 {
@@ -23,17 +24,14 @@ namespace datalink
 namespace receiver
 {
 
-class DataLinkReceiver
+class DataLinkReceiver : public IDataLinkReceiver
 {
 public:
-    using OnDataSlot = DataLinkReceiverSm::OnDataSlot;
-    using OnFailureSlot = DataLinkReceiverSm::OnFailureSlot;
-
     DataLinkReceiver(eul::logger::logger_factory& logger_factory);
-    void receive(const StreamType& stream);
-    void receiveByte(const uint8_t byte);
-    void doOnData(OnDataSlot& on_data);
-    void doOnFailure(OnFailureSlot& on_failure);
+    void receive(const StreamType& stream) override;
+    void receiveByte(const uint8_t byte) override;
+    void doOnData(OnDataSlot& on_data) override;
+    void doOnFailure(OnFailureSlot& on_failure) override;
 
 private:
     eul::logger::logger logger_;

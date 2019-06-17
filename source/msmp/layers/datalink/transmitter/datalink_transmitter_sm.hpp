@@ -23,7 +23,6 @@ namespace transmitter
 {
 class DataLinkTransmitterSm
 {
-private:
 public:
     using OnSuccessSlot = OnSuccessSignal::slot_t;
     using OnFailureSlot = OnFailureSignal::slot_t;

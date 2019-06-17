@@ -13,6 +13,7 @@
 #include <eul/logger/logger.hpp>
 #include <eul/utils/string.hpp>
 
+#include "msmp/layers/datalink/receiver/i_datalink_receiver.hpp"
 #include "msmp/configuration/configuration.hpp"
 #include "msmp/message_type.hpp"
 #include "msmp/transport_frame.hpp"
@@ -20,21 +21,27 @@
 
 namespace msmp
 {
+namespace layers
+{
+namespace transport
+{
+namespace receiver
+{
 
-template <typename DataLinkReceiver, typename Configuration = configuration::Configuration>
 class TransportReceiver
 {
 public:
-    using Frame = TransportFrame<Configuration>;
+    using Frame = TransportFrame<configuration::Configuration>;
     using CallbackType = eul::function<void(const Frame&), sizeof(void*)>;
 
-    TransportReceiver(eul::logger::logger_factory& logger_factory, DataLinkReceiver& datalink_receiver)
-        : logger_(create_logger(logger_factory))
+    TransportReceiver(eul::logger::logger_factory& logger_factory, datalink::receiver::IDataLinkReceiver& datalink_receiver)
+        : logger_(logger_factory.create("TransportReceiver"))
     {
-        datalink_receiver.on_data([this](const StreamType& payload)
-        {
-            receive_frame(payload);
-        });
+        on_data_slot_ = [this](const StreamType& payload)
+            {
+                receive_frame(payload);
+            };
+        datalink_receiver.doOnData(on_data_slot_);
     }
 
     void on_data_frame(const CallbackType& callback)
@@ -138,18 +145,16 @@ protected:
     }
 
 private:
-    auto& create_logger(eul::logger::logger_factory& logger_factory)
-    {
-        static auto logger = logger_factory.create("TransportReceiver");
-        logger.set_time_provider(logger_factory.get_time_provider());
-        return logger;
-    }
 
-    eul::logger::logger& logger_;
-    eul::container::ring_buffer<Frame, Configuration::rx_buffer_frames_size> frames_;
+    eul::logger::logger logger_;
+    eul::container::ring_buffer<Frame, configuration::Configuration::rx_buffer_frames_size> frames_;
     CallbackType on_control_frame_;
     CallbackType on_data_frame_;
     CallbackType on_failure_;
+    datalink::receiver::IDataLinkReceiver::OnDataSlot on_data_slot_;
 };
 
-}  // namespace msmp
+} // namespace msmp
+} // namespace receiver
+} // namespace transport
+} // namespace layers
