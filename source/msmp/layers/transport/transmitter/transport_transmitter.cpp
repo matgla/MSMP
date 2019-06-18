@@ -69,7 +69,7 @@ TransportTransmitter::TransportTransmitter(
         logger_.trace() << "Transmission done, starting timer for acknowledge.";
         timer_.start([this]
         {
-            logger_.trace() << "Timer fired: " << static_cast<int>(retransmission_counter_);
+            logger_.trace() << "Timer fired, times: " << static_cast<int>(retransmission_counter_) + 1;
 
             if (retransmission_counter_ >= configuration::Configuration::max_retransmission_tries)
             {

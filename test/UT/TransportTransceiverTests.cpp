@@ -268,6 +268,7 @@ TEST_F(TransportTransceiverTests, RetransmitAfterTimeout)
     }));
 
     datalink_transmitter_.clear_buffer();
+    datalink_transmitter_.emit_success();
     time_ += configuration::Configuration::timeout_for_transmission;
     time_ += std::chrono::milliseconds(1);
 
