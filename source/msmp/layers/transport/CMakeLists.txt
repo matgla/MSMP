@@ -3,12 +3,14 @@ set(library_name "msmp_layers_transport")
 add_library(${library_name} STATIC)
 
 add_subdirectory(receiver)
-# add_subdirectory(transmitter)
+add_subdirectory(transmitter)
+add_subdirectory(transceiver)
 
 target_link_libraries(${library_name}
     PUBLIC
         msmp_layers_transport_receiver
-        # msmp_layers_datalink_transmitter
+        msmp_layers_transport_transmitter
+        msmp_layers_transport_transceiver
     PRIVATE
         gsl
         eul

@@ -10,8 +10,6 @@ namespace serializer
 constexpr uint8_t __little_endian = 1;
 constexpr uint8_t __big_endian = 2;
 
-
-
 enum class Endian : uint8_t
 {
     Big,
@@ -21,7 +19,6 @@ enum class Endian : uint8_t
 #elif MSMP_HOST_LITTLE_ENDIAN
     Native = Little
 #else
-    #warning Endianness is not defined. Please define MSMP_HOST_BIG_ENDIAN or MSMP_HOST_LITTLE_ENDIAN.
     Native = Little
 #endif
 };

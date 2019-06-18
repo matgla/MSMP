@@ -12,38 +12,51 @@
 #include "msmp/messages/control/nack.hpp"
 #include "msmp/transport_frame.hpp"
 
+#include "msmp/layers/transport/receiver/transport_receiver.hpp"
+#include "msmp/layers/transport/transmitter/transport_transmitter.hpp"
+
 namespace msmp
 {
+namespace layers
+{
+namespace transport
+{
+namespace transceiver
+{
 
-template <typename TransportReceiver, typename TransportTransmitter>
 class TransportTransceiver
 {
 public:
     using StreamType = gsl::span<const uint8_t>;
     using CallbackType = eul::function<void(const StreamType&), sizeof(void*)>;
-    using TransmitterCallbackType = typename TransportTransmitter::CallbackType;
-    using Frame = typename TransportReceiver::Frame;
+    using TransmitterCallbackType = typename transmitter::TransportTransmitter::CallbackType;
+    using Frame = typename receiver::TransportReceiver::Frame;
 
-    TransportTransceiver(eul::logger::logger_factory& logger_factory, TransportReceiver& transport_receiver, TransportTransmitter& transport_transmitter)
-        : logger_(create_logger(logger_factory))
+    TransportTransceiver(eul::logger::logger_factory& logger_factory,
+        receiver::TransportReceiver& transport_receiver, transmitter::TransportTransmitter& transport_transmitter)
+        : logger_(logger_factory.create("TransportTransceiver"))
         , transport_receiver_(transport_receiver)
         , transport_transmitter_(transport_transmitter)
     {
-        transport_receiver_.on_control_frame([this](const Frame& frame)
+        on_control_slot_ = [this](const Frame& frame)
         {
             receive_control(frame);
-        });
+        };
 
-        transport_receiver_.on_data_frame([this](const Frame& frame)
+        transport_receiver_.doOnControlFrame(on_control_slot_);
+
+        on_data_slot_ = [this](const Frame& frame)
         {
             respond_ack(frame);
             receive_data(frame);
-        });
+        };
+        transport_receiver_.doOnDataFrame(on_data_slot_);
 
-        transport_receiver_.on_failure([this](const Frame& frame)
+        on_failure_slot_ = [this](const Frame& frame)
         {
             respond_nack(frame);
-        });
+        };
+        transport_receiver_.doOnFailure(on_failure_slot_);
     }
 
     void respond_nack(const auto& frame)
@@ -96,13 +109,6 @@ public:
     }
 
 private:
-    static auto& create_logger(eul::logger::logger_factory& logger_factory)
-    {
-        static auto logger = logger_factory.create("TransportTransceiver");
-        logger.set_time_provider(logger_factory.get_time_provider());
-        return logger;
-    }
-
     void receive_control(const Frame& frame)
     {
         const uint8_t id = frame.buffer[0];
@@ -139,11 +145,18 @@ private:
         }
     }
 
-    eul::logger::logger& logger_;
-    TransportReceiver& transport_receiver_;
-    TransportTransmitter& transport_transmitter_;
+    eul::logger::logger logger_;
+    receiver::TransportReceiver& transport_receiver_;
+    transmitter::TransportTransmitter& transport_transmitter_;
+
+    receiver::TransportReceiver::OnDataFrameSlot on_data_slot_;
+    receiver::TransportReceiver::OnControlFrameSlot on_control_slot_;
+    receiver::TransportReceiver::OnFailureSlot on_failure_slot_;
 
     CallbackType on_data_;
 };
 
+} // namespace transceiver
+} // namespace transport
+} // namespace layers
 } // namespace msmp

@@ -39,15 +39,24 @@ TEST_F(TransportReceiverTests, ReceiveDataPayload)
     using Frame = typename decltype(sut)::Frame;
     Frame control_frame;
     Frame data_frame;
-    sut.on_control_frame([&control_frame](const auto& frame)
-    {
-        control_frame = frame;
-    });
 
-    sut.on_data_frame([&data_frame](const auto& frame)
-    {
-        data_frame = frame;
-    });
+    TransportReceiver::OnControlFrameSlot on_control_slot(
+        [&control_frame](const auto& frame)
+        {
+            control_frame = frame;
+        }
+    );
+
+    sut.doOnControlFrame(on_control_slot);
+
+    TransportReceiver::OnDataFrameSlot on_data_slot(
+        [&data_frame](const auto& frame)
+        {
+            data_frame = frame;
+        }
+    );
+
+    sut.doOnDataFrame(on_data_slot);
 
     std::vector<uint8_t> data
         {static_cast<int>(MessageType::Data),
@@ -70,15 +79,24 @@ TEST_F(TransportReceiverTests, ReceiveControlPayload)
     using Frame = typename decltype(sut)::Frame;
     Frame control_frame;
     Frame data_frame;
-    sut.on_control_frame([&control_frame](const auto& frame)
-    {
-        control_frame = frame;
-    });
 
-    sut.on_data_frame([&data_frame](const auto& frame)
-    {
-        data_frame = frame;
-    });
+    TransportReceiver::OnControlFrameSlot on_control_slot(
+        [&control_frame](const auto& frame)
+        {
+            control_frame = frame;
+        }
+    );
+
+    sut.doOnControlFrame(on_control_slot);
+
+    TransportReceiver::OnDataFrameSlot on_data_slot(
+        [&data_frame](const auto& frame)
+        {
+            data_frame = frame;
+        }
+    );
+
+    sut.doOnDataFrame(on_data_slot);
 
     std::vector<uint8_t> data{
         static_cast<int>(MessageType::Control),
@@ -102,10 +120,13 @@ TEST_F(TransportReceiverTests, ReportCrcMismatch)
 
     Frame failed_frame;
 
-    sut.on_failure([&failed_frame](const auto& frame)
-    {
-        failed_frame = frame;
-    });
+    TransportReceiver::OnFailureSlot on_failure_slot(
+        [&failed_frame](const auto& frame)
+        {
+            failed_frame = frame;
+        }
+    );
+    sut.doOnFailure(on_failure_slot);
 
     std::vector<uint8_t> data{
         static_cast<int>(MessageType::Control),
@@ -128,10 +149,13 @@ TEST_F(TransportReceiverTests, ReportWrongMessageTypeMismatch)
 
     Frame failed_frame;
 
-    sut.on_failure([&failed_frame](const auto& frame)
-    {
-        failed_frame = frame;
-    });
+    TransportReceiver::OnFailureSlot on_failure_slot(
+        [&failed_frame](const auto& frame)
+        {
+            failed_frame = frame;
+        }
+    );
+    sut.doOnFailure(on_failure_slot);
 
     std::vector<uint8_t> data{
         3,

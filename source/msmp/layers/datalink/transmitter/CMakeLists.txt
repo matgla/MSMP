@@ -10,6 +10,7 @@ target_sources(${library_name}
         ${CMAKE_CURRENT_SOURCE_DIR}/datalink_transmitter_states.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/datalink_transmitter.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/fwd.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/i_datalink_transmitter.hpp
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/datalink_transmitter_events.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/datalink_transmitter_guards.cpp

@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 
 #include "msmp/layers/datalink/transmitter/datalink_transmitter.hpp"
-#include "msmp/transport_transmitter.hpp"
+#include "msmp/layers/transport/transmitter/transport_transmitter.hpp"
 #include "msmp/configuration/configuration.hpp"
 
 #include "test/UT/stubs/StandardErrorStreamStub.hpp"
@@ -11,6 +11,12 @@
 #include "test/UT/stubs/DataLinkTransmitterStub.hpp"
 
 namespace msmp
+{
+namespace layers
+{
+namespace transport
+{
+namespace transmitter
 {
 
 class TransportTransmitterTests : public ::testing::Test
@@ -127,4 +133,7 @@ TEST_F(TransportTransmitterTests, ReportFailureWhenRetransmissionFailedThreeTime
     EXPECT_TRUE(failure);
 }
 
+} // namespace transmitter
+} // namespace transport
+} // namespace layers
 } // namespace msmp

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <gsl/span>
-
 #include <eul/signals/signal.hpp>
 
 #include "msmp/types.hpp"

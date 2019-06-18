@@ -43,7 +43,8 @@ public:
 
     void emitData()
     {
-        on_data_.emit();
+        on_data_.emit(gsl::make_span(buffer_));
+        buffer_.clear();
     }
 
 private:

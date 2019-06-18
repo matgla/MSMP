@@ -12,6 +12,7 @@
 #include <eul/logger/logger_factory.hpp>
 #include <eul/logger/logger.hpp>
 #include <eul/utils/string.hpp>
+#include <eul/signals/signal.hpp>
 
 #include "msmp/layers/datalink/receiver/i_datalink_receiver.hpp"
 #include "msmp/configuration/configuration.hpp"
@@ -32,125 +33,33 @@ class TransportReceiver
 {
 public:
     using Frame = TransportFrame<configuration::Configuration>;
-    using CallbackType = eul::function<void(const Frame&), sizeof(void*)>;
+private:
+    using OnDataFrameSignal = eul::signals::signal<void(const Frame&)>;
+    using OnControlFrameSignal = eul::signals::signal<void(const Frame&)>;
+    using OnFailureSignal = eul::signals::signal<void(const Frame&)>;
+public:
+    using OnDataFrameSlot = OnDataFrameSignal::slot_t;
+    using OnControlFrameSlot = OnControlFrameSignal::slot_t;
+    using OnFailureSlot = OnFailureSignal::slot_t;
 
-    TransportReceiver(eul::logger::logger_factory& logger_factory, datalink::receiver::IDataLinkReceiver& datalink_receiver)
-        : logger_(logger_factory.create("TransportReceiver"))
-    {
-        on_data_slot_ = [this](const StreamType& payload)
-            {
-                receive_frame(payload);
-            };
-        datalink_receiver.doOnData(on_data_slot_);
-    }
+    TransportReceiver(eul::logger::logger_factory& logger_factory, datalink::receiver::IDataLinkReceiver& datalink_receiver);
 
-    void on_data_frame(const CallbackType& callback)
-    {
-        on_data_frame_ = callback;
-    }
-
-    void on_control_frame(const CallbackType& callback)
-    {
-        on_control_frame_ = callback;
-    }
-
-    void on_failure(const CallbackType& callback)
-    {
-        on_failure_ = callback;
-    }
+    void doOnDataFrame(OnDataFrameSlot& slot);
+    void doOnControlFrame(OnControlFrameSlot& slot);
+    void doOnFailure(OnFailureSlot& slot);
 
 protected:
-    void notify_failure(const Frame& frame)
-    {
-        if (on_failure_)
-        {
-            on_failure_(frame);
-        }
-    }
-
-    void notify_data(const Frame& frame)
-    {
-        if (on_data_frame_)
-        {
-            on_data_frame_(frame);
-        }
-    }
-
-    void notify_control(const Frame& frame)
-    {
-        if (on_control_frame_)
-        {
-            on_control_frame_(frame);
-        }
-    }
-
-    void receive_frame(const gsl::span<const uint8_t>& payload)
-    {
-        logger_.trace() << "Received frame: " << payload;
-
-        auto& frame = frames_.push(Frame{});
-        // -- get transaction id --
-        frame.transaction_id = payload[1];
-        std::copy(payload.begin() + 2, payload.end() - 4, std::back_inserter(frame.buffer));
-
-        // -- CRC validation, last 4 bytes are CRC --
-        const uint32_t crc = CRC::Calculate(payload.data(), payload.size() - 4, CRC::CRC_32());
-        const std::size_t crc_iterator = payload.size() - 4;
-        const uint32_t received_crc =
-              payload[crc_iterator] << 24
-            | payload[crc_iterator + 1] << 16
-            | payload[crc_iterator + 2] << 8
-            | payload[crc_iterator + 3];
-
-        if (crc != received_crc)
-        {
-            char crc_received[9];
-            char crc_expected[9];
-            eul::utils::itoa(received_crc, crc_received, 16);
-            eul::utils::itoa(crc, crc_expected, 16);
-            logger_.trace() << "Crc mismatch expected: 0x" << crc_expected << ", but received: 0x" << crc_received;
-            frame.status = TransportFrameStatus::CrcMismatch;
-            notify_failure(frame);
-            return;
-        }
-
-        const auto message_type = static_cast<MessageType>(payload[0]);
-        switch (message_type)
-        {
-            case MessageType::Control:
-            {
-                frame.status = TransportFrameStatus::Ok;
-                frame.type = TransportFrameType::Control;
-                logger_.trace() << "Received control frame: " << gsl::make_span(frame.buffer.begin(), frame.buffer.end());
-
-                notify_control(frame);
-            } break;
-            case MessageType::Data:
-            {
-                frame.status = TransportFrameStatus::Ok;
-                frame.type = TransportFrameType::Data;
-
-                logger_.trace() << "Received data frame: " << gsl::make_span(frame.buffer.begin(), frame.buffer.end());
-
-                notify_data(frame);
-            } break;
-            default:
-            {
-                frame.status = TransportFrameStatus::WrongMessageType;
-                logger_.trace() << "Wrong message type received";
-
-                notify_failure(frame);
-            }
-        }
-    }
+    void receiveFrame(const gsl::span<const uint8_t>& payload);
+    bool validateCrc(const StreamType& payload) const;
 
 private:
-
     eul::logger::logger logger_;
     eul::container::ring_buffer<Frame, configuration::Configuration::rx_buffer_frames_size> frames_;
-    CallbackType on_control_frame_;
-    CallbackType on_data_frame_;
-    CallbackType on_failure_;
+
+    OnControlFrameSignal on_control_frame_;
+    OnDataFrameSignal on_data_frame_;
+    OnFailureSignal on_failure_;
+
     datalink::receiver::IDataLinkReceiver::OnDataSlot on_data_slot_;
 };
 

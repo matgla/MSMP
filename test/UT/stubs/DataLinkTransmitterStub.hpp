@@ -5,27 +5,34 @@
 #include <functional>
 #include <vector>
 
-#include "msmp/layers/datalink/transmitter/datalink_transmitter.hpp"
+#include "msmp/layers/datalink/transmitter/i_datalink_transmitter.hpp"
+#include "msmp/layers/datalink/transmitter/datalink_transmitter_types.hpp"
+#include "msmp/transmission_status.hpp"
 
+namespace msmp
+{
 namespace test
 {
 namespace stubs
 {
 
-class DataLinkTransmitterStub
+class DataLinkTransmitterStub : public layers::datalink::transmitter::IDataLinkTransmitter
 {
 public:
-    using SuccessCallbackType = std::function<void()>;
-    using FailureCallbackType = std::function<void(msmp::TransmissionStatus)>;
-
-    void on_success(const SuccessCallbackType& callback)
+    virtual void send(const StreamType& bytes, OnSuccessSlot& on_success, OnFailureSlot& on_failure)
     {
-        on_success_ = callback;
+        send(bytes);
+
+        on_success_.connect(on_success);
+        on_failure_.connect(on_failure);
     }
-
-    void on_failure(const FailureCallbackType& callback)
+    virtual void send(const StreamType& bytes)
     {
-        on_failure_ = callback;
+        std::copy(bytes.begin(), bytes.end(), std::back_inserter(buffer_));
+        if (auto_emit_)
+        {
+            emit_success();
+        }
     }
 
     const std::vector<uint8_t>& get_buffer() const
@@ -45,27 +52,12 @@ public:
 
     void emit_success()
     {
-        if (on_success_)
-        {
-            on_success_();
-        }
+        on_success_.emit();
     }
 
     void emit_failure(msmp::TransmissionStatus status)
     {
-        if (on_failure_)
-        {
-            on_failure_(status);
-        }
-    }
-
-    void send(const gsl::span<uint8_t>& payload)
-    {
-        std::copy(payload.begin(), payload.end(), std::back_inserter(buffer_));
-        if (auto_emit_)
-        {
-            emit_success();
-        }
+        on_failure_.emit(status);
     }
 
     void enable_auto_emitting()
@@ -79,13 +71,15 @@ public:
     }
 
 private:
-    SuccessCallbackType on_success_;
-    FailureCallbackType on_failure_;
 
     std::vector<uint8_t> buffer_;
     bool auto_emit_ = false;
+
+    layers::datalink::transmitter::OnSuccessSignal on_success_;
+    layers::datalink::transmitter::OnFailureSignal on_failure_;
 
 };
 
 } // namespace stubs
 } // namespace test
+} // namespace msmp

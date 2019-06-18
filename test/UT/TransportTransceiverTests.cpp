@@ -5,9 +5,9 @@
 
 #include <eul/logger/logger_factory.hpp>
 
-#include "msmp/transport_transceiver.hpp"
+#include "msmp/layers/transport/transmitter/transport_transmitter.hpp"
 #include "msmp/layers/transport/receiver/transport_receiver.hpp"
-#include "msmp/transport_transmitter.hpp"
+#include "msmp/layers/transport/transceiver/transport_transceiver.hpp"
 #include "msmp/messages/control/ack.hpp"
 
 #include "test/UT/stubs/StandardErrorStreamStub.hpp"
@@ -18,6 +18,12 @@
 
 
 namespace msmp
+{
+namespace layers
+{
+namespace transport
+{
+namespace transceiver
 {
 
 class TransportTransceiverTests : public ::testing::Test
@@ -64,9 +70,9 @@ protected:
     stubs::TimeStub time_;
     eul::logger::logger_factory logger_factory_;
 
-    ::test::stubs::DataLinkTransmitterStub datalink_transmitter_;
+    test::stubs::DataLinkTransmitterStub datalink_transmitter_;
     test::stubs::DataLinkReceiverStub datalink_receiver_;
-    TransportTransmitter<::test::stubs::DataLinkTransmitterStub, configuration::Configuration> transport_transmitter_;
+    transmitter::TransportTransmitter transport_transmitter_;
     layers::transport::receiver::TransportReceiver transport_receiver_;
 };
 
@@ -89,6 +95,7 @@ TEST_F(TransportTransceiverTests, SendMessages)
     datalink_transmitter_.clear_buffer();
 
     datalink_receiver_.receive(ack1);
+    datalink_receiver_.emitData();
     configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(datalink_transmitter_.get_buffer(), ::testing::ElementsAreArray({
@@ -116,6 +123,8 @@ TEST_F(TransportTransceiverTests, ReceiveMessages)
     };
 
     datalink_receiver_.receive(data);
+    datalink_receiver_.emitData();
+
     configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(buffer, ::testing::ElementsAreArray({1, 2, 3, 4, 5}));
@@ -132,6 +141,7 @@ TEST_F(TransportTransceiverTests, RespondNackForCrcMismatch)
     };
 
     datalink_receiver_.receive(data);
+    datalink_receiver_.emitData();
 
     configuration::Configuration::execution_queue.run();
     EXPECT_THAT(datalink_transmitter_.get_buffer(), ::testing::ElementsAreArray({
@@ -153,6 +163,7 @@ TEST_F(TransportTransceiverTests, RespondNackForWrongMessageType)
     };
 
     datalink_receiver_.receive(data);
+    datalink_receiver_.emitData();
 
     configuration::Configuration::execution_queue.run();
     EXPECT_THAT(datalink_transmitter_.get_buffer(), ::testing::ElementsAreArray({
@@ -183,6 +194,8 @@ TEST_F(TransportTransceiverTests, RetransmitAfterNack)
     auto nack = generate_nack(1);
     datalink_transmitter_.clear_buffer();
     datalink_receiver_.receive(nack);
+    datalink_receiver_.emitData();
+
     configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(datalink_transmitter_.get_buffer(), ::testing::ElementsAreArray({
@@ -196,6 +209,8 @@ TEST_F(TransportTransceiverTests, RetransmitAfterNack)
     EXPECT_FALSE(success);
     datalink_transmitter_.clear_buffer();
     datalink_receiver_.receive(ack);
+    datalink_receiver_.emitData();
+
     configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(datalink_transmitter_.get_buffer(), ::testing::ElementsAreArray({
@@ -230,6 +245,8 @@ TEST_F(TransportTransceiverTests, NotifyFailureWhenRetransmissionExceeded)
     {
         auto nack = generate_nack(1);
         datalink_receiver_.receive(nack);
+        datalink_receiver_.emitData();
+
         configuration::Configuration::execution_queue.run();
     }
     EXPECT_TRUE(failure);
@@ -264,4 +281,7 @@ TEST_F(TransportTransceiverTests, RetransmitAfterTimeout)
     }));
 }
 
+} // namespace transceiver
+} // namespace transport
+} // namespace layers
 } // namespace msmp

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "msmp/types.hpp"
+#include "msmp/layers/datalink/transmitter/datalink_transmitter_types.hpp"
 
 namespace msmp
 {

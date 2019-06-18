@@ -1,11 +1,10 @@
-set(library_name "msmp_layers_transport_receiver")
+set(library_name "msmp_layers_transport_transceiver")
 
 add_library(${library_name} STATIC)
 
 target_sources(${library_name}
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/transport_receiver.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/transport_receiver.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/transport_transceiver.hpp
 )
 
 target_link_libraries(${library_name}
