@@ -215,7 +215,7 @@
 
 //     const auto ack      = messages::control::Ack();
 //     auto serialized_ack = ack.serialize();
-//     sut.send_control(messages::control::Ack());
+//     sut.sendControl(messages::control::Ack());
 
 //     EXPECT_THAT(transmitter_buffer_, ::testing::ElementsAreArray({
 //                                          static_cast<uint8_t>(ControlByte::StartFrame),

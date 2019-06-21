@@ -21,7 +21,7 @@
 //         : logger_(create_logger(logger_factory))
 //         , transceiver_(transceiver)
 //     {
-//         transceiver_.on_data([this](const StreamType& payload){
+//         transceiver_.onData[this](const StreamType& payload){
 //             handle_message(payload);
 //         });
 //     }

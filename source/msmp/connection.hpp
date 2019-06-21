@@ -69,7 +69,7 @@ public:
         std::copy(name_.begin(), name_.begin() + length, std::begin(message.name));
         message.name[length + 1] = 0;
 
-        transmitter_.send_control(message);
+        transmitter_.sendControl(message);
     }
 
     bool is_connected()

@@ -9,7 +9,7 @@ namespace transport
 namespace transmitter
 {
 
-bool TransportTransmitter::confirm_frame_transmission(uint8_t transaction_id)
+bool TransportTransmitter::confirmFrameTransmission(uint8_t transaction_id)
 {
     timer_.stop();
     logger_.trace() << "Received ACK for message: " << (int)(transaction_id);
@@ -23,7 +23,7 @@ bool TransportTransmitter::confirm_frame_transmission(uint8_t transaction_id)
         frames_.pop_front();
         if (frames_.size())
         {
-            send_next_frame();
+            sendNextFrame();
         }
         return true;
     }
@@ -31,7 +31,7 @@ bool TransportTransmitter::confirm_frame_transmission(uint8_t transaction_id)
     return false;
 }
 
-void TransportTransmitter::process_frame_failure(uint8_t transaction_id)
+void TransportTransmitter::processFrameFailure(uint8_t transaction_id)
 {
     timer_.stop();
 
@@ -43,9 +43,9 @@ void TransportTransmitter::process_frame_failure(uint8_t transaction_id)
         return;
     }
 
-    if (retransmission_counter_ < 3)
+    if (retransmission_counter_ < configuration::Configuration::max_retransmission_tries)
     {
-        send_next_frame();
+        sendNextFrame();
         ++retransmission_counter_;
         return;
     }
@@ -70,38 +70,19 @@ TransportTransmitter::TransportTransmitter(
         timer_.start([this]
         {
             logger_.trace() << "Timer fired, times: " << static_cast<int>(retransmission_counter_) + 1;
-
-            if (retransmission_counter_ >= configuration::Configuration::max_retransmission_tries)
-            {
-                frames_.front().on_failure();
-                frames_.pop_front();
-                return;
-            }
-            ++retransmission_counter_;
-            send_next_frame();
+            handleFailure();
         }, configuration::Configuration::timeout_for_transmission);
     };
 
     on_failure_slot_ = [this](TransmissionStatus status){
         logger_.trace() << "Received failure: " << to_string(status);
-        UNUSED(status);
-        auto callback = frames_.front().on_failure;
-
-        if (frames_.size())
-        {
-            send_next_frame();
-            ++retransmission_counter_;
-        }
-        if (retransmission_counter_ == 3)
-        {
-            callback();
-        }
+        handleFailure();
     };
 
     configuration::Configuration::timer_manager.register_timer(timer_);
 }
 
-TransmissionStatus TransportTransmitter::send_control(
+TransmissionStatus TransportTransmitter::sendControl(
     const StreamType& payload, const CallbackType& on_success, const CallbackType& on_failure)
 {
     logger_.trace() << "Sending control message: " << payload;
@@ -188,13 +169,13 @@ TransmissionStatus
 
     if (frames_.size() == 1)
     {
-        send_next_frame();
+        sendNextFrame();
     }
 
     return TransmissionStatus::Ok;
 }
 
-void TransportTransmitter::send_next_frame()
+void TransportTransmitter::sendNextFrame()
 {
     configuration::Configuration::execution_queue.push_front(lifetime_, [this]
     {
@@ -207,6 +188,24 @@ void TransportTransmitter::send_next_frame()
         auto data = gsl::make_span(frames_.front().buffer.begin(), frames_.front().buffer.end());
         datalink_transmitter_.send(data, on_success_slot_, on_failure_slot_);
     });
+}
+
+void TransportTransmitter::handleFailure()
+{
+    logger_.trace() << "Retransmitted: " << static_cast<int>(retransmission_counter_) << " times";
+    if (retransmission_counter_ >= configuration::Configuration::max_retransmission_tries)
+    {
+        logger_.trace() << "Retransmissions exceeded, reporting failure";
+        if (frames_.front().on_failure)
+        {
+            frames_.front().on_failure();
+        }
+        frames_.pop_front();
+        return;
+    }
+
+    ++retransmission_counter_;
+    sendNextFrame();
 }
 
 } // namespace msmp

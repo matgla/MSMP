@@ -33,23 +33,22 @@ namespace transmitter
 
 const auto dummy = []{};
 
-// TODO: states to prevent acknowledge before callback from transmitter
-
 class TransportTransmitter
 {
 public:
     using CallbackType = eul::function<void(), sizeof(void*)>;
     TransportTransmitter(eul::logger::logger_factory& logger_factory, datalink::transmitter::IDataLinkTransmitter& datalink_transmitter, const eul::time::i_time_provider& time_provider);
 
-    TransmissionStatus send_control(const StreamType& payload, const CallbackType& on_success = dummy, const CallbackType& on_failure = dummy);
+    TransmissionStatus sendControl(const StreamType& payload, const CallbackType& on_success = dummy, const CallbackType& on_failure = dummy);
     TransmissionStatus send(const StreamType& payload, const CallbackType& on_success = dummy, const CallbackType& on_failure = dummy);
 
-    bool confirm_frame_transmission(uint8_t transaction_id);
-    void process_frame_failure(uint8_t transaction_id);
+    bool confirmFrameTransmission(uint8_t transaction_id);
+    void processFrameFailure(uint8_t transaction_id);
 private:
     TransmissionStatus send(MessageType type, const StreamType& payload, const CallbackType& on_success, const CallbackType& on_failure);
-    void send_next_frame();
-    void retransmit_failed_frame();
+    void sendNextFrame();
+    void retransmitFailedFrame();
+    void handleFailure();
 
     uint8_t transaction_id_counter_;
     eul::logger::logger logger_;

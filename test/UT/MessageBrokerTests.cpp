@@ -57,15 +57,15 @@
 //         std::copy(stream.begin(), stream.end(), std::back_inserter(buffer2));
 //     });
 
-//     transceiver_.receive_data(std::vector<uint8_t>{0, 1, 2, 3});
+//     transceiver_.receiveData(std::vector<uint8_t>{0, 1, 2, 3});
 //     EXPECT_THAT(buffer1, ::testing::ElementsAreArray({0, 1, 2, 3}));
 //     EXPECT_THAT(buffer2, ::testing::IsEmpty());
 
-//     transceiver_.receive_data(std::vector<uint8_t>{1, 2, 2, 1});
+//     transceiver_.receiveData(std::vector<uint8_t>{1, 2, 2, 1});
 //     EXPECT_THAT(buffer1, ::testing::ElementsAreArray({0, 1, 2, 3}));
 //     EXPECT_THAT(buffer2, ::testing::ElementsAreArray({1, 2, 2, 1}));
 
-//     transceiver_.receive_data(std::vector<uint8_t>{1, 9, 2, 44});
+//     transceiver_.receiveData(std::vector<uint8_t>{1, 9, 2, 44});
 //     EXPECT_THAT(buffer1, ::testing::ElementsAreArray({0, 1, 2, 3}));
 //     EXPECT_THAT(buffer2, ::testing::ElementsAreArray({1, 2, 2, 1, 1, 9, 2, 44}));
 // }

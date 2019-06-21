@@ -5,6 +5,8 @@ add_library(${library_name} STATIC)
 target_sources(${library_name}
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/transport_transceiver.hpp
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/transport_transceiver.cpp
 )
 
 target_link_libraries(${library_name}

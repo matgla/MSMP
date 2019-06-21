@@ -110,7 +110,7 @@ TEST_F(TransportTransceiverTests, ReceiveMessages)
 {
     TransportTransceiver sut(logger_factory_, transport_receiver_, transport_transmitter_);
     std::vector<uint8_t> buffer;
-    sut.on_data([&buffer](const StreamType& stream)
+    sut.onData([&buffer](const StreamType& stream)
     {
         std::copy(stream.begin(), stream.end(), std::back_inserter(buffer));
     });

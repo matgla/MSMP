@@ -40,7 +40,7 @@ TEST_F(TransportTransmitterTests, SendPayload)
     sut.send(data);
     sut.send(data2);
     std::vector<uint8_t> control_data {0xd, 0x0, 0xd, 0xa};
-    sut.send_control(control_data);
+    sut.sendControl(control_data);
 
     configuration::Configuration::execution_queue.run();
 
@@ -58,7 +58,7 @@ TEST_F(TransportTransmitterTests, SendPayload)
     );
 
     datalink_transmitter_.clear_buffer();
-    sut.confirm_frame_transmission(1);
+    sut.confirmFrameTransmission(1);
     configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(datalink_transmitter_.get_buffer(),
@@ -104,7 +104,7 @@ TEST_F(TransportTransmitterTests, RetransmitAfterFailure)
 }
 
 
-TEST_F(TransportTransmitterTests, ReportFailureWhenRetransmissionFailedThreeTimes)
+TEST_F(TransportTransmitterTests, ReportFailureWhenRetransmissionFailedFourTimes)
 {
     TransportTransmitter sut(logger_factory_, datalink_transmitter_, time_);
 
@@ -124,6 +124,7 @@ TEST_F(TransportTransmitterTests, ReportFailureWhenRetransmissionFailedThreeTime
         })
     );
 
+    datalink_transmitter_.emit_failure(msmp::TransmissionStatus::BufferFull);
     datalink_transmitter_.emit_failure(msmp::TransmissionStatus::BufferFull);
     datalink_transmitter_.emit_failure(msmp::TransmissionStatus::BufferFull);
     EXPECT_FALSE(success);

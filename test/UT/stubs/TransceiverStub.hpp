@@ -54,12 +54,12 @@ public:
         TransportCallbackType on_failure_;
     };
 
-    void on_data(const CallbackType& callback)
+    void onDataconst CallbackType& callback)
     {
         on_data_ = callback;
     }
 
-    void receive_data(const gsl::span<const uint8_t>& payload)
+    void receiveData(const gsl::span<const uint8_t>& payload)
     {
         if (on_data_)
         {

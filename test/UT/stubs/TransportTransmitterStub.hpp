@@ -21,7 +21,7 @@ struct TransportTransmitterStub
         std::copy(stream.begin(), stream.end(), std::back_inserter(buffer));
     }
 
-    bool confirm_frame_transmission(uint8_t id)
+    bool confirmFrameTransmission(uint8_t id)
     {
         UNUSED(id);
         return true;
