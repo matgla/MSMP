@@ -10,6 +10,7 @@ target_sources(msmp_stubs
         ${CMAKE_CURRENT_SOURCE_DIR}/TimeStub.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/StandardErrorStreamStub.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/TransportReceiverStub.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/TransportTransceiverMock.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/TransportTransmitterStub.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/WriterForTest.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/WriterStub.hpp

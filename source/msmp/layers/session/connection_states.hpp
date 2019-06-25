@@ -10,6 +10,7 @@ namespace session
 {
 
 class Idle;
+class Connected;
 
 } // namespace session
 } // namespace layers

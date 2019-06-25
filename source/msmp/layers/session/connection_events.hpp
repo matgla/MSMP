@@ -7,7 +7,22 @@ namespace layers
 namespace session
 {
 
-class Connection
+class Connect
+{
+
+};
+
+class PeerConnected
+{
+
+};
+
+class PeerDisconnected
+{
+
+};
+
+class Disconnect
 {
 
 };

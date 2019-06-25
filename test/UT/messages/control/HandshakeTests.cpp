@@ -4,7 +4,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "msmp/messages/control/handshake.hpp"
+#include "msmp/messages/session/handshake.hpp"
 
 namespace msmp
 {

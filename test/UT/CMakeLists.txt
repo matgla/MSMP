@@ -7,6 +7,7 @@ target_sources(msmp_tests
         # HPP
 
         # CPP
+        layers/session/ConnectionTests.cpp
         ConnectionTests.cpp
         PayloadReceiverTests.cpp
         PayloadTransmitterTests.cpp
