@@ -4,11 +4,17 @@
 
 namespace msmp
 {
+namespace layers
+{
+namespace session
+{
 
 enum class MessageType : uint8_t
 {
-    Control = 0x01,
-    Data    = 0x02
+    User,
+    Protocol
 };
 
+} // namespace session
+} // namespace layers
 } // namespace msmp

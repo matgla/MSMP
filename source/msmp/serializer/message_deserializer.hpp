@@ -36,8 +36,10 @@ public:
     template <std::size_t Size>
     void decompose(char (&data)[Size])
     {
-        auto deserialized_string = decompose_string<Size>();
-        std::copy(deserialized_string.begin(), deserialized_string.end(), data);
+        auto deserialized_string = decompose_string();
+        const std::size_t length = deserialized_string.length() + 1 < Size ? deserialized_string.length() : Size - 1;
+        std::copy(deserialized_string.begin(), deserialized_string.begin() + length, data);
+        data[length + 1] = 0;
     }
 
     uint8_t decompose_u8()
@@ -53,14 +55,6 @@ public:
     uint32_t decompose_u32()
     {
         return decompose_impl<uint32_t>();
-    }
-
-    template <std::size_t Size>
-    std::string_view decompose_string()
-    {
-        const std::string_view str(reinterpret_cast<const char*>(buffer_.data()) + position_, Size);
-        position_ += Size;
-        return str;
     }
 
     std::string_view decompose_string()

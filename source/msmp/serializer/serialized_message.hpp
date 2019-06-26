@@ -3,6 +3,8 @@
 #include <memory>
 #include <string_view>
 
+#include <eul/container/static_vector.hpp>
+
 #include "msmp/serializer/endian.hpp"
 #include "msmp/serializer/serializers.hpp"
 
@@ -21,8 +23,8 @@ public:
     template <typename PreviousMessage, typename T>
     SerializedMessage(const PreviousMessage& previous, const T& data) : buffer_()
     {
-        std::copy(previous.begin(), previous.end(), buffer_.begin());
-        std::copy(data.begin(), data.end(), buffer_.begin() + previous.size());
+        std::copy(previous.begin(), previous.end(), std::back_inserter(buffer_));
+        std::copy(data.begin(), data.end(), std::back_inserter(buffer_));
     }
 
     constexpr auto compose_u8(uint8_t d)
@@ -44,14 +46,14 @@ public:
     auto compose_string(std::string_view str)
     {
         SerializedMessage<Size + StringSize> msg(buffer_, str);
-        return msg;
+        return msg.compose_u8(0);
     }
 
     template <std::size_t StringSize>
     auto compose_string(char const (&str)[StringSize])
     {
         SerializedMessage<Size + StringSize> msg(buffer_, std::string_view(str));
-        return msg;
+        return msg.compose_u8(0);
     }
 
     const auto build()
@@ -68,7 +70,7 @@ private:
         return msg;
     }
 
-    std::array<uint8_t, Size> buffer_;
+    eul::container::static_vector<uint8_t, Size> buffer_;
 };
 
 } // namespace serializer

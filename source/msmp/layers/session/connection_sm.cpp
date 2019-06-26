@@ -36,19 +36,39 @@ void ConnectionSm::sendHandshake()
     std::copy(name_.begin(), name_.begin() + length, std::begin(handshake.name));
     handshake.name[length + 1] = 0;
 
-    transport_transceiver_.send(handshake.serialize());
+    const auto serialized = handshake.serialize();
+
+    transport_transceiver_.send(gsl::make_span(serialized.begin(), serialized.end()));
 }
+
 void ConnectionSm::configureConnection()
 {
-
+    sendHandshake();
 }
+
 void ConnectionSm::deconfigureConnection()
 {
-
+    // TODO: Send disconnection message
 }
+
 void ConnectionSm::disconnectPeer()
 {
+    // TODO: Send disconnection message
+}
 
+void ConnectionSm::handleMessage(const MessageReceived& msg)
+{
+    UNUSED(msg);
+}
+
+void ConnectionSm::sendMessage(const SendMessage& msg)
+{
+    transport_transceiver_.send(msg.payload, msg.on_success, msg.on_failure);
+}
+
+void ConnectionSm::rejectMessage(const SendMessage& msg)
+{
+    msg.on_failure();
 }
 
 } // namespace session

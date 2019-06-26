@@ -37,6 +37,9 @@ public:
             , state<Idle>                 + event<PeerConnected>                                                      / call(this, &ConnectionSm::configureConnection)        = state<Connected>
             , state<Connected>            + event<Disconnect>                                                         / call(this, &ConnectionSm::disconnectPeer)             = state<Idle>
             , state<Connected>            + event<PeerDisconnected>                                                   / call(this, &ConnectionSm::deconfigureConnection)      = state<Idle>
+            , state<Connected>            + event<MessageReceived>                                                    / call(this, &ConnectionSm::handleMessage)              = state<Connected>
+            , state<Connected>            + event<SendMessage>                                                        / call(this, &ConnectionSm::sendMessage)                = state<Connected>
+            , state<Idle>                 + event<SendMessage>                                                        / call(this, &ConnectionSm::rejectMessage)              = state<Idle>
         );
     }
 
@@ -45,6 +48,9 @@ private:
     void configureConnection();
     void deconfigureConnection();
     void disconnectPeer();
+    void handleMessage(const MessageReceived& msg);
+    void sendMessage(const SendMessage& msg);
+    void rejectMessage(const SendMessage& msg);
 
     eul::logger::logger logger_;
     transport::transceiver::ITransportTransceiver& transport_transceiver_;
