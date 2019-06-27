@@ -9,6 +9,7 @@
 #include "msmp/layers/session/connection_sm.hpp"
 #include "msmp/layers/transport/transceiver/fwd.hpp"
 #include "msmp/types.hpp"
+#include "msmp/layers/session/types.hpp"
 
 namespace msmp
 {
@@ -26,7 +27,7 @@ public:
     void start();
     void stop();
     void handlePeerConnected();
-    void doOnMessage();
+    void onData(const OnDataCallbackType& callback);
 
     void send(const StreamType& msg, const CallbackType& on_success, const CallbackType& on_failure);
 private:
@@ -35,6 +36,7 @@ private:
     boost::sml::sm<ConnectionSm> sm_;
     transport::transceiver::ITransportTransceiver& transport_transceiver_;
     eul::logger::logger logger_;
+    ConnectionSm& sm_data_;
 };
 
 } // namespace session

@@ -43,6 +43,8 @@ public:
         );
     }
 
+    void onData(const OnDataCallbackType& callback);
+
 private:
     void sendHandshake();
     void configureConnection();
@@ -55,6 +57,7 @@ private:
     eul::logger::logger logger_;
     transport::transceiver::ITransportTransceiver& transport_transceiver_;
     std::string_view name_;
+    OnDataCallbackType callback_;
 };
 
 } // namespace session

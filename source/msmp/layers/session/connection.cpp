@@ -17,6 +17,7 @@ Connection::Connection(transport::transceiver::ITransportTransceiver& transport_
     : sm_{ConnectionSm(transport_transceiver, logger_factory, name)}
     , transport_transceiver_(transport_transceiver)
     , logger_(logger_factory.create("Connection"))
+    , sm_data_(sm_)
 {
     transport_transceiver_.onData([this](const StreamType& data)
     {
@@ -39,9 +40,9 @@ void Connection::handlePeerConnected()
 
 }
 
-void Connection::doOnMessage()
+void Connection::onData(const OnDataCallbackType& callback)
 {
-
+    sm_data_.onData(callback);
 }
 
 void Connection::handle(const StreamType& payload)

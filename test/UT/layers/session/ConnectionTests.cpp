@@ -19,6 +19,12 @@
 namespace msmp
 {
 
+struct Message
+{
+    uint8_t id;
+    std::vector<uint8_t> buffer;
+};
+
 class TestMessage
 {
 public:
@@ -199,6 +205,42 @@ TEST_F(ConnectionShould, ForwardCallbacksToTransmitter)
     on_success_from_sut();
     EXPECT_TRUE(succeeded);
     EXPECT_FALSE(failed);
+}
+
+TEST_F(ConnectionShould, ReceiveMessage)
+{
+    const std::string client_name = "TestClient";
+
+    msmp::layers::transport::transceiver::ITransportTransceiver::CallbackType on_data;
+    EXPECT_CALL(transport_transceiver_, onData(::testing::_))
+        .WillOnce(::testing::SaveArg<0>(&on_data));
+
+    layers::session::Connection sut(transport_transceiver_, logger_factory_, client_name);
+
+    Message received_msg;
+    sut.onData([&received_msg](uint8_t id, const StreamType& payload) {
+        received_msg.id = id;
+        std::copy(payload.begin(), payload.end(), std::back_inserter(received_msg.buffer));
+    });
+
+    /* initialize connection */
+    const auto handshake = createHandshake(client_name);
+    const auto serialized_handshake = handshake.serialize();
+    const auto handshake_span = gsl::make_span(serialized_handshake.begin(), serialized_handshake.end());
+
+    EXPECT_CALL(transport_transceiver_, send(handshake_span))
+        .Times(1);
+
+    on_data(handshake_span);
+
+    const TestMessage msg{10, "Test"};
+
+    const auto serialized_msg = msg.serialize();
+    const auto msg_span = gsl::make_span(serialized_msg.begin(), serialized_msg.end());
+
+    on_data(msg_span);
+    EXPECT_THAT(received_msg.buffer, ::testing::ElementsAreArray(serialized_msg));
+    EXPECT_EQ(received_msg.id, TestMessage::id);
 }
 
 } // namespace msmp

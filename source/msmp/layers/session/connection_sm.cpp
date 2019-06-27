@@ -41,6 +41,11 @@ void ConnectionSm::sendHandshake()
     transport_transceiver_.send(gsl::make_span(serialized.begin(), serialized.end()));
 }
 
+void ConnectionSm::onData(const OnDataCallbackType& callback)
+{
+    callback_ = callback;
+}
+
 void ConnectionSm::configureConnection()
 {
     sendHandshake();
@@ -58,7 +63,10 @@ void ConnectionSm::disconnectPeer()
 
 void ConnectionSm::handleMessage(const MessageReceived& msg)
 {
-    UNUSED(msg);
+    if (callback_)
+    {
+        callback_(msg.payload[1], msg.payload);
+    }
 }
 
 void ConnectionSm::sendMessage(const SendMessage& msg)
