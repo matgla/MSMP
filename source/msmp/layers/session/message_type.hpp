@@ -11,8 +11,8 @@ namespace session
 
 enum class MessageType : uint8_t
 {
-    User,
-    Protocol
+    User = 1,
+    Protocol = 2
 };
 
 } // namespace session

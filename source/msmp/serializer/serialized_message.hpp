@@ -18,7 +18,16 @@ struct SerializedMessage
 {
 public:
     using Serializer = Serializers<endian>;
-    SerializedMessage() = default;
+
+    SerializedMessage()
+    {
+        buffer_.push_back(1); // MessageType -> User is default value
+    }
+
+    SerializedMessage(uint8_t message_type)
+    {
+        buffer_.push_back(message_type);
+    }
 
     template <typename PreviousMessage, typename T>
     SerializedMessage(const PreviousMessage& previous, const T& data) : buffer_()
@@ -40,6 +49,22 @@ public:
     constexpr auto compose_u32(uint32_t d)
     {
         return compose_impl(d);
+    }
+
+    constexpr auto compose_double(double d)
+    {
+        return compose_impl(d);
+    }
+
+    constexpr auto compose_float(float d)
+    {
+        return compose_impl(d);
+    }
+
+    constexpr auto compose_message(const auto& msg)
+    {
+        SerializedMessage<Size + msg.max_size()> new_msg(buffer_, msg);
+        return new_msg;
     }
 
     template <std::size_t StringSize>

@@ -17,6 +17,7 @@ target_link_libraries(${library_name}
     PUBLIC
         gsl
         eul
+        sml
         msmp_layers_transport
 )
 

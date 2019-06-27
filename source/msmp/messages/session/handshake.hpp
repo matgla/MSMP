@@ -24,13 +24,11 @@ namespace control
 
 struct Handshake
 {
-    constexpr static uint8_t type = static_cast<uint8_t>(layers::session::MessageType::Protocol);
     constexpr static uint8_t id = static_cast<uint8_t>(ControlMessages::Handshake);
 
     auto serialize() const
     {
-        return serializer::SerializedMessage{}
-            .compose_u8(type)
+        return serializer::SerializedMessage{static_cast<uint8_t>(layers::session::MessageType::Protocol)}
             .compose_u8(id)
             .compose_u8(protocol_version_major)
             .compose_u8(protocol_version_minor)
@@ -43,7 +41,6 @@ struct Handshake
     {
         Handshake handshake{};
         serializer::MessageDeserializer message(payload);
-        message.drop_u8();
         message.drop_u8();
         message.decompose(handshake.protocol_version_major);
         message.decompose(handshake.protocol_version_minor);

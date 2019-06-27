@@ -18,6 +18,7 @@ Connection::Connection(transport::transceiver::ITransportTransceiver& transport_
     , transport_transceiver_(transport_transceiver)
     , logger_(logger_factory.create("Connection"))
     , sm_data_(sm_)
+    , observing_node_(this)
 {
     transport_transceiver_.onData([this](const StreamType& data)
     {
@@ -27,6 +28,7 @@ Connection::Connection(transport::transceiver::ITransportTransceiver& transport_
 
 void Connection::start()
 {
+    logger_.info() << "Trying to connect";
     sm_.process_event(Connect{});
 }
 
@@ -65,6 +67,11 @@ void Connection::handle(const StreamType& payload)
 void Connection::send(const StreamType& msg, const CallbackType& on_success, const CallbackType& on_failure)
 {
     sm_.process_event(SendMessage{msg, on_success, on_failure});
+}
+
+Connection::ObservingNodeType& Connection::getObservingNode()
+{
+    return observing_node_;
 }
 
 } // namespace session

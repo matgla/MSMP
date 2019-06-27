@@ -18,6 +18,7 @@
 #include "msmp/transmission_status.hpp"
 #include "msmp/layers/physical/i_data_writer.hpp"
 #include "msmp/layers/datalink/transmitter/datalink_transmitter_sm.hpp"
+#include "msmp/layers/datalink/transmitter/i_datalink_transmitter.hpp"
 
 namespace msmp
 {
@@ -28,7 +29,7 @@ namespace datalink
 namespace transmitter
 {
 
-class DataLinkTransmitter
+class DataLinkTransmitter : public IDataLinkTransmitter
 {
 public:
     using OnSuccessSlot = DataLinkTransmitterSm::OnSuccessSlot;

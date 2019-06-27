@@ -23,7 +23,7 @@ public:
     using DataType = gsl::span<const uint8_t>;
     MessageDeserializer(const DataType& data)
         : buffer_(data)
-        , position_(0)
+        , position_(1) // message type is ommited
     {
     }
 

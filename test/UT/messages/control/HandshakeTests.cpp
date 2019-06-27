@@ -39,6 +39,7 @@ TEST_F(HandshakeShould, Serialize)
 
     // clang-format off
     EXPECT_THAT(payload, ::testing::ElementsAreArray({
+        static_cast<char>(1),
         static_cast<char>(Handshake::id),
         static_cast<char>(1),
         static_cast<char>(2),
@@ -72,10 +73,11 @@ TEST_F(HandshakeShould, SerializeWithShortName)
 
     // clang-format off
     EXPECT_THAT(payload, ::testing::ElementsAreArray({
+        static_cast<char>(1),
         static_cast<char>(Handshake::id),
         static_cast<char>(1),
         static_cast<char>(2),
-        'n', 'a', 'm', 'e', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+        'n', 'a', 'm', 'e', '\0',
         static_cast<char>(0),
         static_cast<char>(0),
         static_cast<char>(0x04),
@@ -86,10 +88,11 @@ TEST_F(HandshakeShould, SerializeWithShortName)
 TEST_F(HandshakeShould, Deserialize)
 {
     std::vector<uint8_t> msg{
+        static_cast<char>(1),
         static_cast<uint8_t>(Handshake::id),
         static_cast<uint8_t>(1),
         static_cast<uint8_t>(2),
-        'n', 'a', 'm', 'e', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+        'n', 'a', 'm', 'e', '\0',
         static_cast<uint8_t>(0),
         static_cast<uint8_t>(0),
         static_cast<uint8_t>(0x04),

@@ -16,7 +16,8 @@ class IMessageHandler
 public:
     virtual ~IMessageHandler() = default;
 
-    virtual void handleMessage(uint8_t id, const StreamType& payload) = 0;
+    virtual bool match(uint8_t id, const StreamType& payload) const = 0;
+    virtual void handle(const StreamType& payload) = 0;
 };
 
 } // namespace broker
