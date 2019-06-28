@@ -29,7 +29,8 @@ class TransportTransceiver : public ITransportTransceiver
 {
 public:
     TransportTransceiver(eul::logger::logger_factory& logger_factory,
-        receiver::TransportReceiver& transport_receiver, transmitter::TransportTransmitter& transport_transmitter);
+        receiver::TransportReceiver& transport_receiver, transmitter::TransportTransmitter& transport_transmitter,
+        std::string_view prefix = "");
     void respondNack(const Frame& frame) override;
     void respondAck(const Frame& frame) override;
     void onData(const CallbackType& callback) override;

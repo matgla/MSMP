@@ -12,8 +12,8 @@ namespace transport
 namespace receiver
 {
 
-TransportReceiver::TransportReceiver(eul::logger::logger_factory& logger_factory, datalink::receiver::IDataLinkReceiver& datalink_receiver)
-    : logger_(logger_factory.create("TransportReceiver"))
+TransportReceiver::TransportReceiver(eul::logger::logger_factory& logger_factory, datalink::receiver::IDataLinkReceiver& datalink_receiver, std::string_view prefix)
+    : logger_(logger_factory.create("TransportReceiver", prefix))
 {
     on_data_slot_ = [this](const StreamType& payload)
         {
@@ -51,6 +51,7 @@ void TransportReceiver::receiveFrame(const gsl::span<const uint8_t>& payload)
     {
         frame.status = TransportFrameStatus::CrcMismatch;
         on_failure_.emit(frame);
+        return;
     }
 
     const auto message_type = static_cast<MessageType>(payload[0]);

@@ -41,14 +41,24 @@ void ConnectionSm::sendHandshake()
     transport_transceiver_.send(gsl::make_span(serialized.begin(), serialized.end()));
 }
 
+void ConnectionSm::onConnected(const CallbackType& on_connected)
+{
+    on_connected_ = on_connected;
+}
+
 void ConnectionSm::onData(const OnDataCallbackType& callback)
 {
     callback_ = callback;
 }
 
-void ConnectionSm::configureConnection()
+void ConnectionSm::configureConnection(const PeerConnected& msg)
 {
+    logger_.info() << "Client connected: " << msg.name;
     sendHandshake();
+    if (on_connected_)
+    {
+        on_connected_();
+    }
 }
 
 void ConnectionSm::deconfigureConnection()

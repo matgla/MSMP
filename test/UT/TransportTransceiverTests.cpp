@@ -145,10 +145,10 @@ TEST_F(TransportTransceiverTests, RespondNackForCrcMismatch)
 
     configuration::Configuration::execution_queue.run();
     EXPECT_THAT(datalink_transmitter_.get_buffer(), ::testing::ElementsAreArray({
-        2, 1,
+        1, 1,
         static_cast<int>(messages::control::Nack::id),
         0, static_cast<int>(messages::control::Nack::Reason::CrcMismatch),
-        0xeb, 0x92, 0xc8, 0x3
+        0xac, 0x32, 0xb2, 0xd3
     }));
 }
 
@@ -167,10 +167,10 @@ TEST_F(TransportTransceiverTests, RespondNackForWrongMessageType)
 
     configuration::Configuration::execution_queue.run();
     EXPECT_THAT(datalink_transmitter_.get_buffer(), ::testing::ElementsAreArray({
-        2, 1,
+        1, 1,
         static_cast<int>(messages::control::Nack::id),
         0, static_cast<int>(messages::control::Nack::Reason::WrongMessageType),
-        0x72, 0x9b, 0x99, 0xb9
+        0x35, 0x3b, 0xe3, 0x69
     }));
 }
 

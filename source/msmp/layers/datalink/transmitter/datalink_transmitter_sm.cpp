@@ -12,8 +12,8 @@ namespace transmitter
 {
 
 DataLinkTransmitterSm::DataLinkTransmitterSm(eul::logger::logger_factory& logger_factory
-    , physical::IDataWriter& writer)
-    : logger_(logger_factory.create("DataLinkTransmitterSm"))
+    , physical::IDataWriter& writer, std::string_view prefix)
+    : logger_(logger_factory.create("DataLinkTransmitterSm", prefix))
     , writer_(&writer)
     , retransmission_counter_(0)
 {

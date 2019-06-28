@@ -29,7 +29,7 @@ struct Nack
 
     static Nack deserialize(const gsl::span<const uint8_t>& payload)
     {
-        serializer::MessageDeserializer message(payload);
+        serializer::RawMessageDeserializer<> message(payload);
         message.drop_u8();
 
         return Nack{
@@ -40,7 +40,7 @@ struct Nack
 
     auto serialize() const
     {
-        return serializer::SerializedMessage{}
+        return serializer::SerializedRawMessage<>{}
             .compose_u8(id)
             .compose_u8(transaction_id)
             .compose_u8(reason)

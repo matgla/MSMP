@@ -37,7 +37,7 @@ class TransportTransmitter
 {
 public:
     using CallbackType = eul::function<void(), sizeof(void*)>;
-    TransportTransmitter(eul::logger::logger_factory& logger_factory, datalink::transmitter::IDataLinkTransmitter& datalink_transmitter, const eul::time::i_time_provider& time_provider);
+    TransportTransmitter(eul::logger::logger_factory& logger_factory, datalink::transmitter::IDataLinkTransmitter& datalink_transmitter, const eul::time::i_time_provider& time_provider, std::string_view prefix = "");
 
     TransmissionStatus sendControl(const StreamType& payload, const CallbackType& on_success = dummy, const CallbackType& on_failure = dummy);
     TransmissionStatus send(const StreamType& payload, const CallbackType& on_success = dummy, const CallbackType& on_failure = dummy);
@@ -47,7 +47,7 @@ public:
 private:
     TransmissionStatus send(MessageType type, const StreamType& payload, const CallbackType& on_success, const CallbackType& on_failure);
     void sendNextFrame();
-    void retransmitFailedFrame();
+    void sendNextControlFrame();
     void handleFailure();
 
     uint8_t transaction_id_counter_;
@@ -77,6 +77,7 @@ private:
     eul::timer::timeout_timer timer_;
     datalink::transmitter::IDataLinkTransmitter::OnSuccessSlot on_success_slot_;
     datalink::transmitter::IDataLinkTransmitter::OnFailureSlot on_failure_slot_;
+    bool was_control_frame_transmission_;
 };
 
 } // namespace msmp

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string_view>
+
 #include "msmp/types.hpp"
 #include "msmp/layers/session/types.hpp"
 
@@ -15,9 +17,9 @@ class Connect
 
 };
 
-class PeerConnected
+struct PeerConnected
 {
-
+    std::string_view name;
 };
 
 class PeerDisconnected

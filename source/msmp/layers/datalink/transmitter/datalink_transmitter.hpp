@@ -38,7 +38,7 @@ public:
 
 public:
     DataLinkTransmitter(eul::logger::logger_factory& logger_factory, physical::IDataWriter& writer,
-        eul::timer::timer_manager& timer_manager, eul::time::i_time_provider& time_provider);
+        eul::timer::timer_manager& timer_manager, eul::time::i_time_provider& time_provider, std::string_view prefix = "");
 
     void send(const StreamType& bytes, OnSuccessSlot& on_success, OnFailureSlot& on_failure);
     void send(const StreamType& bytes);

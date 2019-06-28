@@ -33,6 +33,7 @@ public:
 
     void send(const StreamType& msg, const CallbackType& on_success, const CallbackType& on_failure);
     ObservingNodeType& getObservingNode();
+    void onConnected(const CallbackType& on_connected);
 private:
 
     void handle(const StreamType& payload);

@@ -44,10 +44,11 @@ public:
     }
 
     void onData(const OnDataCallbackType& callback);
+    void onConnected(const CallbackType& on_connected);
 
 private:
     void sendHandshake();
-    void configureConnection();
+    void configureConnection(const PeerConnected& msg);
     void deconfigureConnection();
     void disconnectPeer();
     void handleMessage(const MessageReceived& msg);
@@ -58,6 +59,7 @@ private:
     transport::transceiver::ITransportTransceiver& transport_transceiver_;
     std::string_view name_;
     OnDataCallbackType callback_;
+    CallbackType on_connected_;
 };
 
 } // namespace session

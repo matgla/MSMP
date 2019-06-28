@@ -29,7 +29,8 @@ public:
     using OnByteSentSlot = msmp::OnByteSentSlot;
     constexpr static uint8_t allowed_retransmissions = configuration::Configuration::max_retransmission_tries;
 public:
-    DataLinkTransmitterSm(eul::logger::logger_factory& logger_factory, physical::IDataWriter& writer);
+    DataLinkTransmitterSm(eul::logger::logger_factory& logger_factory, physical::IDataWriter& writer,
+        std::string_view prefix = "");
     DataLinkTransmitterSm(const DataLinkTransmitterSm& data_link_transmitter);
 
     auto operator()() noexcept

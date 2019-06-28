@@ -14,8 +14,9 @@ namespace msmp
 {
 namespace serializer
 {
-
-template <Endian endian = Endian::Big>
+namespace detail
+{
+template <std::size_t position = 0, Endian endian = Endian::Big>
 class MessageDeserializer
 {
 public:
@@ -23,7 +24,7 @@ public:
     using DataType = gsl::span<const uint8_t>;
     MessageDeserializer(const DataType& data)
         : buffer_(data)
-        , position_(1) // message type is ommited
+        , position_(position)
     {
     }
 
@@ -90,6 +91,20 @@ private:
     DataType buffer_;
     std::size_t position_;
 };
+} // namespace detail
+
+template<Endian endian = Endian::Big>
+using UserMessageDeserializer = detail::MessageDeserializer<1, endian>;
+
+template<Endian endian = Endian::Big>
+using ProtocolMessageDeserializer = detail::MessageDeserializer<1, endian>;
+
+template<Endian endian = Endian::Big>
+using RawMessageDeserializer = detail::MessageDeserializer<0, endian>;
+
+template<Endian endian = Endian::Big>
+using DataDeserializer = RawMessageDeserializer<endian>;
+
 
 } // namespace serializer
 } // namespace msmp

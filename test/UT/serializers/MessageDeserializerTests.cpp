@@ -23,7 +23,7 @@ TEST_F(DeserializedMessageShould, DeserializeMessage)
         't', 'e', 's', 't', ' ', 'o', 'n', 'g', 'o', 'i', 'n', 'g', '\0',
         '!', '\0'};
 
-    auto sut = MessageDeserializer(msg);
+    auto sut = RawMessageDeserializer<>(msg);
     EXPECT_EQ(0xab, sut.decompose_u8());
     EXPECT_EQ(0xcdef, sut.decompose_u16());
     EXPECT_EQ(0x12345678, sut.decompose_u32());

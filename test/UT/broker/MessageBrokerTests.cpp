@@ -36,7 +36,7 @@ public:
 
     auto serialize() const
     {
-        return serializer::SerializedMessage{}
+        return serializer::SerializedUserMessage<>{}
             .compose_u8(type)
             .compose_u8(id)
             .compose_u32(a_)

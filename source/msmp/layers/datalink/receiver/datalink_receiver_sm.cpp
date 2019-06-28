@@ -11,8 +11,8 @@ namespace datalink
 namespace receiver
 {
 
-DataLinkReceiverSm::DataLinkReceiverSm(eul::logger::logger_factory& logger_factory)
-    : logger_(logger_factory.create("DataLinkReceiverSm"))
+DataLinkReceiverSm::DataLinkReceiverSm(eul::logger::logger_factory& logger_factory, std::string_view prefix)
+    : logger_(logger_factory.create("DataLinkReceiverSm", prefix))
 {
 }
 
@@ -35,6 +35,7 @@ void DataLinkReceiverSm::processFrame()
 {
     logger_.trace() << "Received frame";
     StreamType span(buffer_.data(), static_cast<StreamType::index_type>(buffer_.size()));
+    buffer_.clear();
     on_data_.emit(span);
 
 }
@@ -45,6 +46,7 @@ void DataLinkReceiverSm::reportBufferOverflow()
     StreamType span(buffer_.data(), static_cast<StreamType::index_type>(buffer_.size()));
     on_failure_.emit(span, ErrorCode::MessageBufferOverflow);
 }
+
 void DataLinkReceiverSm::storeByte(ByteReceived event)
 {
     buffer_.push_back(event.byte);

@@ -27,7 +27,7 @@ namespace receiver
 class DataLinkReceiver : public IDataLinkReceiver
 {
 public:
-    DataLinkReceiver(eul::logger::logger_factory& logger_factory);
+    DataLinkReceiver(eul::logger::logger_factory& logger_factory, std::string_view prefix = "");
     void receive(const StreamType& stream) override;
     void receiveByte(const uint8_t byte) override;
     void doOnData(OnDataSlot& on_data) override;

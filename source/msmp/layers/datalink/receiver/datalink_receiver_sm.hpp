@@ -33,7 +33,7 @@ class DataLinkReceiverSm
 public:
     constexpr static std::size_t max_payload_size = configuration::Configuration::max_payload_size;
 
-    explicit DataLinkReceiverSm(eul::logger::logger_factory& logger_factory);
+    DataLinkReceiverSm(eul::logger::logger_factory& logger_factory, std::string_view prefix = "");
     auto operator()() noexcept
     {
         using namespace boost::sml;
@@ -41,9 +41,9 @@ public:
 
         return make_transition_table(
         /*  |          from               |        when         |                     if                             |                              do                       |         to                   |*/
-            * state<Idle>                 + event<ByteReceived> [             call(IsStartByte)                    ] / call(this, &DataLinkReceiverSm::startFrameReceiving)  = state<ReceivingByte>
-            , state<ReceivingByte>        + event<ByteReceived> [  call(IsStartByte) && (IsBufferEmpty{buffer_})   ]                                                         = state<Idle>
-            , state<ReceivingByte>        + event<ByteReceived> [             call(IsStartByte)                    ] / call(this, &DataLinkReceiverSm::processFrame)         = state<Idle>
+            * state<Idle>                 + event<ByteReceived> [  call(IsStartByte) && (IsBufferEmpty{buffer_})   ] / call(this, &DataLinkReceiverSm::startFrameReceiving)  = state<ReceivingByte>
+            , state<Idle>                 + event<ByteReceived> [  call(IsStartByte) && !(IsBufferEmpty{buffer_})  ] / call(this, &DataLinkReceiverSm::processFrame)         = state<ReceivingByte>
+            , state<ReceivingByte>        + event<ByteReceived> [             call(IsStartByte)                    ] / call(this, &DataLinkReceiverSm::processFrame)         = state<ReceivingByte>
             , state<ReceivingByte>        + event<ByteReceived> [             call(IsEscapeCode)                   ]                                                         = state<ReceivingEscapedByte>
             , state<ReceivingByte>        + event<ByteReceived> [ !call(IsControlByte) && (IsBufferFull{buffer_})  ] / call(this, &DataLinkReceiverSm::reportBufferOverflow) = state<Idle>
             , state<ReceivingByte>        + event<ByteReceived> [ !call(IsControlByte) && !(IsBufferFull{buffer_}) ] / call(this, &DataLinkReceiverSm::storeByte)            = state<ReceivingByte>

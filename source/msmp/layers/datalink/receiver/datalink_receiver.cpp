@@ -15,9 +15,9 @@ namespace datalink
 namespace receiver
 {
 
-DataLinkReceiver::DataLinkReceiver(eul::logger::logger_factory& logger_factory)
-    : logger_(logger_factory.create("DataLinkReceiver"))
-    , sm_{DataLinkReceiverSm{logger_factory}}
+DataLinkReceiver::DataLinkReceiver(eul::logger::logger_factory& logger_factory, std::string_view prefix)
+    : logger_(logger_factory.create("DataLinkReceiver", prefix))
+    , sm_{DataLinkReceiverSm{logger_factory, prefix}}
     , sm_data_(sm_)
 {
 }
@@ -32,6 +32,7 @@ void DataLinkReceiver::receive(const StreamType& stream)
 
 void DataLinkReceiver::receiveByte(const uint8_t byte)
 {
+    logger_.info() << "Received byte: " << eul::logger::hex << byte;
     sm_.process_event(ByteReceived{byte});
 }
 

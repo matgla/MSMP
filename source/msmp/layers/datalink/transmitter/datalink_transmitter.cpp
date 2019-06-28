@@ -12,10 +12,10 @@ namespace transmitter
 {
 
 DataLinkTransmitter::DataLinkTransmitter(eul::logger::logger_factory& logger_factory, physical::IDataWriter& writer,
-        eul::timer::timer_manager& timer_manager, eul::time::i_time_provider& time_provider)
-    : logger_(logger_factory.create("DataLinkTransmitter"))
+        eul::timer::timer_manager& timer_manager, eul::time::i_time_provider& time_provider, std::string_view prefix)
+    : logger_(logger_factory.create("DataLinkTransmitter", prefix))
     , writer_(writer)
-    , sm_(std::move(DataLinkTransmitterSm(logger_factory, writer)))
+    , sm_(std::move(DataLinkTransmitterSm(logger_factory, writer, prefix)))
     , sm_data_(sm_)
     , timer_(time_provider)
 {
@@ -53,6 +53,7 @@ void DataLinkTransmitter::send(const StreamType& bytes)
 void DataLinkTransmitter::onWriterTimeout()
 {
     sm_.process_event(Timeout{});
+    configuration::Configuration::execution_queue.run();
 }
 
 void DataLinkTransmitter::onWriterSuccess()

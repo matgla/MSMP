@@ -12,8 +12,9 @@ namespace transceiver
 {
 
 TransportTransceiver::TransportTransceiver(eul::logger::logger_factory& logger_factory,
-    receiver::TransportReceiver& transport_receiver, transmitter::TransportTransmitter& transport_transmitter)
-    : logger_(logger_factory.create("TransportTransceiver"))
+    receiver::TransportReceiver& transport_receiver, transmitter::TransportTransmitter& transport_transmitter,
+    std::string_view prefix)
+    : logger_(logger_factory.create("TransportTransceiver", prefix))
     , transport_receiver_(transport_receiver)
     , transport_transmitter_(transport_transmitter)
 {
@@ -53,7 +54,7 @@ void TransportTransceiver::respondNack(const Frame& frame)
                 .transaction_id = frame.transaction_id,
                 .reason = messages::control::Nack::Reason::CrcMismatch
             }.serialize();
-            transport_transmitter_.send(gsl::make_span(nack.begin(), nack.end()));
+            transport_transmitter_.sendControl(gsl::make_span(nack.begin(), nack.end()));
         } break;
         case TransportFrameStatus::WrongMessageType:
         {
@@ -61,7 +62,7 @@ void TransportTransceiver::respondNack(const Frame& frame)
                 .transaction_id = frame.transaction_id,
                 .reason = messages::control::Nack::Reason::WrongMessageType
             }.serialize();
-            transport_transmitter_.send(gsl::make_span(nack.begin(), nack.end()));
+            transport_transmitter_.sendControl(gsl::make_span(nack.begin(), nack.end()));
         } break;
     }
 }
@@ -69,7 +70,7 @@ void TransportTransceiver::respondNack(const Frame& frame)
 void TransportTransceiver::respondAck(const Frame& frame)
 {
     auto ack = messages::control::Ack{.transaction_id = frame.transaction_id}.serialize();
-    transport_transmitter_.send(gsl::make_span(ack.begin(), ack.end()));
+    transport_transmitter_.sendControl(gsl::make_span(ack.begin(), ack.end()));
 }
 
 void TransportTransceiver::onData(const CallbackType& callback)

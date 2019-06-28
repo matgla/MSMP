@@ -28,7 +28,7 @@ struct Handshake
 
     auto serialize() const
     {
-        return serializer::SerializedMessage{static_cast<uint8_t>(layers::session::MessageType::Protocol)}
+        return serializer::SerializedProtocolMessage<>{}
             .compose_u8(id)
             .compose_u8(protocol_version_major)
             .compose_u8(protocol_version_minor)
@@ -40,7 +40,7 @@ struct Handshake
     static Handshake deserialize(const gsl::span<const uint8_t>& payload)
     {
         Handshake handshake{};
-        serializer::MessageDeserializer message(payload);
+        serializer::ProtocolMessageDeserializer<> message(payload);
         message.drop_u8();
         message.decompose(handshake.protocol_version_major);
         message.decompose(handshake.protocol_version_minor);

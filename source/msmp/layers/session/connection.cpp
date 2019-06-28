@@ -47,6 +47,11 @@ void Connection::onData(const OnDataCallbackType& callback)
     sm_data_.onData(callback);
 }
 
+void Connection::onConnected(const CallbackType& on_connected)
+{
+    sm_data_.onConnected(on_connected);
+}
+
 void Connection::handle(const StreamType& payload)
 {
     if (static_cast<session::MessageType>(payload[0]) == session::MessageType::Protocol)
@@ -54,8 +59,7 @@ void Connection::handle(const StreamType& payload)
         if (payload[1] == messages::control::Handshake::id)
         {
             auto msg = messages::control::Handshake::deserialize(payload);
-            logger_.info() << "Client connected: " << msg.name;
-            sm_.process_event(PeerConnected{});
+            sm_.process_event(PeerConnected{msg.name});
         }
 
         return;

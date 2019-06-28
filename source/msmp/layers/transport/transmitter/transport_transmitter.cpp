@@ -54,23 +54,29 @@ void TransportTransmitter::processFrameFailure(uint8_t transaction_id)
 
 TransportTransmitter::TransportTransmitter(
     eul::logger::logger_factory& logger_factory, datalink::transmitter::IDataLinkTransmitter& datalink_transmitter,
-        const eul::time::i_time_provider& time_provider)
+        const eul::time::i_time_provider& time_provider, std::string_view prefix)
     : transaction_id_counter_(0)
-    , logger_(logger_factory.create("TransportTransmitter"))
+    , logger_(logger_factory.create("TransportTransmitter", prefix))
     , datalink_transmitter_(datalink_transmitter)
     , current_byte_(0)
     , retransmission_counter_(0)
     , timer_(time_provider)
+    , was_control_frame_transmission_(false)
 {
     logger_.trace() << "Created";
 
     on_success_slot_ = [this]
     {
+        if (was_control_frame_transmission_)
+        {
+            return;
+        }
         logger_.trace() << "Transmission done, starting timer for acknowledge.";
         timer_.start([this]
         {
             logger_.trace() << "Timer fired, times: " << static_cast<int>(retransmission_counter_) + 1;
             handleFailure();
+            configuration::Configuration::execution_queue.run();
         }, configuration::Configuration::timeout_for_transmission);
     };
 
@@ -110,17 +116,7 @@ TransmissionStatus TransportTransmitter::sendControl(
     frame.on_failure = on_failure;
     frame.type = MessageType::Control;
 
-    configuration::Configuration::execution_queue.push_front(lifetime_, [this]
-    {
-        logger_.trace() << "Sending next control frame. Still exists in buffer: ";
-        for (const auto& frame : control_frames_)
-        {
-            logger_.trace() << "id: " << frame.transaction_id << " -> " << gsl::make_span(frame.buffer.begin(), frame.buffer.end());
-        }
-        auto data = gsl::make_span(control_frames_.front().buffer.begin(), control_frames_.front().buffer.end());
-        datalink_transmitter_.send(data, on_success_slot_, on_failure_slot_);
-        control_frames_.pop_back();
-    });
+    sendNextControlFrame();
 
     return TransmissionStatus::Ok;
 }
@@ -190,22 +186,61 @@ void TransportTransmitter::sendNextFrame()
     });
 }
 
+void TransportTransmitter::sendNextControlFrame()
+{
+    configuration::Configuration::execution_queue.push_front(lifetime_, [this]
+    {
+        logger_.trace() << "Sending next control frame. Still exists in buffer: ";
+        for (const auto& frame : control_frames_)
+        {
+            logger_.trace() << "id: " << frame.transaction_id << " -> " << gsl::make_span(frame.buffer.begin(), frame.buffer.end());
+        }
+        auto data = gsl::make_span(control_frames_.front().buffer.begin(), control_frames_.front().buffer.end());
+        datalink_transmitter_.send(data, on_success_slot_, on_failure_slot_);
+        control_frames_.pop_back();
+        was_control_frame_transmission_ = true;
+    });
+}
+
 void TransportTransmitter::handleFailure()
 {
     logger_.trace() << "Retransmitted: " << static_cast<int>(retransmission_counter_) << " times";
     if (retransmission_counter_ >= configuration::Configuration::max_retransmission_tries)
     {
         logger_.trace() << "Retransmissions exceeded, reporting failure";
-        if (frames_.front().on_failure)
+        if (was_control_frame_transmission_)
         {
-            frames_.front().on_failure();
+            if (control_frames_.front().on_failure)
+            {
+                control_frames_.front().on_failure();
+            }
+            control_frames_.pop_front();
         }
-        frames_.pop_front();
+        else
+        {
+            if (frames_.front().on_failure)
+            {
+                frames_.front().on_failure();
+            }
+            frames_.pop_front();
+        }
+
         return;
     }
 
     ++retransmission_counter_;
-    sendNextFrame();
+    if (was_control_frame_transmission_)
+    {
+        if (control_frames_.front().on_failure)
+        {
+            control_frames_.front().on_failure();
+        }
+        control_frames_.pop_front();
+    }
+    else
+    {
+        sendNextFrame();
+    }
 }
 
 } // namespace msmp

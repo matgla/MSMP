@@ -14,7 +14,7 @@ class SerializedMessageShould : public ::testing::Test
 
 TEST_F(SerializedMessageShould, SerializeMessage)
 {
-    const auto msg = SerializedMessage{}
+    const auto msg = SerializedRawMessage<>{}
         .compose_u8(0xab)
         .compose_u16(0xcdef)
         .compose_u32(0x12345678)

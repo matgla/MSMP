@@ -12,8 +12,9 @@ namespace msmp
 {
 namespace serializer
 {
-
-template <std::size_t Size = 0, Endian endian = Endian::Big>
+namespace detail
+{
+template <std::size_t Size = 1, uint8_t message_type = 1, Endian endian = Endian::Big>
 struct SerializedMessage
 {
 public:
@@ -21,12 +22,11 @@ public:
 
     SerializedMessage()
     {
-        buffer_.push_back(1); // MessageType -> User is default value
-    }
+        if constexpr (Size == 1)
+        {
+            buffer_.push_back(message_type);
+        }
 
-    SerializedMessage(uint8_t message_type)
-    {
-        buffer_.push_back(message_type);
     }
 
     template <typename PreviousMessage, typename T>
@@ -97,6 +97,18 @@ private:
 
     eul::container::static_vector<uint8_t, Size> buffer_;
 };
+} // namespace detail
+template<Endian endian = Endian::Big>
+using SerializedUserMessage = detail::SerializedMessage<1, 1, endian>;
+
+template<Endian endian = Endian::Big>
+using SerializedProtocolMessage = detail::SerializedMessage<1, 2, endian>;
+
+template<Endian endian = Endian::Big>
+using SerializedRawMessage = detail::SerializedMessage<0, 0, endian>;
+
+template<Endian endian = Endian::Big>
+using DataSerializer = SerializedRawMessage<endian>;
 
 } // namespace serializer
 } // namespace msmp

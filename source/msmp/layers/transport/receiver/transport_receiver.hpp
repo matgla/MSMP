@@ -42,7 +42,7 @@ public:
     using OnControlFrameSlot = OnControlFrameSignal::slot_t;
     using OnFailureSlot = OnFailureSignal::slot_t;
 
-    TransportReceiver(eul::logger::logger_factory& logger_factory, datalink::receiver::IDataLinkReceiver& datalink_receiver);
+    TransportReceiver(eul::logger::logger_factory& logger_factory, datalink::receiver::IDataLinkReceiver& datalink_receiver, std::string_view prefix = "");
 
     void doOnDataFrame(OnDataFrameSlot& slot);
     void doOnControlFrame(OnControlFrameSlot& slot);
