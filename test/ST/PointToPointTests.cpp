@@ -352,6 +352,18 @@ TEST(PointToPointTests, RetransmissionWhenWriterHasNoise)
     };
     EXPECT_EQ(handler_a2.getMessage(), expected_message);
     EXPECT_TRUE(broker.succeeded);
+
+    auto expected_msg_2 = MessageA{
+        .a = 10,
+        .b = "aa",
+        .c = 'd'
+    };
+    auto msg_a = expected_msg_2.serialize();
+    broker.broker.publish(gsl::make_span(msg_a.begin(), msg_a.end()));
+    configuration::Configuration::execution_queue.run();
+
+    EXPECT_EQ(handler_a2.getMessage(), expected_msg_2);
+
 }
 
 
