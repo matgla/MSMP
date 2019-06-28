@@ -70,7 +70,7 @@ void TransportTransceiver::respondNack(const Frame& frame)
 void TransportTransceiver::respondAck(const Frame& frame)
 {
     auto ack = messages::control::Ack{.transaction_id = frame.transaction_id}.serialize();
-    transport_transmitter_.sendControl(gsl::make_span(ack.begin(), ack.end()));
+    transport_transmitter_.sendControlAsap(gsl::make_span(ack.begin(), ack.end()));
 }
 
 void TransportTransceiver::onData(const CallbackType& callback)

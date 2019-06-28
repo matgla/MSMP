@@ -33,11 +33,14 @@ void DataLinkReceiverSm::startFrameReceiving()
 }
 void DataLinkReceiverSm::processFrame()
 {
-    logger_.trace() << "Received frame";
-    StreamType span(buffer_.data(), static_cast<StreamType::index_type>(buffer_.size()));
-    buffer_.clear();
-    on_data_.emit(span);
+    if (buffer_.size())
+    {
+        logger_.trace() << "Received frame";
+        StreamType span(buffer_.data(), static_cast<StreamType::index_type>(buffer_.size()));
+        on_data_.emit(span);
+    }
 
+    buffer_.clear();
 }
 void DataLinkReceiverSm::reportBufferOverflow()
 {

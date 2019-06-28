@@ -40,6 +40,10 @@ void TransportReceiver::doOnFailure(OnFailureSlot& slot)
 
 void TransportReceiver::receiveFrame(const gsl::span<const uint8_t>& payload)
 {
+    if (payload.size() <= 4)
+    {
+        return;
+    }
     logger_.trace() << "Received frame: " << payload;
 
     auto& frame = frames_.push(Frame{});
@@ -47,14 +51,19 @@ void TransportReceiver::receiveFrame(const gsl::span<const uint8_t>& payload)
     frame.transaction_id = payload[1];
     std::copy(payload.begin() + 2, payload.end() - 4, std::back_inserter(frame.buffer));
 
+    const auto message_type = static_cast<MessageType>(payload[0]);
+
     if (!validateCrc(payload))
     {
         frame.status = TransportFrameStatus::CrcMismatch;
-        on_failure_.emit(frame);
+        if (message_type != MessageType::Control)
+        {
+            on_failure_.emit(frame);
+        }
+
         return;
     }
 
-    const auto message_type = static_cast<MessageType>(payload[0]);
     switch (message_type)
     {
         case MessageType::Control:

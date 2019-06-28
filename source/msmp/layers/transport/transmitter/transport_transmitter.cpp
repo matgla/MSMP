@@ -67,11 +67,16 @@ TransportTransmitter::TransportTransmitter(
 
     on_success_slot_ = [this]
     {
+        if (control_frames_.size())
+        {
+            sendNextControlFrame();
+        }
         if (was_control_frame_transmission_)
         {
             return;
         }
         logger_.trace() << "Transmission done, starting timer for acknowledge.";
+
         timer_.start([this]
         {
             logger_.trace() << "Timer fired, times: " << static_cast<int>(retransmission_counter_) + 1;
@@ -116,7 +121,46 @@ TransmissionStatus TransportTransmitter::sendControl(
     frame.on_failure = on_failure;
     frame.type = MessageType::Control;
 
-    sendNextControlFrame();
+    if (control_frames_.size() == 1)
+    {
+        sendNextControlFrame();
+    }
+
+    return TransmissionStatus::Ok;
+}
+
+TransmissionStatus TransportTransmitter::sendControlAsap(
+    const StreamType& payload, const CallbackType& on_success, const CallbackType& on_failure)
+{
+    logger_.trace() << "Sending control message: " << payload;
+
+    if (configuration::Configuration::max_payload_size < (static_cast<std::size_t>(payload.size()) + 2 + 4))
+    {
+        return TransmissionStatus::TooMuchPayload;
+    }
+
+    control_frames_.push_front(ControlFrame{});
+    auto& frame = control_frames_.front();
+    auto& buffer = frame.buffer;
+    buffer.push_back(static_cast<uint8_t>(MessageType::Control));
+    buffer.push_back(++transaction_id_counter_);
+    frame.transaction_id = transaction_id_counter_;
+    std::copy(payload.begin(), payload.end(), std::back_inserter(buffer));
+
+    const uint32_t crc = CRC::Calculate(buffer.data(), buffer.size(), CRC::CRC_32());
+    buffer.push_back((crc >> 24) & 0xff);
+    buffer.push_back((crc >> 16) & 0xff);
+    buffer.push_back((crc >> 8) & 0xff);
+    buffer.push_back(crc & 0xff);
+
+    frame.on_success = on_success;
+    frame.on_failure = on_failure;
+    frame.type = MessageType::Control;
+
+    if (control_frames_.size() == 1)
+    {
+        sendNextControlFrame();
+    }
 
     return TransmissionStatus::Ok;
 }
@@ -168,6 +212,11 @@ TransmissionStatus
         sendNextFrame();
     }
 
+    if (!control_frames_.empty())
+    {
+        sendNextControlFrame();
+    }
+
     return TransmissionStatus::Ok;
 }
 
@@ -183,6 +232,7 @@ void TransportTransmitter::sendNextFrame()
 
         auto data = gsl::make_span(frames_.front().buffer.begin(), frames_.front().buffer.end());
         datalink_transmitter_.send(data, on_success_slot_, on_failure_slot_);
+        was_control_frame_transmission_ = false;
     });
 }
 
@@ -190,6 +240,11 @@ void TransportTransmitter::sendNextControlFrame()
 {
     configuration::Configuration::execution_queue.push_front(lifetime_, [this]
     {
+        if (control_frames_.empty())
+        {
+            was_control_frame_transmission_ = false;
+            return;
+        }
         logger_.trace() << "Sending next control frame. Still exists in buffer: ";
         for (const auto& frame : control_frames_)
         {
@@ -197,7 +252,7 @@ void TransportTransmitter::sendNextControlFrame()
         }
         auto data = gsl::make_span(control_frames_.front().buffer.begin(), control_frames_.front().buffer.end());
         datalink_transmitter_.send(data, on_success_slot_, on_failure_slot_);
-        control_frames_.pop_back();
+        control_frames_.pop_front();
         was_control_frame_transmission_ = true;
     });
 }
@@ -208,39 +263,18 @@ void TransportTransmitter::handleFailure()
     if (retransmission_counter_ >= configuration::Configuration::max_retransmission_tries)
     {
         logger_.trace() << "Retransmissions exceeded, reporting failure";
-        if (was_control_frame_transmission_)
+
+        if (frames_.front().on_failure)
         {
-            if (control_frames_.front().on_failure)
-            {
-                control_frames_.front().on_failure();
-            }
-            control_frames_.pop_front();
+            frames_.front().on_failure();
         }
-        else
-        {
-            if (frames_.front().on_failure)
-            {
-                frames_.front().on_failure();
-            }
-            frames_.pop_front();
-        }
+        frames_.pop_front();
 
         return;
     }
 
     ++retransmission_counter_;
-    if (was_control_frame_transmission_)
-    {
-        if (control_frames_.front().on_failure)
-        {
-            control_frames_.front().on_failure();
-        }
-        control_frames_.pop_front();
-    }
-    else
-    {
-        sendNextFrame();
-    }
+    sendNextFrame();
 }
 
 } // namespace msmp

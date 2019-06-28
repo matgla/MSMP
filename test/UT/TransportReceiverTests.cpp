@@ -129,7 +129,7 @@ TEST_F(TransportReceiverTests, ReportCrcMismatch)
     sut.doOnFailure(on_failure_slot);
 
     std::vector<uint8_t> data{
-        static_cast<int>(MessageType::Control),
+        static_cast<int>(MessageType::Data),
         2, // transaction id
         0xd, 0x0, 0xd, 0xa,
         0x1, 0x2, 0x3, 0x4,

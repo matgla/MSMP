@@ -135,7 +135,7 @@ TEST_F(TransportTransceiverTests, RespondNackForCrcMismatch)
     TransportTransceiver sut(logger_factory_, transport_receiver_, transport_transmitter_);
 
     const std::vector<uint8_t> data{
-        1, 0,
+        2, 0,
         0xff,
         0x75, 0xc0, 0xcc, 0x33
     };

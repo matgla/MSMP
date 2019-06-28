@@ -18,7 +18,7 @@ public:
 
     void addConnection(layers::session::Connection& connection);
     void addHandler(MessageHandler& handler);
-    void publish(const StreamType& payload, const CallbackType& on_success, const CallbackType& on_failure);
+    void publish(const StreamType& payload, const CallbackType& on_success = []{}, const CallbackType& on_failure = []{});
 
 private:
     void handle(uint8_t id, const StreamType& payload);
