@@ -126,6 +126,28 @@ struct MessageA
             .build();
     }
 
+    bool operator==(const MessageA& msg) const
+    {
+        if (a != msg.a)
+        {
+            std::cerr << "MessageA.a: " << a << " != " << msg.a << std::endl;
+            return false;
+        }
+
+        if (b != msg.b)
+        {
+            std::cerr << "MessageA.b: " << b<< " != " << msg.b << std::endl;
+            return false;
+        }
+
+        if (c != msg.c)
+        {
+            std::cerr << "MessageA.c: " << c << " != " << msg.c << std::endl;
+            return false;
+        }
+        return true;
+    }
+
     static MessageA deserialize(const StreamType& payload)
     {
         MessageA a{};
@@ -137,9 +159,9 @@ struct MessageA
         return a;
     }
 
-    int a;
-    std::string b;
-    char c;
+    int a = 0;
+    std::string b = "";
+    char c = 0;
 };
 
 struct CustomData
@@ -181,10 +203,22 @@ class MessageAHandler : public broker::TypedMessageHandler<MessageA>
 public:
     void handle(const StreamType& msg) override
     {
-        std::cerr << "MessageA received" << std::endl;
-        MessageA message = MessageA::deserialize(msg);
-        UNUSED(message);
+        message_ = MessageA::deserialize(msg);
     }
+
+    const MessageA& getMessage() const
+    {
+        return message_;
+    }
+private:
+    MessageA message_;
+};
+
+struct BrokerAggregate
+{
+    broker::MessageBroker& broker;
+    bool failed = false;
+    bool succeeded = false;
 };
 
 TEST(PointToPointTests, communication)
@@ -220,23 +254,33 @@ TEST(PointToPointTests, communication)
     broker_a.addHandler(handler_a1);
     broker_b.addHandler(handler_a2);
 
-    host_a.onConnected([&broker_a]{
+    BrokerAggregate broker{broker_a, false, false};
+
+    host_a.onConnected([&broker]{
         auto msg_a = MessageA{
             .a = 15,
             .b = "TestMessage",
             .c = 'd'
         }.serialize();
 
-        broker_a.publish(gsl::make_span(msg_a.begin(), msg_a.end()), []{
-            std::cerr << "Succeeded" << std::endl;
+        broker.broker.publish(gsl::make_span(msg_a.begin(), msg_a.end()), [&broker]{
+            broker.succeeded = true;
         },
-        [] {
-            std::cerr << "Failed" << std::endl;
+        [&broker] {
+            broker.failed = true;
         });
     });
 
 
     configuration::Configuration::execution_queue.run();
+
+    auto expected_message = MessageA{
+        .a = 15,
+        .b = "TestMessage",
+        .c = 'd'
+    };
+    EXPECT_EQ(handler_a2.getMessage(), expected_message);
+    EXPECT_TRUE(broker.succeeded);
 }
 
 TEST(PointToPointTests, RetransmissionWhenWriterHasNoise)
@@ -274,18 +318,20 @@ TEST(PointToPointTests, RetransmissionWhenWriterHasNoise)
     broker_a.addHandler(handler_a1);
     broker_b.addHandler(handler_a2);
 
-    host_a.onConnected([&broker_a]{
+    BrokerAggregate broker{broker_a, false, false};
+    host_a.onConnected([&broker]{
         auto msg_a = MessageA{
             .a = 15,
             .b = "TestMessage",
             .c = 'd'
         }.serialize();
-
-        broker_a.publish(gsl::make_span(msg_a.begin(), msg_a.end()), []{
-            std::cerr << "Succeeded" << std::endl;
+        broker.broker.publish(gsl::make_span(msg_a.begin(), msg_a.end()));
+        broker.broker.publish(gsl::make_span(msg_a.begin(), msg_a.end()));
+        broker.broker.publish(gsl::make_span(msg_a.begin(), msg_a.end()), [&broker]{
+            broker.succeeded = true;
         },
-        [] {
-            std::cerr << "Failed" << std::endl;
+        [&broker] {
+            broker.failed = true;
         });
     });
 
@@ -299,9 +345,94 @@ TEST(PointToPointTests, RetransmissionWhenWriterHasNoise)
     configuration::Configuration::timer_manager.run();
     configuration::Configuration::execution_queue.run();
 
-    time += std::chrono::seconds(2);
-    configuration::Configuration::timer_manager.run();
+    auto expected_message = MessageA{
+        .a = 15,
+        .b = "TestMessage",
+        .c = 'd'
+    };
+    EXPECT_EQ(handler_a2.getMessage(), expected_message);
+    EXPECT_TRUE(broker.succeeded);
+
+    auto expected_msg_2 = MessageA{
+        .a = 10,
+        .b = "aa",
+        .c = 'd'
+    };
+    auto msg_a = expected_msg_2.serialize();
+    broker.broker.publish(gsl::make_span(msg_a.begin(), msg_a.end()));
     configuration::Configuration::execution_queue.run();
+
+    EXPECT_EQ(handler_a2.getMessage(), expected_msg_2);
+
+}
+
+
+TEST(PointToPointTests, FailureWhenConnectionIsNotWorking)
+{
+    TimeProvider time;
+    ForwardingWriter writer_a;
+    ForwardingWriter writer_b;
+
+    Host host_a(time, writer_a, "HostA");
+    Host host_b(time, writer_b, "HostB");
+
+    auto& datalink_receiver_b = host_b.getDataLinkReceiver();
+    writer_a.setReceiver([&datalink_receiver_b](uint8_t byte) {
+        datalink_receiver_b.receiveByte(byte);
+    });
+
+    auto& datalink_receiver_a = host_a.getDataLinkReceiver();
+    writer_b.setReceiver([&datalink_receiver_a](uint8_t byte) {
+        datalink_receiver_a.receiveByte(byte);
+    });
+
+    host_a.connect();
+
+    broker::MessageBroker broker_a;
+    broker::MessageBroker broker_b;
+
+    broker_a.addConnection(host_a.getConnection());
+    broker_b.addConnection(host_b.getConnection());
+
+    MessageAHandler handler_a1;
+    MessageAHandler handler_a2;
+
+    broker_a.addHandler(handler_a1);
+    broker_b.addHandler(handler_a2);
+
+    BrokerAggregate broker{broker_a, false, false};
+
+    configuration::Configuration::execution_queue.run();
+
+    writer_a.generateNoise();
+    writer_b.generateNoise();
+
+    auto msg_a = MessageA{
+        .a = 15,
+        .b = "TestMessage",
+        .c = 'd'
+    }.serialize();
+
+    broker.broker.publish(gsl::make_span(msg_a.begin(), msg_a.end()), [&broker]{
+        broker.succeeded = true;
+    },
+    [&broker] {
+        broker.failed = true;
+    });
+
+    for (std::size_t i = 0; i < configuration::Configuration::max_retransmission_tries + 2; ++i)
+    {
+        time += std::chrono::seconds(2);
+        configuration::Configuration::timer_manager.run();
+    }
+
+    auto expected_message = MessageA{
+        .a = 0,
+        .b = "",
+        .c = 0
+    };
+    EXPECT_EQ(handler_a2.getMessage(), expected_message);
+    EXPECT_TRUE(broker.failed);
 }
 
 

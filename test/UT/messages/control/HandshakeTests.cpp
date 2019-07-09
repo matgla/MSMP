@@ -39,7 +39,7 @@ TEST_F(HandshakeShould, Serialize)
 
     // clang-format off
     EXPECT_THAT(payload, ::testing::ElementsAreArray({
-        static_cast<char>(1),
+        static_cast<char>(2),
         static_cast<char>(Handshake::id),
         static_cast<char>(1),
         static_cast<char>(2),
@@ -73,7 +73,7 @@ TEST_F(HandshakeShould, SerializeWithShortName)
 
     // clang-format off
     EXPECT_THAT(payload, ::testing::ElementsAreArray({
-        static_cast<char>(1),
+        static_cast<char>(2),
         static_cast<char>(Handshake::id),
         static_cast<char>(1),
         static_cast<char>(2),

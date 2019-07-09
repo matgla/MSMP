@@ -32,7 +32,6 @@ void DataLinkReceiver::receive(const StreamType& stream)
 
 void DataLinkReceiver::receiveByte(const uint8_t byte)
 {
-    logger_.info() << "Received byte: " << eul::logger::hex << byte;
     sm_.process_event(ByteReceived{byte});
 }
 
