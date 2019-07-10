@@ -18,3 +18,13 @@ target_sources(communication_over_tcp_example_peer_b
 
         ${CMAKE_CURRENT_SOURCE_DIR}/main_b.cpp
 )
+
+target_link_libraries(communication_over_tcp_example_peer_a
+    PRIVATE
+        msmp_tcp
+)
+
+target_link_libraries(communication_over_tcp_example_peer_b
+    PRIVATE
+        msmp_tcp
+)

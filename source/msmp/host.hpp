@@ -23,36 +23,16 @@ class Host
 {
 public:
     using CallbackType = eul::function<void(), sizeof(void*)>;
-    Host(eul::time::i_time_provider& time_provider, layers::physical::IDataWriter& writer, std::string_view name)
-        : logger_factory_(time_provider)
-        , datalink_receiver_(logger_factory_, name)
-        , datalink_transmitter_(logger_factory_, writer, configuration::Configuration::timer_manager, time_provider, name)
-        , transport_receiver_(logger_factory_, datalink_receiver_, name)
-        , transport_transmitter_(logger_factory_, datalink_transmitter_, time_provider, name)
-        , transport_transceiver_(logger_factory_, transport_receiver_, transport_transmitter_, name)
-        , connection_(transport_transceiver_, logger_factory_, name)
-    {
-    }
 
-    layers::session::Connection& getConnection()
-    {
-        return connection_;
-    }
+    Host(eul::time::i_time_provider& time_provider, layers::physical::IDataWriter& writer, std::string_view name);
+    virtual ~Host();
 
-    void connect()
-    {
-        connection_.start();
-    }
+    layers::session::Connection& getConnection();
 
-    layers::datalink::receiver::DataLinkReceiver& getDataLinkReceiver()
-    {
-        return datalink_receiver_;
-    }
+    void connect();
+    layers::datalink::receiver::DataLinkReceiver& getDataLinkReceiver();
 
-    void onConnected(const CallbackType& callback)
-    {
-        connection_.onConnected(callback);
-    }
+    void onConnected(const CallbackType& callback);
 
 private:
     eul::logger::logger_factory logger_factory_;
