@@ -9,6 +9,7 @@
 
 #include "message_a_handler.hpp"
 #include "test/UT/stubs/StandardErrorStreamStub.hpp"
+#include "msmp/default_time_provider.hpp"
 
 int main()
 {
@@ -17,14 +18,15 @@ int main()
 
 
     msmp::TcpHost host("TcpHostB", 2345, "localhost", 1234);
-    msmp::broker::MessageBroker broker;
-
+    msmp::DefaultTimeProvider time;
+    eul::logger::logger_factory lf(time);
+    msmp::broker::MessageBroker broker(lf);
     broker.addConnection(host.getConnection());
-    MessageAHandler handler_a;
+    MessageAHandler handler_a(broker);
     broker.addHandler(handler_a);
 
     host.onConnected([&broker] {
-        std::cerr << "Message broker is connected" << std::endl;
+        std::cerr << "Peer connected!" << std::endl;
         auto msg_a = MessageA{
             .value = 177,
             .name = "TestingMessage"}.serialize();

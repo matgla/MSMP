@@ -6,6 +6,8 @@
 #include <memory>
 #include <iostream>
 
+#include "msmp/configuration/configuration.hpp"
+
 namespace msmp
 {
 
@@ -13,9 +15,11 @@ class Session : public std::enable_shared_from_this<Session>
 {
 public:
     using OnDataCallback = std::function<void(uint8_t)>;
-    Session(boost::asio::ip::tcp::socket socket, const OnDataCallback& on_data)
+    using OnDisconnectionCallback = std::function<void()>;
+    Session(boost::asio::ip::tcp::socket socket, const OnDataCallback& on_data, const OnDisconnectionCallback& on_disconnection)
         : socket_(std::move(socket))
         , on_data_(on_data)
+        , on_disconnection_(on_disconnection)
     {
     }
 
@@ -29,22 +33,31 @@ private:
     {
         auto self(shared_from_this());
         socket_.async_receive(boost::asio::buffer(data_), [this, self](boost::system::error_code ec, std::size_t length) {
+
             if (!ec)
             {
                 std::size_t data_length = length < data_.size() ? length : data_.size();
                 for (std::size_t i = 0; i < data_length; ++i)
                 {
-                    std::cerr << "Received data: " << (int)(data_[i]) << std::endl;
                     on_data_(data_[i]);
                 }
+                doRead();
             }
-            doRead();
+            else
+            {
+                std::cerr << "Client disconected" << std::endl;
+                if (on_disconnection_)
+                {
+                    on_disconnection_();
+                }
+            }
         });
     }
 
     std::array<uint8_t, 1024> data_;
     boost::asio::ip::tcp::socket socket_;
     OnDataCallback on_data_;
+    OnDisconnectionCallback on_disconnection_;
 };
 
 TcpReader::TcpReader(boost::asio::io_service& io_service, uint16_t port, const OnDataCallback& on_data)
@@ -64,31 +77,31 @@ void TcpReader::doOnConnection(const std::function<void()>& on_connection)
 
 void TcpReader::doAccept()
 {
-    std::cerr << "Waiting for connection" << std::endl;
     acceptor_.async_accept(socket_, [this](boost::system::error_code ec) {
         if (!ec)
         {
             if (connected_)
             {
-                std::cerr << "Connection already setuped" << std::endl;
                 return;
             }
 
+            connected_ = true;
             if (on_connection_)
             {
                 on_connection_();
             }
 
-            std::cerr << "Connection arrived" << std::endl;
-
-            connected_ = true;
-            std::make_shared<Session>(std::move(socket_), on_data_)->start();
-        }
-        else
-        {
-            std::cerr << "Error with acceptation" << std::endl;
+            std::make_shared<Session>(std::move(socket_), on_data_, [this]{
+                connected_ = false;
+                doAccept();
+            })->start();
         }
     });
+}
+
+bool TcpReader::connected() const
+{
+    return connected_;
 }
 
 } // namespace msmp

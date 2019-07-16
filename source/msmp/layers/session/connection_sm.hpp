@@ -60,6 +60,8 @@ private:
     std::string_view name_;
     OnDataCallbackType callback_;
     CallbackType on_connected_;
+    bool peer_connected_;
+    bool connected_to_peer_;
 };
 
 } // namespace session

@@ -39,6 +39,9 @@ private:
     Host host_;
     std::string_view peer_address_;
     uint16_t peer_port_;
+
+    bool connected_to_peer_;
+    bool peer_is_connected_;
 };
 
 } // namespace msmp

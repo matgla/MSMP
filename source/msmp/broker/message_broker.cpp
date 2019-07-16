@@ -5,6 +5,12 @@ namespace msmp
 namespace broker
 {
 
+MessageBroker::MessageBroker(eul::logger::logger_factory& logger_factory)
+    : logger_(logger_factory.create("MessageBroker"))
+{
+}
+
+
 void MessageBroker::addConnection(layers::session::Connection& connection)
 {
     connections_.push_back(connection.getObservingNode());
@@ -23,6 +29,7 @@ void MessageBroker::publish(const StreamType& payload, const CallbackType& on_su
 {
     for (auto& connection : connections_)
     {
+        logger_.trace() << "Publishing message: " << eul::logger::hex << payload;
         (*connection)->send(payload, on_success, on_failure);
     }
 }

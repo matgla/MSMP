@@ -58,6 +58,11 @@ public:
         return decompose_impl<uint32_t>();
     }
 
+    float decompose_float()
+    {
+        return decompose_impl<float>();
+    }
+
     std::string_view decompose_string()
     {
         const std::string_view str(reinterpret_cast<const char*>(buffer_.data()) + position_, eul::utils::strlen(buffer_.subspan(position_, buffer_.size() - position_)));

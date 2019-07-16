@@ -1,6 +1,8 @@
 #pragma once
 
 #include <eul/container/observable/observing_list.hpp>
+#include <eul/logger/logger.hpp>
+#include <eul/logger/logger_factory.hpp>
 
 #include "msmp/layers/session/connection.hpp"
 #include "msmp/layers/session/types.hpp"
@@ -15,6 +17,7 @@ class MessageBroker
 {
 public:
     using CallbackType = layers::session::CallbackType;
+    MessageBroker(eul::logger::logger_factory& logger_factory);
 
     void addConnection(layers::session::Connection& connection);
     void addHandler(MessageHandler& handler);
@@ -25,6 +28,7 @@ private:
 
     eul::container::observing_list<layers::session::Connection::ObservingNodeType> connections_;
     eul::container::observing_list<MessageHandler::ObservingNodeType> handlers_;
+    eul::logger::logger logger_;
 };
 
 } // namespace broker

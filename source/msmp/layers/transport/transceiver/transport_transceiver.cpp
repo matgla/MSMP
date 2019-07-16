@@ -17,6 +17,7 @@ TransportTransceiver::TransportTransceiver(eul::logger::logger_factory& logger_f
     : logger_(logger_factory.create("TransportTransceiver", prefix))
     , transport_receiver_(transport_receiver)
     , transport_transmitter_(transport_transmitter)
+    , started_(false)
 {
     on_control_slot_ = [this](const Frame& frame)
     {
@@ -70,7 +71,7 @@ void TransportTransceiver::respondNack(const Frame& frame)
 void TransportTransceiver::respondAck(const Frame& frame)
 {
     auto ack = messages::control::Ack{.transaction_id = frame.transaction_id}.serialize();
-    transport_transmitter_.sendControlAsap(gsl::make_span(ack.begin(), ack.end()));
+    transport_transmitter_.sendControl(gsl::make_span(ack.begin(), ack.end()));
 }
 
 void TransportTransceiver::onData(const CallbackType& callback)
@@ -81,11 +82,19 @@ void TransportTransceiver::onData(const CallbackType& callback)
 void TransportTransceiver::send(const StreamType& payload)
 {
     transport_transmitter_.send(payload);
+    if (started_)
+    {
+        configuration::Configuration::execution_queue.run();
+    }
 }
 
 void TransportTransceiver::send(const StreamType& payload, const TransmitterCallbackType& on_success, const TransmitterCallbackType& on_failure)
 {
     transport_transmitter_.send(payload, on_success, on_failure);
+    if (started_)
+    {
+        configuration::Configuration::execution_queue.run();
+    }
 }
 
 void TransportTransceiver::receiveControl(const Frame& frame)
@@ -122,6 +131,12 @@ void TransportTransceiver::receiveData(const Frame& frame)
         auto data = gsl::make_span(frame.buffer.begin(), frame.buffer.end());
         on_data_(data);
     }
+}
+
+void TransportTransceiver::start()
+{
+    started_ = true;
+    configuration::Configuration::execution_queue.run();
 }
 
 } // namespace transceiver

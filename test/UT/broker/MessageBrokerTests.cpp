@@ -104,7 +104,7 @@ protected:
 
 TEST_F(MessageBrokerTests, receiveMessages)
 {
-    MessageBroker sut;
+    MessageBroker sut(logger_factory_);
     sut.addConnection(*connection1_);
     sut.addConnection(*connection2_);
 
@@ -150,7 +150,7 @@ TEST_F(MessageBrokerTests, receiveMessages)
 
 TEST_F(MessageBrokerTests, sendMessages)
 {
-    MessageBroker sut;
+    MessageBroker sut(logger_factory_);
     sut.addConnection(*connection1_);
     sut.addConnection(*connection2_);
 

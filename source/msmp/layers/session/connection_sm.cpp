@@ -17,6 +17,8 @@ ConnectionSm::ConnectionSm(transport::transceiver::ITransportTransceiver& transp
     : logger_(logger_factory.create("ConnectionSm"))
     , transport_transceiver_(transport_transceiver)
     , name_(name)
+    , peer_connected_(false)
+    , connected_to_peer_(false)
 {
 
 }
@@ -38,7 +40,14 @@ void ConnectionSm::sendHandshake()
 
     const auto serialized = handshake.serialize();
 
-    transport_transceiver_.send(gsl::make_span(serialized.begin(), serialized.end()));
+    transport_transceiver_.send(gsl::make_span(serialized.begin(), serialized.end()), [this]{
+        connected_to_peer_ = true;
+        if (peer_connected_ && on_connected_)
+        {
+            on_connected_();
+        }
+    },
+    []{});
 }
 
 void ConnectionSm::onConnected(const CallbackType& on_connected)
@@ -54,8 +63,12 @@ void ConnectionSm::onData(const OnDataCallbackType& callback)
 void ConnectionSm::configureConnection(const PeerConnected& msg)
 {
     logger_.info() << "Client connected: " << msg.name;
-    sendHandshake();
-    if (on_connected_)
+    if (connected_to_peer_)
+    {
+        sendHandshake();
+    }
+    peer_connected_ = true;
+    if (on_connected_ && connected_to_peer_)
     {
         on_connected_();
     }

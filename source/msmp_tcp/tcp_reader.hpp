@@ -16,6 +16,7 @@ public:
 
     void doAccept();
     void doOnConnection(const std::function<void()>& on_connection);
+    bool connected() const;
 private:
     boost::asio::io_service& io_service_;
     boost::asio::ip::tcp::acceptor acceptor_;

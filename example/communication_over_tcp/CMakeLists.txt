@@ -34,9 +34,11 @@ target_include_directories(communication_over_tcp_example_peer_b
 target_link_libraries(communication_over_tcp_example_peer_a
     PRIVATE
         msmp_tcp
+        gsl
 )
 
 target_link_libraries(communication_over_tcp_example_peer_b
     PRIVATE
         msmp_tcp
+        gsl
 )

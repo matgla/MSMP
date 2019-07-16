@@ -58,7 +58,15 @@ public:
 
     constexpr auto compose_float(float d)
     {
-        return compose_impl(d);
+        auto next = compose_impl(d);
+
+        auto copy = next;
+        for (const auto byte : copy.build())
+        {
+            std::cerr << (int)(byte) << ", " << std::endl;
+        }
+
+        return next;
     }
 
     constexpr auto compose_message(const auto& msg)

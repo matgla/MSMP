@@ -14,7 +14,7 @@ struct MessageB
     {
         return msmp::serializer::SerializedUserMessage<>{}
             .compose_u8(id)
-            .compose_u32(value)
+            .compose_float(value)
             .compose_string<20>(name)
             .build();
     }
@@ -24,7 +24,7 @@ struct MessageB
         MessageB msg{};
         msmp::serializer::UserMessageDeserializer<> reader(payload);
         reader.drop_u8();
-        reader.decompose(msg.value);
+        msg.value = reader.decompose_float();
         msg.name = reader.decompose_string();
         return msg;
     }

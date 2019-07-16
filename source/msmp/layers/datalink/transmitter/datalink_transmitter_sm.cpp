@@ -69,9 +69,10 @@ void DataLinkTransmitterSm::sendByte()
 void DataLinkTransmitterSm::sendByteAsync(uint8_t byte)
 {
     current_byte_ = byte;
-    configuration::Configuration::execution_queue.push_front(lifetime_, [this]{
-        sendByte();
-    });
+    // configuration::Configuration::execution_queue.push_front(lifetime_, [this]{
+    //     sendByte();
+    // });
+    sendByte();
 }
 
 void DataLinkTransmitterSm::finishTransmission()

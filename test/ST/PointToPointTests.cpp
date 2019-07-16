@@ -242,8 +242,9 @@ TEST(PointToPointTests, communication)
 
     host_a.connect();
 
-    broker::MessageBroker broker_a;
-    broker::MessageBroker broker_b;
+    eul::logger::logger_factory lf(time);
+    broker::MessageBroker broker_a(lf);
+    broker::MessageBroker broker_b(lf);
 
     broker_a.addConnection(host_a.getConnection());
     broker_b.addConnection(host_b.getConnection());
@@ -306,8 +307,9 @@ TEST(PointToPointTests, RetransmissionWhenWriterHasNoise)
 
     host_a.connect();
 
-    broker::MessageBroker broker_a;
-    broker::MessageBroker broker_b;
+    eul::logger::logger_factory lf(time);
+    broker::MessageBroker broker_a(lf);
+    broker::MessageBroker broker_b(lf);
 
     broker_a.addConnection(host_a.getConnection());
     broker_b.addConnection(host_b.getConnection());
@@ -388,8 +390,9 @@ TEST(PointToPointTests, FailureWhenConnectionIsNotWorking)
 
     host_a.connect();
 
-    broker::MessageBroker broker_a;
-    broker::MessageBroker broker_b;
+    eul::logger::logger_factory lf(time);
+    broker::MessageBroker broker_a(lf);
+    broker::MessageBroker broker_b(lf);
 
     broker_a.addConnection(host_a.getConnection());
     broker_b.addConnection(host_b.getConnection());

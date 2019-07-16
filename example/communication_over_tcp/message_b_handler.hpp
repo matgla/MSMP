@@ -1,5 +1,3 @@
-#pragma once
-
 #include <msmp/types.hpp>
 #include <msmp/broker/typed_message_handler.hpp>
 

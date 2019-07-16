@@ -18,6 +18,8 @@ public:
     MOCK_METHOD1(send, void(const StreamType&));
     MOCK_METHOD3(send, void(const StreamType&, const TransmitterCallbackType&,
         const TransmitterCallbackType&));
+    MOCK_METHOD0(start, void());
+
 };
 
 } // namespace mocks

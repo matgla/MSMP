@@ -29,6 +29,7 @@ Connection::Connection(transport::transceiver::ITransportTransceiver& transport_
 void Connection::start()
 {
     logger_.info() << "Trying to connect";
+    transport_transceiver_.start();
     sm_.process_event(Connect{});
 }
 

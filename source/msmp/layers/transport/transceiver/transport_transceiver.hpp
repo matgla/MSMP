@@ -37,6 +37,7 @@ public:
     void send(const StreamType& payload) override;
     void send(const StreamType& payload, const TransmitterCallbackType& on_success,
         const TransmitterCallbackType& on_failure) override;
+    void start();
 private:
     void receiveControl(const Frame& frame);
     void receiveData(const Frame& frame);
@@ -50,6 +51,7 @@ private:
     receiver::TransportReceiver::OnFailureSlot on_failure_slot_;
 
     CallbackType on_data_;
+    bool started_;
 };
 
 } // namespace transceiver
