@@ -17,7 +17,7 @@ int main()
     eul::logger::logger_stream_registry::get().register_stream(stream);
 
 
-    msmp::TcpHost host("TcpHostB", 2345, "localhost", 1234);
+    msmp::TcpHost host("TcpHostB", 1237, "localhost", 1236);
     msmp::DefaultTimeProvider time;
     eul::logger::logger_factory lf(time);
     msmp::broker::MessageBroker broker(lf);

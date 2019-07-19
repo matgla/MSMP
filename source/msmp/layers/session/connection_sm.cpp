@@ -42,6 +42,7 @@ void ConnectionSm::sendHandshake()
 
     transport_transceiver_.send(gsl::make_span(serialized.begin(), serialized.end()), [this]{
         connected_to_peer_ = true;
+        logger_.trace() << "Connected to peer";
         if (peer_connected_ && on_connected_)
         {
             on_connected_();

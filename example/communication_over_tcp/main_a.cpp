@@ -19,7 +19,7 @@ int main()
     stubs::StandardErrorStreamStub stream;
     eul::logger::logger_stream_registry::get().register_stream(stream);
 
-    msmp::TcpHost host("TcpHostA", 1234, "localhost", 2345);
+    msmp::TcpHost host("TcpHostA", 1236, "localhost", 1237);
     msmp::DefaultTimeProvider time;
     eul::logger::logger_factory lf(time);
     msmp::broker::MessageBroker broker(lf);

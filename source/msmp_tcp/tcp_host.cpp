@@ -15,18 +15,34 @@ TcpHost::TcpHost(eul::time::i_time_provider& time_provider, std::string_view nam
     , host_(time_provider, tcp_writer_, name)
     , peer_address_(peer_address)
     , peer_port_(peer_port)
+    , host_connected_(false)
 {
     tcp_reader_.doOnConnection([this]{
-        tcp_writer_.connect(peer_address_, peer_port_, [this]{
-            if (tcp_reader_.connected() && tcp_writer_.connected())
-            {
-                host_.connect();
-            }
-        });
+        if (!tcp_writer_.connected())
+        {
+            std::cerr << "Writer not connected" << std::endl;
+            tcp_writer_.connect(peer_address_, peer_port_, [this]{
+                if (tcp_reader_.connected() && tcp_writer_.connected())
+                {
+                    std::cerr << "Writer and reader connected, starting host" << std::endl;
+                    host_connected_ = true;
+                    if (!host_connected_)
+                    {
+                        host_.connect();
+                    }
+                }
+            });
+        }
 
         if (tcp_reader_.connected() && tcp_writer_.connected())
         {
-            host_.connect();
+            std::cerr << "Writer and reader connected, starting host from reader" << std::endl;
+
+            host_connected_ = true;
+            if (!host_connected_)
+            {
+                host_.connect();
+            }
         }
     });
 }
@@ -43,11 +59,18 @@ TcpHost::TcpHost(std::string_view name,
 void TcpHost::start()
 {
     tcp_writer_.connect(peer_address_, peer_port_, [this]{
-            if (tcp_reader_.connected() && tcp_writer_.connected())
+        if (tcp_reader_.connected() && tcp_writer_.connected())
+        {
+            std::cerr << "Writer and reader connected, starting host from start" << std::endl;
+
+            host_connected_ = true;
+            if (!host_connected_)
             {
                 host_.connect();
             }
-        });
+        }
+    });
+    tcp_reader_.start();
     io_service_.run();
 }
 

@@ -85,16 +85,18 @@ void TcpReader::doAccept()
                 return;
             }
 
-            connected_ = true;
-            if (on_connection_)
-            {
-                on_connection_();
-            }
 
             std::make_shared<Session>(std::move(socket_), on_data_, [this]{
                 connected_ = false;
                 doAccept();
             })->start();
+            std::cerr << "HMMMM" << std::endl;
+            connected_ = true;
+
+            if (on_connection_)
+            {
+                on_connection_();
+            }
         }
     });
 }
