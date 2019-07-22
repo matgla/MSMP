@@ -47,13 +47,13 @@ void DataLinkTransmitter::send(const StreamType& bytes)
 {
     OnSuccessSlot on_success;
     OnFailureSlot on_failure;
+
     sm_.process_event(SendFrame(bytes, on_success, on_failure));
 }
 
 void DataLinkTransmitter::onWriterTimeout()
 {
     sm_.process_event(Timeout{});
-    configuration::Configuration::execution_queue.run();
 }
 
 void DataLinkTransmitter::onWriterSuccess()

@@ -3,6 +3,8 @@
 #include <array>
 #include <cstdint>
 
+#include <boost/sml.hpp>
+
 #include <gsl/span>
 
 #include <CRC.h>
@@ -20,6 +22,7 @@
 #include "msmp/types.hpp"
 #include "msmp/transmission_status.hpp"
 
+#include "msmp/layers/transport/transmitter/transport_transmitter_sm.hpp"
 #include "msmp/layers/datalink/transmitter/i_datalink_transmitter.hpp"
 
 namespace msmp
@@ -79,6 +82,10 @@ private:
     datalink::transmitter::IDataLinkTransmitter::OnSuccessSlot on_success_slot_;
     datalink::transmitter::IDataLinkTransmitter::OnFailureSlot on_failure_slot_;
     bool was_control_frame_transmission_;
+
+    boost::sml::sm<TransportTransmitterSm> sm_;
+    TransportTransmitterSm& sm_data_;
+    TransportTransmitterSm::OnDataSlot on_data_slot_;
 };
 
 } // namespace msmp

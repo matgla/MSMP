@@ -15,35 +15,13 @@ TcpHost::TcpHost(eul::time::i_time_provider& time_provider, std::string_view nam
     , host_(time_provider, tcp_writer_, name)
     , peer_address_(peer_address)
     , peer_port_(peer_port)
-    , host_connected_(false)
+    , sm_{TcpHostSm{[this] {
+        host_.connect();
+    }}}
+    , sm_data_(sm_)
 {
-    tcp_reader_.doOnConnection([this]{
-        if (!tcp_writer_.connected())
-        {
-            std::cerr << "Writer not connected" << std::endl;
-            tcp_writer_.connect(peer_address_, peer_port_, [this]{
-                if (tcp_reader_.connected() && tcp_writer_.connected())
-                {
-                    std::cerr << "Writer and reader connected, starting host" << std::endl;
-                    host_connected_ = true;
-                    if (!host_connected_)
-                    {
-                        host_.connect();
-                    }
-                }
-            });
-        }
-
-        if (tcp_reader_.connected() && tcp_writer_.connected())
-        {
-            std::cerr << "Writer and reader connected, starting host from reader" << std::endl;
-
-            host_connected_ = true;
-            if (!host_connected_)
-            {
-                host_.connect();
-            }
-        }
+    tcp_reader_.doOnConnection([this] {
+        sm_.process_event(ConnectionReceived{});
     });
 }
 
@@ -53,22 +31,12 @@ TcpHost::TcpHost(std::string_view name,
     std::string_view peer_address, uint16_t peer_port)
     : TcpHost(time_provider_, name, host_port, peer_address, peer_port)
 {
-
 }
 
 void TcpHost::start()
 {
-    tcp_writer_.connect(peer_address_, peer_port_, [this]{
-        if (tcp_reader_.connected() && tcp_writer_.connected())
-        {
-            std::cerr << "Writer and reader connected, starting host from start" << std::endl;
-
-            host_connected_ = true;
-            if (!host_connected_)
-            {
-                host_.connect();
-            }
-        }
+    tcp_writer_.connect(peer_address_, peer_port_, [this] {
+        sm_.process_event(ConnectionEstablished{});
     });
     tcp_reader_.start();
     io_service_.run();

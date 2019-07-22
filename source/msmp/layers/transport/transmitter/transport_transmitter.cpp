@@ -73,70 +73,37 @@ TransportTransmitter::TransportTransmitter(
     , retransmission_counter_(0)
     , timer_(time_provider)
     , was_control_frame_transmission_(false)
+    , sm_{TransportTransmitterSm{}}
+    , sm_data_(sm_)
 {
     logger_.trace() << "Created";
 
     on_success_slot_ = [this]
     {
-        if (control_frames_.size())
-        {
-            sendNextControlFrame();
-            return;
-        }
-        if (was_control_frame_transmission_)
-        {
-            return;
-        }
-        logger_.trace() << "Transmission done, starting timer for acknowledge.";
-
-        timer_.start([this]
-        {
-            logger_.trace() << "Timer fired, times: " << static_cast<int>(retransmission_counter_) + 1;
-            handleFailure();
-            configuration::Configuration::execution_queue.run();
-        }, configuration::Configuration::timeout_for_transmission);
+        sm_.process_event(SuccessResponse{});
     };
 
-    on_failure_slot_ = [this](TransmissionStatus status){
-        logger_.trace() << "Received failure: " << to_string(status);
-        handleFailure();
+    on_failure_slot_ = [this](TransmissionStatus status)
+    {
+        sm_.process_event(FailureResponse{});
     };
 
-    configuration::Configuration::timer_manager.register_timer(timer_);
+    on_data_slot_ = [this](const StreamType& stream)
+    {
+        datalink_transmitter_.send(stream, on_success_slot_, on_failure_slot_);
+    };
+
+    sm_data_.doOnData(on_data_slot_);
 }
 
 TransmissionStatus TransportTransmitter::sendControl(
     const StreamType& payload, const CallbackType& on_success, const CallbackType& on_failure)
 {
-    logger_.trace() << "Sending control message: " << payload;
-
-    if (configuration::Configuration::max_payload_size < (static_cast<std::size_t>(payload.size()) + 2 + 4))
-    {
-        return TransmissionStatus::TooMuchPayload;
-    }
-
-    control_frames_.push_back(ControlFrame{});
-    auto& frame = control_frames_.back();
-    auto& buffer = frame.buffer;
-    buffer.push_back(static_cast<uint8_t>(MessageType::Control));
-    buffer.push_back(++transaction_id_counter_);
-    frame.transaction_id = transaction_id_counter_;
-    std::copy(payload.begin(), payload.end(), std::back_inserter(buffer));
-
-    const uint32_t crc = CRC::Calculate(buffer.data(), buffer.size(), CRC::CRC_32());
-    buffer.push_back((crc >> 24) & 0xff);
-    buffer.push_back((crc >> 16) & 0xff);
-    buffer.push_back((crc >> 8) & 0xff);
-    buffer.push_back(crc & 0xff);
-
-    frame.on_success = on_success;
-    frame.on_failure = on_failure;
-    frame.type = MessageType::Control;
-
-    if (control_frames_.size() == 1 && frames_.size() == 0)
-    {
-        sendNextControlFrame();
-    }
+    sm_.process_event(SendControl{
+        .payload = payload,
+        .on_success = on_success,
+        .on_failure = on_failure
+    });
 
     return TransmissionStatus::Ok;
 }
@@ -144,9 +111,13 @@ TransmissionStatus TransportTransmitter::sendControl(
 TransmissionStatus
     TransportTransmitter::send(const StreamType& payload, const CallbackType& on_success, const CallbackType& on_failure)
 {
-    logger_.trace() << "Sending message: " << payload;
+    sm_.process_event(SendData{
+        .payload = payload,
+        .on_success = on_success,
+        .on_failure = on_failure
+    });
 
-    return send(MessageType::Data, payload, on_success, on_failure);
+    return TransmissionStatus::Ok;
 }
 
 TransmissionStatus
@@ -183,15 +154,16 @@ TransmissionStatus
     frame.on_failure = on_failure;
     frame.type = type;
 
-    logger_.trace() << "There is " << (int)(frames_.size()) << " messages in buffer";
-
-    if (!control_frames_.empty())
-    {
-        sendNextControlFrame();
-    }
+    logger_.trace() << "There is " << (int)(frames_.size()) << " messages and " << (int)(control_frames_.size())
+        << " control messages in buffer";
 
     if (frames_.size() == 1)
     {
+        if (control_frames_.size() == 1)
+        {
+            sendNextControlFrame();
+        }
+
         sendNextFrame();
     }
 
@@ -226,7 +198,6 @@ void TransportTransmitter::sendNextControlFrame()
     }
     auto data = gsl::make_span(control_frames_.front().buffer.begin(), control_frames_.front().buffer.end());
     datalink_transmitter_.send(data, on_success_slot_, on_failure_slot_);
-    control_frames_.pop_front();
     was_control_frame_transmission_ = true;
 }
 

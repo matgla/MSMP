@@ -67,6 +67,10 @@ TcpReader::TcpReader(boost::asio::io_service& io_service, uint16_t port, const O
     , on_data_(on_data)
     , connected_(false)
 {
+}
+
+void TcpReader::start()
+{
     doAccept();
 }
 

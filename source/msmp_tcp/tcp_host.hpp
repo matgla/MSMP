@@ -2,6 +2,8 @@
 
 #include <string_view>
 
+#include <boost/sml.hpp>
+
 #include <eul/time/i_time_provider.hpp>
 #include <eul/function.hpp>
 
@@ -11,6 +13,7 @@
 
 #include "msmp_tcp/tcp_writer.hpp"
 #include "msmp_tcp/tcp_reader.hpp"
+#include "msmp_tcp/tcp_host_sm.hpp"
 
 
 namespace msmp
@@ -40,7 +43,8 @@ private:
     std::string_view peer_address_;
     uint16_t peer_port_;
 
-    bool host_connected_;
+    boost::sml::sm<TcpHostSm> sm_;
+    TcpHostSm& sm_data_;
 };
 
 } // namespace msmp

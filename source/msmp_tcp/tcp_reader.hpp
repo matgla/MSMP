@@ -14,6 +14,7 @@ public:
 
     TcpReader(boost::asio::io_service& io_service, uint16_t port, const OnDataCallback& on_data);
 
+    void start();
     void doAccept();
     void doOnConnection(const std::function<void()>& on_connection);
     bool connected() const;
