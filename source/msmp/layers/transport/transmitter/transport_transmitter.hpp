@@ -49,10 +49,6 @@ public:
     bool confirmFrameTransmission(uint8_t transaction_id);
     void processFrameFailure(uint8_t transaction_id);
 private:
-    TransmissionStatus send(MessageType type, const StreamType& payload, const CallbackType& on_success, const CallbackType& on_failure);
-    void sendNextFrame();
-    void sendNextControlFrame();
-    void handleFailure();
 
     uint8_t transaction_id_counter_;
     eul::logger::logger logger_;
