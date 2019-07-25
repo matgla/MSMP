@@ -28,7 +28,8 @@ public:
     virtual void send(const StreamType& payload) = 0;
     virtual void send(const StreamType& payload, const TransmitterCallbackType& on_success,
         const TransmitterCallbackType& on_failure) = 0;
-    virtual void start() = 0;
+
+    virtual void reset() = 0;
 };
 
 } // namespace transceiver

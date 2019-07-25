@@ -26,6 +26,16 @@ void Host::connect()
     connection_.start();
 }
 
+void Host::disconnect()
+{
+    connection_.stop();
+}
+
+void Host::peerDisconnected()
+{
+    connection_.peerDisconnected();
+}
+
 layers::datalink::receiver::DataLinkReceiver& Host::getDataLinkReceiver()
 {
     return datalink_receiver_;

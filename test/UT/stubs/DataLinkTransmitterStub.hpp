@@ -5,6 +5,8 @@
 #include <functional>
 #include <vector>
 
+#include <eul/utils/unused.hpp>
+
 #include "msmp/layers/datalink/transmitter/i_datalink_transmitter.hpp"
 #include "msmp/layers/datalink/transmitter/datalink_transmitter_types.hpp"
 #include "msmp/transmission_status.hpp"
@@ -33,6 +35,16 @@ public:
         {
             emit_success();
         }
+    }
+
+    bool isIdle() const override
+    {
+        return true;
+    }
+
+    void doOnIdle(OnIdleSlot& on_idle) override
+    {
+        UNUSED(on_idle);
     }
 
     const std::vector<uint8_t>& get_buffer() const

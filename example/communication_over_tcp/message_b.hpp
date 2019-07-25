@@ -8,7 +8,7 @@
 
 struct MessageB
 {
-    constexpr static uint8_t id = 1;
+    constexpr static uint8_t id = 2;
 
     auto serialize() const
     {

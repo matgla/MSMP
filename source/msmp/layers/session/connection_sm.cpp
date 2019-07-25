@@ -2,6 +2,7 @@
 
 #include "msmp/configuration/configuration.hpp"
 #include "msmp/layers/transport/transceiver/transport_transceiver.hpp"
+#include "msmp/messages/session/disconnect.hpp"
 #include "msmp/messages/session/handshake.hpp"
 #include "msmp/version.hpp"
 
@@ -17,14 +18,13 @@ ConnectionSm::ConnectionSm(transport::transceiver::ITransportTransceiver& transp
     : logger_(logger_factory.create("ConnectionSm"))
     , transport_transceiver_(transport_transceiver)
     , name_(name)
-    , peer_connected_(false)
-    , connected_to_peer_(false)
 {
 
 }
 
 void ConnectionSm::sendHandshake()
 {
+    logger_.info() << "Sending handshake";
     auto handshake = messages::control::Handshake{
         .protocol_version_major = protocol_version_major,
         .protocol_version_minor = protocol_version_minor,
@@ -40,15 +40,7 @@ void ConnectionSm::sendHandshake()
 
     const auto serialized = handshake.serialize();
 
-    transport_transceiver_.send(gsl::make_span(serialized.begin(), serialized.end()), [this]{
-        connected_to_peer_ = true;
-        logger_.trace() << "Connected to peer";
-        if (peer_connected_ && on_connected_)
-        {
-            on_connected_();
-        }
-    },
-    []{});
+    transmit_.emit(gsl::make_span(serialized.begin(), serialized.end()));
 }
 
 void ConnectionSm::onConnected(const CallbackType& on_connected)
@@ -61,32 +53,35 @@ void ConnectionSm::onData(const OnDataCallbackType& callback)
     callback_ = callback;
 }
 
-void ConnectionSm::configureConnection(const PeerConnected& msg)
+void ConnectionSm::doOnTransmission(TransmitSlot& slot)
 {
-    logger_.info() << "Client connected: " << msg.name;
-    if (connected_to_peer_)
-    {
-        sendHandshake();
-    }
-    peer_connected_ = true;
-    if (on_connected_ && connected_to_peer_)
-    {
-        on_connected_();
-    }
+    transmit_.connect(slot);
 }
+
 
 void ConnectionSm::deconfigureConnection()
 {
-    // TODO: Send disconnection message
+    logger_.trace() << "Performing disconnection";
+
+    auto msg = messages::control::Disconnect{}.serialize();
+    transmit_.emit(gsl::make_span(msg.begin(), msg.end()));
+}
+
+void ConnectionSm::resetTransceiver()
+{
+    transport_transceiver_.reset();
 }
 
 void ConnectionSm::disconnectPeer()
 {
+    logger_.trace() << "Peer is disconnected";
     // TODO: Send disconnection message
 }
 
 void ConnectionSm::handleMessage(const MessageReceived& msg)
 {
+    logger_.trace() << "Received message";
+
     if (callback_)
     {
         callback_(msg.payload[1], msg.payload);
@@ -101,6 +96,15 @@ void ConnectionSm::sendMessage(const SendMessage& msg)
 void ConnectionSm::rejectMessage(const SendMessage& msg)
 {
     msg.on_failure();
+}
+
+void ConnectionSm::notify()
+{
+    logger_.info() << "Connection established";
+    if (on_connected_)
+    {
+        on_connected_();
+    }
 }
 
 } // namespace session

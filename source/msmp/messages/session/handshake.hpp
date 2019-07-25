@@ -1,10 +1,6 @@
 #pragma once
 
-#include <algorithm>
 #include <cstdint>
-#include <cstring>
-#include <iterator>
-#include <type_traits>
 
 #include <gsl/span>
 

@@ -32,15 +32,23 @@ void DataLinkTransmitterSm::doOnByteSent(OnByteSentSlot& slot)
     on_byte_sent_.connect(slot);
 }
 
+void DataLinkTransmitterSm::doOnIdle(OnIdleSlot& on_idle)
+{
+    on_idle_.connect(on_idle);
+}
+
 void DataLinkTransmitterSm::initialize()
 {
     buffer_.clear();
+    on_idle_.emit();
 }
 
 void DataLinkTransmitterSm::writeDataToBufferAndStart(const SendFrame& event)
 {
     logger_.trace() << "Storing data in buffer: " << eul::logger::hex << event.getData();
     std::copy(event.getData().begin(), event.getData().end(), std::back_inserter(buffer_));
+    on_success_.disconnect_all();
+    on_failure_.disconnect_all();
     on_success_.connect(event.onSuccess());
     on_failure_.connect(event.onFailure());
     sendByteAsync(static_cast<uint8_t>(ControlByte::StartFrame));
@@ -69,14 +77,12 @@ void DataLinkTransmitterSm::sendByte()
 void DataLinkTransmitterSm::sendByteAsync(uint8_t byte)
 {
     current_byte_ = byte;
-    // configuration::Configuration::execution_queue.push_front(lifetime_, [this]{
-    //     sendByte();
-    // });
     sendByte();
 }
 
 void DataLinkTransmitterSm::finishTransmission()
 {
+    logger_.trace() << "Finishing transmission";
     buffer_.clear();
     sendByteAsync(static_cast<uint8_t>(ControlByte::StartFrame));
     on_success_.emit();
@@ -97,8 +103,8 @@ void DataLinkTransmitterSm::sendNextByte()
 void DataLinkTransmitterSm::retryTransmission()
 {
     logger_.trace() << "Retransmission (" << retransmission_counter_ << ") of: " << eul::logger::hex << current_byte_;
-    sendByteAsync(current_byte_);
     ++retransmission_counter_;
+    sendByteAsync(current_byte_);
 }
 
 void DataLinkTransmitterSm::clearCounterAndSendNextByte()

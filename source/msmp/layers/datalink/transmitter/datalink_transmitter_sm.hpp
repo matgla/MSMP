@@ -26,6 +26,7 @@ class DataLinkTransmitterSm
 public:
     using OnSuccessSlot = OnSuccessSignal::slot_t;
     using OnFailureSlot = OnFailureSignal::slot_t;
+    using OnIdleSlot = OnIdleSignal::slot_t;
     using OnByteSentSlot = msmp::OnByteSentSlot;
     constexpr static uint8_t allowed_retransmissions = configuration::Configuration::max_retransmission_tries;
 public:
@@ -68,6 +69,7 @@ public:
     }
 
     void doOnByteSent(OnByteSentSlot& slot);
+    void doOnIdle(OnIdleSlot& on_idle);
 
 private:
     void initialize();
@@ -90,6 +92,7 @@ private:
     OnSuccessSignal on_success_;
     OnFailureSignal on_failure_;
     OnSuccessSignal on_byte_sent_;
+    OnIdleSignal on_idle_;
     uint8_t current_byte_;
     configuration::Configuration::LifetimeType lifetime_;
     uint8_t retransmission_counter_;

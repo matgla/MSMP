@@ -25,15 +25,6 @@ void MessageBroker::addHandler(MessageHandler& handler)
     handlers_.push_back(handler.getObservingNode());
 }
 
-void MessageBroker::publish(const StreamType& payload, const CallbackType& on_success, const CallbackType& on_failure)
-{
-    for (auto& connection : connections_)
-    {
-        logger_.trace() << "Publishing message: " << eul::logger::hex << payload;
-        (*connection)->send(payload, on_success, on_failure);
-    }
-}
-
 void MessageBroker::handle(uint8_t id, const StreamType& payload)
 {
     for (auto& handler : handlers_)

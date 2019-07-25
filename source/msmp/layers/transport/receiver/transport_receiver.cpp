@@ -111,6 +111,14 @@ bool TransportReceiver::validateCrc(const StreamType& payload) const
     return true;
 }
 
+void TransportReceiver::reset()
+{
+    while (frames_.size())
+    {
+        frames_.pop();
+    }
+}
+
 } // namespace msmp
 } // namespace receiver
 } // namespace transport

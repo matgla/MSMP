@@ -9,7 +9,6 @@ target_sources(msmp_tests
         # CPP
         layers/session/ConnectionTests.cpp
         broker/MessageBrokerTests.cpp
-        ConnectionTests.cpp
         PayloadReceiverTests.cpp
         PayloadTransmitterTests.cpp
         main.cpp

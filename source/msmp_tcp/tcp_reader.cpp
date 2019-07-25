@@ -45,7 +45,6 @@ private:
             }
             else
             {
-                std::cerr << "Client disconected" << std::endl;
                 if (on_disconnection_)
                 {
                     on_disconnection_();
@@ -79,6 +78,12 @@ void TcpReader::doOnConnection(const std::function<void()>& on_connection)
     on_connection_ = on_connection;
 }
 
+void TcpReader::doOnDisconnection(const std::function<void()>& callback)
+{
+    on_disconnection_ = callback;
+}
+
+
 void TcpReader::doAccept()
 {
     acceptor_.async_accept(socket_, [this](boost::system::error_code ec) {
@@ -89,12 +94,14 @@ void TcpReader::doAccept()
                 return;
             }
 
-
             std::make_shared<Session>(std::move(socket_), on_data_, [this]{
                 connected_ = false;
-                doAccept();
+                if (on_disconnection_)
+                {
+                    on_disconnection_();
+                }
             })->start();
-            std::cerr << "HMMMM" << std::endl;
+
             connected_ = true;
 
             if (on_connection_)

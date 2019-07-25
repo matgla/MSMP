@@ -17,6 +17,7 @@ public:
     void start();
     void doAccept();
     void doOnConnection(const std::function<void()>& on_connection);
+    void doOnDisconnection(const std::function<void()>& callback);
     bool connected() const;
 private:
     boost::asio::io_service& io_service_;
@@ -24,6 +25,7 @@ private:
     boost::asio::ip::tcp::socket socket_;
     OnDataCallback on_data_;
     std::function<void()> on_connection_;
+    std::function<void()> on_disconnection_;
     bool connected_;
 };
 

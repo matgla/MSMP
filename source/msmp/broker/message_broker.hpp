@@ -21,7 +21,23 @@ public:
 
     void addConnection(layers::session::Connection& connection);
     void addHandler(MessageHandler& handler);
-    void publish(const StreamType& payload, const CallbackType& on_success = []{}, const CallbackType& on_failure = []{});
+
+    template <typename T>
+    void publish(const gsl::span<T>& payload, const CallbackType& on_success = []{}, const CallbackType& on_failure = []{})
+    {
+        for (auto& connection : connections_)
+        {
+            logger_.trace() << "Publishing message: " << eul::logger::hex << payload;
+            (*connection)->send(payload, on_success, on_failure);
+        }
+    }
+
+    template <typename T>
+    void publish(const T& msg, const CallbackType& on_success = []{}, const CallbackType& on_failure = []{})
+    {
+        auto payload = msg.serialize();
+        publish(gsl::make_span(payload.begin(), payload.end()), on_success, on_failure);
+    }
 
 private:
     void handle(uint8_t id, const StreamType& payload);

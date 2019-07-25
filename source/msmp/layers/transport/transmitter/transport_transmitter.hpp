@@ -40,7 +40,7 @@ class TransportTransmitter
 {
 public:
     using CallbackType = eul::function<void(), sizeof(void*)>;
-    TransportTransmitter(eul::logger::logger_factory& logger_factory, datalink::transmitter::IDataLinkTransmitter& datalink_transmitter, const eul::time::i_time_provider& time_provider, std::string_view prefix = "");
+    TransportTransmitter(eul::logger::logger_factory& logger_factory, datalink::transmitter::IDataLinkTransmitter& datalink_transmitter, eul::time::i_time_provider& time_provider, std::string_view prefix = "");
 
     TransmissionStatus sendControl(const StreamType& payload, const CallbackType& on_success = dummy, const CallbackType& on_failure = dummy);
     TransmissionStatus sendControlAsap(const StreamType& payload, const CallbackType& on_success = dummy, const CallbackType& on_failure = dummy);
@@ -48,43 +48,27 @@ public:
 
     bool confirmFrameTransmission(uint8_t transaction_id);
     void processFrameFailure(uint8_t transaction_id);
+    void reset();
 private:
 
-    uint8_t transaction_id_counter_;
     eul::logger::logger logger_;
     datalink::transmitter::IDataLinkTransmitter& datalink_transmitter_;
-    std::size_t current_byte_;
-    using FrameBuffer = eul::container::static_vector<uint8_t, configuration::Configuration::max_payload_size>;
-    using ControlFrameBuffer = eul::container::static_vector<uint8_t, configuration::Configuration::max_control_message_size>;
+    datalink::transmitter::IDataLinkTransmitter::OnSuccessSlot on_frame_success_slot_;
+    datalink::transmitter::IDataLinkTransmitter::OnSuccessSlot on_control_success_slot_;
+    datalink::transmitter::IDataLinkTransmitter::OnFailureSlot on_frame_failure_slot_;
+    datalink::transmitter::IDataLinkTransmitter::OnFailureSlot on_control_failure_slot_;
+    datalink::transmitter::IDataLinkTransmitter::OnIdleSlot on_idle_slot_;
 
-    template <typename Buffer>
-    struct FrameBase
-    {
-        Buffer buffer;
-        CallbackType on_success;
-        CallbackType on_failure;
-        uint8_t transaction_id;
-        MessageType type;
-    };
-
-    using Frame = FrameBase<FrameBuffer>;
-    using ControlFrame = FrameBase<ControlFrameBuffer>;
-
-    eul::container::static_deque<Frame, configuration::Configuration::tx_buffer_frames_size> frames_;
-    eul::container::static_deque<ControlFrame, configuration::Configuration::tx_buffer_frames_size> control_frames_;
-    typename configuration::Configuration::LifetimeType lifetime_;
-    uint8_t retransmission_counter_;
-    eul::timer::timeout_timer timer_;
-    datalink::transmitter::IDataLinkTransmitter::OnSuccessSlot on_success_slot_;
-    datalink::transmitter::IDataLinkTransmitter::OnFailureSlot on_failure_slot_;
-    bool was_control_frame_transmission_;
-
-    boost::sml::sm<TransportTransmitterSm> sm_;
-    TransportTransmitterSm& sm_data_;
-    TransportTransmitterSm::OnDataSlot on_data_slot_;
+    std::optional<boost::sml::sm<TransportTransmitterSm>> control_frames_sm_;
+    TransportTransmitterSm* control_frames_sm_data_;
+    std::optional<boost::sml::sm<TransportTransmitterSm>> frames_sm_;
+    TransportTransmitterSm* frames_sm_data_;
+    TransportTransmitterSm::OnDataSlot on_control_data_slot_;
+    TransportTransmitterSm::OnDataSlot on_frame_data_slot_;
+    eul::time::i_time_provider& time_provider_;
 };
 
-} // namespace msmp
 } // namespace transmitter
 } // namespace transport
 } // namespace layers
+} // namespace msmp

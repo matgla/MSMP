@@ -22,7 +22,22 @@ struct PeerConnected
     std::string_view name;
 };
 
+struct Success
+{
+
+};
+
+struct Failure
+{
+
+};
+
 class PeerDisconnected
+{
+
+};
+
+class PeerUnexpectedlyDisconnected
 {
 
 };

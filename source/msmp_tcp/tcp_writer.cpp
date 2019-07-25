@@ -8,18 +8,26 @@
 namespace msmp
 {
 
-TcpWriter::TcpWriter(boost::asio::io_service& io_service)
+TcpWriter::TcpWriter(boost::asio::io_service& io_service,
+    const std::function<void()>& on_connected,
+    const std::function<void()>& on_disconnected)
     : io_service_(io_service)
     , socket_(io_service_)
     , connected_(false)
+    , on_connected_(on_connected)
+    , on_disconnected_(on_disconnected)
 {
 }
 
-void TcpWriter::connect(std::string_view address, uint16_t port, const std::function<void()>& on_connected)
+void TcpWriter::connect(std::string_view address, uint16_t port)
 {
-    on_connected_ = on_connected;
     auto endpoints = boost::asio::ip::tcp::resolver(io_service_).resolve({std::string(address), std::to_string(port)});
     performConnection(endpoints);
+}
+
+void TcpWriter::disconnect()
+{
+    connected_ = false;
 }
 
 
@@ -31,6 +39,14 @@ void TcpWriter::performConnection(const boost::asio::ip::tcp::resolver::iterator
         {
             if (ec)
             {
+                if (connected_)
+                {
+                    connected_ = false;
+                    if (on_disconnected_)
+                    {
+                        on_disconnected_();
+                    }
+                }
                 io_service_.post([this, endpoints] {
                     performConnection(endpoints);
                 });

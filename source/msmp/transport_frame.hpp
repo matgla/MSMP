@@ -20,11 +20,9 @@ enum class TransportFrameType : uint8_t
     Control
 };
 
-
-template <typename Configuration>
 struct TransportFrame
 {
-    TransportFrameBuffer<Configuration> buffer;
+    TransportFrameBuffer buffer;
     uint8_t transaction_id;
     TransportFrameStatus status;
     TransportFrameType type;

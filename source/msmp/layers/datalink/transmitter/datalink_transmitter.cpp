@@ -75,6 +75,17 @@ void DataLinkTransmitter::onByteSent()
     }, configuration::Configuration::timeout_for_byte_transmission);
 }
 
+void DataLinkTransmitter::doOnIdle(OnIdleSlot& slot)
+{
+    sm_data_.doOnIdle(slot);
+}
+
+bool DataLinkTransmitter::isIdle() const
+{
+    return sm_.is(boost::sml::state<Idle>);
+}
+
+
 } // namespace transmitter
 } // namespace datalink
 } // namespace layers

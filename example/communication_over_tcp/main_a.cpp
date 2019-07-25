@@ -26,12 +26,12 @@ int main()
 
     broker.addConnection(host.getConnection());
     MessageAHandler handler_a(broker);
-    MessageBHandler handler_b;
+    MessageBHandler handler_b(broker);
     broker.addHandler(handler_a);
     broker.addHandler(handler_b);
 
     host.onConnected([]{
-        std::cerr << "Peer connected!" << std::endl;
+        std::cout << "Peer connected!" << std::endl;
     });
 
     host.start();

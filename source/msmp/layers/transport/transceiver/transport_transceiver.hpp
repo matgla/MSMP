@@ -37,7 +37,8 @@ public:
     void send(const StreamType& payload) override;
     void send(const StreamType& payload, const TransmitterCallbackType& on_success,
         const TransmitterCallbackType& on_failure) override;
-    void start();
+    void reset() override;
+
 private:
     void receiveControl(const Frame& frame);
     void receiveData(const Frame& frame);

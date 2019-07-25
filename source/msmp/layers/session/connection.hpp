@@ -29,6 +29,7 @@ public:
     void start();
     void stop();
     void handlePeerConnected();
+    void peerDisconnected();
     void onData(const OnDataCallbackType& callback);
 
     void send(const StreamType& msg, const CallbackType& on_success, const CallbackType& on_failure);
@@ -42,6 +43,7 @@ private:
     eul::logger::logger logger_;
     ConnectionSm& sm_data_;
     ObservingNodeType observing_node_;
+    TransmitSlot transmit_slot_;
 };
 
 } // namespace session

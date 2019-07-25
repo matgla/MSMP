@@ -67,6 +67,9 @@ public:
         connection2_ = std::make_unique<layers::session::Connection>(
             transport_transceiver2_, logger_factory_, "Connection2");
 
+        connection1_->start();
+        connection2_->start();
+
         const auto handshake = createHandshake("Connection1");
         const auto serialized_handshake = handshake.serialize();
         const auto handshake_span = gsl::make_span(serialized_handshake.begin(), serialized_handshake.end());

@@ -24,6 +24,8 @@ class TcpHost
 public:
     using CallbackType = Host::CallbackType;
 
+    ~TcpHost();
+
     TcpHost(std::string_view name, uint16_t host_port,
         std::string_view peer_address, uint16_t peer_port);
 
@@ -32,6 +34,7 @@ public:
         std::string_view peer_address, uint16_t peer_port);
 
     void start();
+
     layers::session::Connection& getConnection();
     void onConnected(const CallbackType& callback);
 private:

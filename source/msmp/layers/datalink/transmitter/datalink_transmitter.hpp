@@ -40,9 +40,10 @@ public:
     DataLinkTransmitter(eul::logger::logger_factory& logger_factory, physical::IDataWriter& writer,
         eul::timer::timer_manager& timer_manager, eul::time::i_time_provider& time_provider, std::string_view prefix = "");
 
-    void send(const StreamType& bytes, OnSuccessSlot& on_success, OnFailureSlot& on_failure);
-    void send(const StreamType& bytes);
-
+    void send(const StreamType& bytes, OnSuccessSlot& on_success, OnFailureSlot& on_failure) override;
+    void send(const StreamType& bytes) override;
+    void doOnIdle(OnIdleSlot& on_idle) override;
+    bool isIdle() const override;
 private:
     void onWriterSuccess();
     void onWriterFailure();

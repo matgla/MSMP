@@ -28,7 +28,9 @@ TransportTransceiver::TransportTransceiver(eul::logger::logger_factory& logger_f
 
     on_data_slot_ = [this](const Frame& frame)
     {
+        logger_.trace() << "Responding ACK";
         respondAck(frame);
+        logger_.trace() << "Calling callback";
         receiveData(frame);
     };
     transport_receiver_.doOnDataFrame(on_data_slot_);
@@ -82,19 +84,11 @@ void TransportTransceiver::onData(const CallbackType& callback)
 void TransportTransceiver::send(const StreamType& payload)
 {
     transport_transmitter_.send(payload);
-    if (started_)
-    {
-        configuration::Configuration::execution_queue.run();
-    }
 }
 
 void TransportTransceiver::send(const StreamType& payload, const TransmitterCallbackType& on_success, const TransmitterCallbackType& on_failure)
 {
     transport_transmitter_.send(payload, on_success, on_failure);
-    if (started_)
-    {
-        configuration::Configuration::execution_queue.run();
-    }
 }
 
 void TransportTransceiver::receiveControl(const Frame& frame)
@@ -133,10 +127,14 @@ void TransportTransceiver::receiveData(const Frame& frame)
     }
 }
 
-void TransportTransceiver::start()
+void TransportTransceiver::reset()
 {
-    started_ = true;
-    configuration::Configuration::execution_queue.run();
+    transport_receiver_.reset();
+    transport_transmitter_.reset();
+
+    transport_receiver_.doOnControlFrame(on_control_slot_);
+    transport_receiver_.doOnDataFrame(on_data_slot_);
+    transport_receiver_.doOnFailure(on_failure_slot_);
 }
 
 } // namespace transceiver

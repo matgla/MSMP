@@ -4,8 +4,15 @@ add_library(${library_name} STATIC)
 
 target_sources(${library_name}
     PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/transport_transmitter_events.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/transport_transmitter_guards.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/transport_transmitter_sm.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/transport_transmitter_states.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/transport_transmitter_types.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/transport_transmitter.hpp
     PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/transport_transmitter_guards.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/transport_transmitter_sm.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/transport_transmitter.cpp
 )
 

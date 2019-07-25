@@ -107,9 +107,8 @@ TEST_F(DataLinkTransmitterShould, StuffBytes)
         static_cast<uint8_t>(ControlByte::StartFrame)}));
 
     const uint8_t bytes[] = {byte1};
-    sut.send(bytes);
     writer_.clear();
-    configuration::Configuration::execution_queue.run();
+    sut.send(bytes);
 
     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray(
     {
@@ -160,11 +159,11 @@ TEST_F(DataLinkTransmitterShould, ReportWriterFailure)
     DataLinkTransmitter::OnSuccessSlot success_slot([&success]{
         success = true;
     });
-    sut.send(std::vector<uint8_t>{byte1, byte2}, success_slot, failure_slot);
+
     EXPECT_FALSE(failed);
     EXPECT_FALSE(success);
 
-    configuration::Configuration::execution_queue.run();
+    sut.send(std::vector<uint8_t>{byte1, byte2}, success_slot, failure_slot);
 
     EXPECT_TRUE(failed);
     EXPECT_FALSE(success);
@@ -188,11 +187,9 @@ TEST_F(DataLinkTransmitterShould, NotifySuccess)
     });
 
     const uint8_t data[] = {0x1};
-    sut.send(data, success_slot, failure_slot);
+
     EXPECT_FALSE(success);
-
-    configuration::Configuration::execution_queue.run();
-
+    sut.send(data, success_slot, failure_slot);
     EXPECT_TRUE(success);
 }
 
@@ -216,7 +213,6 @@ TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterTimeout)
     EXPECT_FALSE(success);
     writer_.disable_responses();
 
-    configuration::Configuration::execution_queue.run();
     timer_manager_.run();
     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray(
     {
@@ -285,11 +281,10 @@ TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterFail)
     });
 
     const uint8_t data[] = {0x01};
-    sut.send(data, success_slot, failure_slot);
     EXPECT_FALSE(success);
-    writer_.fail_transmissions(2);
 
-    configuration::Configuration::execution_queue.run();
+    writer_.fail_transmissions(2);
+    sut.send(data, success_slot, failure_slot);
 
     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray(
     {

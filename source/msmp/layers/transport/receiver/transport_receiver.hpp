@@ -32,7 +32,7 @@ namespace receiver
 class TransportReceiver
 {
 public:
-    using Frame = TransportFrame<configuration::Configuration>;
+    using Frame = TransportFrame;
 private:
     using OnDataFrameSignal = eul::signals::signal<void(const Frame&)>;
     using OnControlFrameSignal = eul::signals::signal<void(const Frame&)>;
@@ -47,6 +47,7 @@ public:
     void doOnDataFrame(OnDataFrameSlot& slot);
     void doOnControlFrame(OnControlFrameSlot& slot);
     void doOnFailure(OnFailureSlot& slot);
+    void reset();
 
 protected:
     void receiveFrame(const gsl::span<const uint8_t>& payload);

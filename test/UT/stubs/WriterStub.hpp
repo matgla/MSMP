@@ -38,8 +38,8 @@ struct WriterStub : public msmp::layers::physical::DataWriterBase
 
         if (number_bytes_to_fail_)
         {
-            on_failure_.emit();
             --number_bytes_to_fail_;
+            on_failure_.emit();
             return;
         }
 

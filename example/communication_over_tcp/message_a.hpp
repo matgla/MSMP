@@ -24,7 +24,7 @@ struct MessageA
         MessageA msg{};
         msmp::serializer::UserMessageDeserializer<> reader(payload);
         reader.drop_u8();
-        msg.value = reader.decompose_u32();
+        reader.decompose(msg.value);
         msg.name = reader.decompose_string();
         return msg;
     }

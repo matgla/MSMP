@@ -13,8 +13,10 @@ enum class ControlMessages : uint8_t
 {
     Ack,
     Nack,
-    Handshake
+    Handshake,
+    Disconnect
 };
+
 }
 } // namespace messages
 } // namespace msmp

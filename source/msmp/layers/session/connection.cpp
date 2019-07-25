@@ -3,6 +3,7 @@
 #include "msmp/layers/transport/transceiver/i_transport_transceiver.hpp"
 #include "msmp/layers/session/message_type.hpp"
 
+#include "msmp/messages/session/disconnect.hpp"
 #include "msmp/messages/session/handshake.hpp"
 
 namespace msmp
@@ -20,27 +21,43 @@ Connection::Connection(transport::transceiver::ITransportTransceiver& transport_
     , sm_data_(sm_)
     , observing_node_(this)
 {
-    transport_transceiver_.onData([this](const StreamType& data)
+    transmit_slot_ = [this](const StreamType& data)
     {
-        handle(data);
-    });
+        transport_transceiver_.send(data, [this]{
+            sm_.process_event(Success{});
+        }, [this] {
+            sm_.process_event(Failure{});
+        });
+    };
+
+    sm_data_.doOnTransmission(transmit_slot_);
 }
 
 void Connection::start()
 {
     logger_.info() << "Trying to connect";
-    transport_transceiver_.start();
+
+    transport_transceiver_.onData([this](const StreamType& data)
+    {
+        handle(data);
+    });
+
     sm_.process_event(Connect{});
 }
 
 void Connection::stop()
 {
-
+    sm_.process_event(Disconnect{});
 }
 
 void Connection::handlePeerConnected()
 {
 
+}
+
+void Connection::peerDisconnected()
+{
+    sm_.process_event(PeerUnexpectedlyDisconnected{});
 }
 
 void Connection::onData(const OnDataCallbackType& callback)
@@ -61,6 +78,13 @@ void Connection::handle(const StreamType& payload)
         {
             auto msg = messages::control::Handshake::deserialize(payload);
             sm_.process_event(PeerConnected{msg.name});
+            return;
+        }
+
+        if (payload[1] == messages::control::Disconnect::id)
+        {
+            sm_.process_event(PeerDisconnected{});
+            return;
         }
 
         return;

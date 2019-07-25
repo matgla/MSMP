@@ -11,6 +11,8 @@ namespace session
 
 class Idle;
 class Connected;
+class PeerIsConnected;
+class ConnectedToPeer;
 
 } // namespace session
 } // namespace layers

@@ -30,10 +30,11 @@ public:
     layers::session::Connection& getConnection();
 
     void connect();
+    void disconnect();
     layers::datalink::receiver::DataLinkReceiver& getDataLinkReceiver();
 
     void onConnected(const CallbackType& callback);
-
+    void peerDisconnected();
 private:
     eul::logger::logger_factory logger_factory_;
 
