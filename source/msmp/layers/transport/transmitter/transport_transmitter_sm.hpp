@@ -60,8 +60,8 @@ public:
             , state<WaitingForResponse>        + event<Success>  [     !(IsNextTransmissionAllowed(transmitter_, frames_, retransmission_counter_)) && ReceivedValidAck(frames_)  ] / call(this, &TransportTransmitterSm::clearCounterAndRemoveLast)           = state<Idle>
             , state<WaitingForResponse>        + event<Success>  [     !(IsNextTransmissionAllowed(transmitter_, frames_, retransmission_counter_)) && !ReceivedValidAck(frames_)  ]            = state<WaitingForResponse>
 
-            , state<WaitingForResponse>        + event<Failure>  [     !(IsTransmissionAllowed(transmitter_, frames_, retransmission_counter_))      ] / call(this, &TransportTransmitterSm::transmit)        = state<WaitingForResponse>
-            , state<WaitingForResponse>        + event<Failure>  [      (IsTransmissionAllowed(transmitter_, frames_, retransmission_counter_))      ] / call(this, &TransportTransmitterSm::handleFailure)          = state<Idle>
+            , state<WaitingForResponse>        + event<Failure>  [     (IsTransmissionAllowed(transmitter_, frames_, retransmission_counter_))      ] / call(this, &TransportTransmitterSm::transmit)        = state<WaitingForResponse>
+            , state<WaitingForResponse>        + event<Failure>  [      !(IsTransmissionAllowed(transmitter_, frames_, retransmission_counter_))      ] / call(this, &TransportTransmitterSm::handleFailure)          = state<Idle>
         );
 
     }

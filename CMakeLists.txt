@@ -10,6 +10,16 @@ target_include_directories(msmp INTERFACE "${PROJECT_SOURCE_DIR}/source")
 add_subdirectory(lib)
 add_subdirectory(source/msmp)
 
+if (ASAN_ENABLED)
+    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+    set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+endif ()
+
+if (LSAN_ENABLED)
+    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=leak")
+    set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=leak")
+endif ()
+
 if (BUILD_EXAMPLES)
     message(STATUS "Building examples")
 

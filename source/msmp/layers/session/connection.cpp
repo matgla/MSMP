@@ -30,6 +30,11 @@ Connection::Connection(transport::transceiver::ITransportTransceiver& transport_
         });
     };
 
+    transport_transceiver_.onData([this](const StreamType& data)
+    {
+        handle(data);
+    });
+
     sm_data_.doOnTransmission(transmit_slot_);
 }
 

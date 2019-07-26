@@ -56,10 +56,18 @@ public:
         : logger_factory_(time_)
     {
         EXPECT_CALL(transport_transceiver1_, onData(::testing::_))
-            .WillOnce(::testing::SaveArg<0>(&on_data1_));
+            .WillRepeatedly(::testing::SaveArg<0>(&on_data1_));
 
         EXPECT_CALL(transport_transceiver2_, onData(::testing::_))
-            .WillOnce(::testing::SaveArg<0>(&on_data2_));
+            .WillRepeatedly(::testing::SaveArg<0>(&on_data2_));
+
+        layers::transport::transmitter::TransportTransmitter::CallbackType on_success_1;
+        layers::transport::transmitter::TransportTransmitter::CallbackType on_success_2;
+        EXPECT_CALL(transport_transceiver1_, send(::testing::_, ::testing::_, ::testing::_))
+            .WillOnce(::testing::SaveArg<1>(&on_success_1));
+
+        EXPECT_CALL(transport_transceiver2_, send(::testing::_, ::testing::_, ::testing::_))
+            .WillOnce(::testing::SaveArg<1>(&on_success_2));
 
         connection1_ = std::make_unique<layers::session::Connection>(
             transport_transceiver1_, logger_factory_, "Connection1");
@@ -70,14 +78,13 @@ public:
         connection1_->start();
         connection2_->start();
 
+        on_success_1();
+        on_success_2();
+
         const auto handshake = createHandshake("Connection1");
         const auto serialized_handshake = handshake.serialize();
         const auto handshake_span = gsl::make_span(serialized_handshake.begin(), serialized_handshake.end());
-        EXPECT_CALL(transport_transceiver1_, send(::testing::_))
-            .Times(1);
 
-        EXPECT_CALL(transport_transceiver2_, send(::testing::_))
-            .Times(1);
         on_data1_(handshake_span);
         on_data2_(handshake_span);
     }

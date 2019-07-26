@@ -42,24 +42,21 @@ TEST_F(TransportTransmitterTests, SendPayload)
     std::vector<uint8_t> control_data {0xd, 0x0, 0xd, 0xa};
     sut.sendControl(control_data);
 
-    configuration::Configuration::execution_queue.run();
-
     EXPECT_THAT(datalink_transmitter_.get_buffer(),
         ::testing::ElementsAreArray({
-            static_cast<int>(MessageType::Control),
-            3,
-            0xd, 0x0, 0xd, 0xa,
-            0x9a, 0x2f, 0x47, 0x58,
             static_cast<int>(MessageType::Data),
             1, // transaction id
             1, 2, 3, 4, // data
             0x56, 0x12, 0x0d, 0xc9, // crc
+            static_cast<int>(MessageType::Control),
+            1,
+            0xd, 0x0, 0xd, 0xa,
+            0xe0, 0xef, 0x14, 0x38,
         })
     );
 
     datalink_transmitter_.clear_buffer();
     sut.confirmFrameTransmission(1);
-    configuration::Configuration::execution_queue.run();
 
     EXPECT_THAT(datalink_transmitter_.get_buffer(),
         ::testing::ElementsAreArray({

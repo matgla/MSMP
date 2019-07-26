@@ -193,77 +193,77 @@ TEST_F(DataLinkTransmitterShould, NotifySuccess)
     EXPECT_TRUE(success);
 }
 
-TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterTimeout)
-{
-    DataLinkTransmitter sut(logger_factory_, writer_, timer_manager_, time_);
+// TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterTimeout)
+// {
+//     DataLinkTransmitter sut(logger_factory_, writer_, timer_manager_, time_);
 
-    bool failure;
-    DataLinkTransmitter::OnFailureSlot failure_slot([&failure](TransmissionStatus status) {
-        UNUSED(status);
-        failure = true;
-    });
+//     bool failure;
+//     DataLinkTransmitter::OnFailureSlot failure_slot([&failure](TransmissionStatus status) {
+//         UNUSED(status);
+//         failure = true;
+//     });
 
-    bool success;
-    DataLinkTransmitter::OnSuccessSlot success_slot([&success]{
-        success = true;
-    });
+//     bool success;
+//     DataLinkTransmitter::OnSuccessSlot success_slot([&success]{
+//         success = true;
+//     });
 
-    const uint8_t data[] = {0x1};
-    sut.send(data, success_slot, failure_slot);
-    EXPECT_FALSE(success);
-    writer_.disable_responses();
+//     const uint8_t data[] = {0x1};
+//     sut.send(data, success_slot, failure_slot);
+//     EXPECT_FALSE(success);
+//     writer_.disable_responses();
 
-    timer_manager_.run();
-    EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray(
-    {
-        static_cast<int>(ControlByte::StartFrame)
-    }));
+//     timer_manager_.run();
+//     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray(
+//     {
+//         static_cast<int>(ControlByte::StartFrame)
+//     }));
 
-    time_ += std::chrono::milliseconds(501);
-    timer_manager_.run();
-    configuration::Configuration::execution_queue.run();
+//     time_ += std::chrono::milliseconds(501);
+//     timer_manager_.run();
+//     configuration::Configuration::execution_queue.run();
 
-    EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
-        static_cast<int>(ControlByte::StartFrame),
-        static_cast<int>(ControlByte::StartFrame)
-    }));
+//     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
+//         static_cast<int>(ControlByte::StartFrame),
+//         static_cast<int>(ControlByte::StartFrame)
+//     }));
 
-    time_ += std::chrono::milliseconds(501);
-    timer_manager_.run();
-    configuration::Configuration::execution_queue.run();
+//     time_ += std::chrono::milliseconds(501);
+//     timer_manager_.run();
+//     configuration::Configuration::execution_queue.run();
 
-    EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
-        static_cast<int>(ControlByte::StartFrame),
-        static_cast<int>(ControlByte::StartFrame),
-        static_cast<int>(ControlByte::StartFrame)
-    }));
+//     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
+//         static_cast<int>(ControlByte::StartFrame),
+//         static_cast<int>(ControlByte::StartFrame),
+//         static_cast<int>(ControlByte::StartFrame)
+//     }));
 
-    time_ += std::chrono::milliseconds(501);
-    timer_manager_.run();
-    configuration::Configuration::execution_queue.run();
+//     time_ += std::chrono::milliseconds(501);
+//     timer_manager_.run();
+//     configuration::Configuration::execution_queue.run();
 
-    EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
-        static_cast<int>(ControlByte::StartFrame),
-        static_cast<int>(ControlByte::StartFrame),
-        static_cast<int>(ControlByte::StartFrame),
-        static_cast<int>(ControlByte::StartFrame)
-    }));
-    EXPECT_FALSE(failure);
+//     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
+//         static_cast<int>(ControlByte::StartFrame),
+//         static_cast<int>(ControlByte::StartFrame),
+//         static_cast<int>(ControlByte::StartFrame),
+//         static_cast<int>(ControlByte::StartFrame)
+//     }));
+//     EXPECT_FALSE(failure);
 
-    time_ += std::chrono::milliseconds(501);
-    timer_manager_.run();
-    configuration::Configuration::execution_queue.run();
+//     time_ += std::chrono::milliseconds(501);
+//     timer_manager_.run();
+//     configuration::Configuration::execution_queue.run();
 
-    EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
-        static_cast<int>(ControlByte::StartFrame),
-        static_cast<int>(ControlByte::StartFrame),
-        static_cast<int>(ControlByte::StartFrame),
-        static_cast<int>(ControlByte::StartFrame)
-    }));
+//     EXPECT_THAT(writer_.get_buffer(), ::testing::ElementsAreArray({
+//         static_cast<int>(ControlByte::StartFrame),
+//         static_cast<int>(ControlByte::StartFrame),
+//         static_cast<int>(ControlByte::StartFrame),
+//         static_cast<int>(ControlByte::StartFrame)
+//     }));
 
-    EXPECT_FALSE(success);
-    EXPECT_TRUE(failure);
-}
+//     EXPECT_FALSE(success);
+//     EXPECT_TRUE(failure);
+// }
 
 TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterFail)
 {
