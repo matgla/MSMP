@@ -33,8 +33,8 @@ struct Nack
         message.drop_u8();
 
         return Nack{
-            .transaction_id = message.decompose_u8(),
-            .reason         = static_cast<Reason>(message.decompose_u8())
+            message.decompose_u8(),
+            static_cast<Reason>(message.decompose_u8())
         };
     }
 

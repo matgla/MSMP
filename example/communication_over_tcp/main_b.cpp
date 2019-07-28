@@ -24,7 +24,7 @@ int main()
     eul::logger::logger_factory lf(time);
     msmp::broker::MessageBroker broker(lf);
     broker.addConnection(host.getConnection());
-    MessageBHandler handler_b(broker);
+    MessageBHandler handler_b;
     MessageAHandler handler_a(broker);
     broker.addHandler(handler_b);
     broker.addHandler(handler_a);

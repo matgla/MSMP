@@ -26,7 +26,7 @@ int main()
 
     broker.addConnection(host.getConnection());
     MessageAHandler handler_a(broker);
-    MessageBHandler handler_b(broker);
+    MessageBHandler handler_b;
     broker.addHandler(handler_a);
     broker.addHandler(handler_b);
 

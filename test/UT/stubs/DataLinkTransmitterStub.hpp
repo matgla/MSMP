@@ -21,14 +21,15 @@ namespace stubs
 class DataLinkTransmitterStub : public layers::datalink::transmitter::IDataLinkTransmitter
 {
 public:
-    virtual void send(const StreamType& bytes, OnSuccessSlot& on_success, OnFailureSlot& on_failure)
+    void send(const StreamType& bytes, OnSuccessSlot& on_success, OnFailureSlot& on_failure) override
     {
         send(bytes);
 
         on_success_.connect(on_success);
         on_failure_.connect(on_failure);
     }
-    virtual void send(const StreamType& bytes)
+
+    void send(const StreamType& bytes) override
     {
         std::copy(bytes.begin(), bytes.end(), std::back_inserter(buffer_));
         if (auto_emit_)
@@ -44,7 +45,7 @@ public:
 
     void doOnIdle(OnIdleSlot& on_idle) override
     {
-        UNUSED(on_idle);
+        UNUSED1(on_idle);
     }
 
     const std::vector<uint8_t>& get_buffer() const

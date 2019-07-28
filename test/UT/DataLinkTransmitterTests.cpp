@@ -269,9 +269,9 @@ TEST_F(DataLinkTransmitterShould, RetryTransmissionAfterFail)
 {
     DataLinkTransmitter sut(logger_factory_, writer_, timer_manager_, time_);
 
-    bool failure;
+    bool failure = false;
     DataLinkTransmitter::OnFailureSlot failure_slot([&failure](TransmissionStatus status) {
-        UNUSED(status);
+        UNUSED1(status);
         failure = true;
     });
 

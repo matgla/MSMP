@@ -52,7 +52,6 @@ private:
     receiver::TransportReceiver::OnFailureSlot on_failure_slot_;
 
     CallbackType on_data_;
-    bool started_;
 };
 
 } // namespace transceiver

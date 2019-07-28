@@ -257,9 +257,9 @@ TEST(PointToPointTests, communication)
 
     host_a.onConnected([&broker]{
         auto msg_a = MessageA{
-            .a = 15,
-            .b = "TestMessage",
-            .c = 'd'
+            15,
+            "TestMessage",
+            'd'
         }.serialize();
 
         broker.broker.publish(gsl::make_span(msg_a.begin(), msg_a.end()), [&broker]{
@@ -273,9 +273,9 @@ TEST(PointToPointTests, communication)
     host_a.connect();
 
     auto expected_message = MessageA{
-        .a = 15,
-        .b = "TestMessage",
-        .c = 'd'
+        15,
+        "TestMessage",
+        'd'
     };
     EXPECT_EQ(handler_a2.getMessage(), expected_message);
     EXPECT_TRUE(broker.succeeded);
@@ -404,9 +404,9 @@ TEST(PointToPointTests, FailureWhenConnectionIsNotWorking)
 
     host_a.connect();
     auto msg_a = MessageA{
-        .a = 15,
-        .b = "TestMessage",
-        .c = 'd'
+        15,
+        "TestMessage",
+        'd'
     }.serialize();
 
     broker.broker.publish(gsl::make_span(msg_a.begin(), msg_a.end()), [&broker]{
@@ -423,9 +423,9 @@ TEST(PointToPointTests, FailureWhenConnectionIsNotWorking)
     }
 
     auto expected_message = MessageA{
-        .a = 0,
-        .b = "",
-        .c = 0
+        0,
+        "",
+        0
     };
     EXPECT_EQ(handler_a2.getMessage(), expected_message);
     EXPECT_TRUE(broker.failed);

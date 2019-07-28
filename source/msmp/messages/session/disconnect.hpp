@@ -5,6 +5,7 @@
 #include <gsl/span>
 
 #include <eul/container/static_vector.hpp>
+#include <eul/utils/unused.hpp>
 
 #include "msmp/messages/control/messages_ids.hpp"
 #include "msmp/serializer/serialized_message.hpp"
@@ -31,7 +32,7 @@ struct Disconnect
 
     static Disconnect deserialize(const gsl::span<const uint8_t>& payload)
     {
-        UNUSED(payload);
+        UNUSED1(payload);
         return Disconnect{};
     }
 };

@@ -15,7 +15,7 @@ DataLinkTransmitter::DataLinkTransmitter(eul::logger::logger_factory& logger_fac
         eul::timer::timer_manager& timer_manager, eul::time::i_time_provider& time_provider, std::string_view prefix)
     : logger_(logger_factory.create("DataLinkTransmitter", prefix))
     , writer_(writer)
-    , sm_(std::move(DataLinkTransmitterSm(logger_factory, writer, prefix)))
+    , sm_(DataLinkTransmitterSm(logger_factory, writer, prefix))
     , sm_data_(sm_)
     , timer_(time_provider)
 {

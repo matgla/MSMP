@@ -40,7 +40,7 @@ public:
     std::vector<uint8_t> generate_ack(uint8_t transaction_id)
     {
         std::vector<uint8_t> payload {1, 0};
-        auto ack = messages::control::Ack{.transaction_id = transaction_id}.serialize();
+        auto ack = messages::control::Ack{transaction_id}.serialize();
         std::copy(ack.begin(), ack.end(), std::back_inserter(payload));
 
         const uint32_t crc = CRC::Calculate(payload.data(), payload.size(), CRC::CRC_32());
@@ -55,7 +55,7 @@ public:
     std::vector<uint8_t> generate_nack(uint8_t transaction_id)
     {
         std::vector<uint8_t> payload {1, 0};
-        auto nack = messages::control::Nack{.transaction_id = transaction_id, .reason = messages::control::Nack::Reason::CrcMismatch}.serialize();
+        auto nack = messages::control::Nack{transaction_id, messages::control::Nack::Reason::CrcMismatch}.serialize();
         std::copy(nack.begin(), nack.end(), std::back_inserter(payload));
 
         const uint32_t crc = CRC::Calculate(payload.data(), payload.size(), CRC::CRC_32());

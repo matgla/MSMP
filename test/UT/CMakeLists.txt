@@ -46,7 +46,7 @@ target_link_libraries(msmp_tests
 add_test(msmp_tests msmp_tests)
 
 target_compile_options(msmp_tests PRIVATE
-    $<$<COMPILE_LANGUAGE:CXX>:-std=c++2a -fconcepts -Wall -Werror -Wpedantic -Wextra>
+    $<$<COMPILE_LANGUAGE:CXX>:-std=c++2a -Wall -Werror -Wpedantic -Wextra>
     $<$<CONFIG:DEBUG>:-Og -g>
     $<$<CONFIG:RELEASE>:-Os>
 )

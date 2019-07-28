@@ -92,10 +92,10 @@ public:
     messages::control::Handshake createHandshake(const std::string& name)
     {
         auto handshake = messages::control::Handshake{
-        .protocol_version_major = protocol_version_major,
-        .protocol_version_minor = protocol_version_minor,
-        .name                   = {},
-        .max_payload_size       = configuration::Configuration::max_payload_size
+            protocol_version_major,
+            protocol_version_minor,
+            {},
+            configuration::Configuration::max_payload_size
         };
         std::copy(name.begin(), name.begin() + name.size(), std::begin(handshake.name));
         handshake.name[name.size() + 1] = 0;

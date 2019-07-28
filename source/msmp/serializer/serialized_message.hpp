@@ -61,9 +61,10 @@ public:
         return compose_impl(d);
     }
 
-    constexpr auto compose_message(const auto& msg)
+    template <typename T>
+    constexpr auto compose_message(const T& msg)
     {
-        SerializedMessage<Size + msg.max_size()> new_msg(buffer_, msg);
+        SerializedMessage<Size + T::max_size()> new_msg(buffer_, msg);
         return new_msg;
     }
 
@@ -81,7 +82,7 @@ public:
         return msg.compose_u8(0);
     }
 
-    const auto build()
+    auto build()
     {
         return buffer_;
     }

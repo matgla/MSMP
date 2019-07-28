@@ -33,7 +33,7 @@ struct Ack
     {
         serializer::RawMessageDeserializer<> message(payload);
         message.drop_u8();
-        return Ack {.transaction_id = message.decompose_u8()};
+        return Ack { message.decompose_u8() };
     }
 };
 

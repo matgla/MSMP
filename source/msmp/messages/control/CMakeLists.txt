@@ -15,7 +15,7 @@ target_include_directories(${library_name}
 )
 
 target_compile_options(${library_name} INTERFACE
-    $<$<COMPILE_LANGUAGE:CXX>:-std=c++2a -fconcepts -Wall -Werror>
+    $<$<COMPILE_LANGUAGE:CXX>:-std=c++2a -Wall -Werror>
     $<$<CONFIG:DEBUG>:-Og -g>
     $<$<CONFIG:RELEASE>:-Os>
 )

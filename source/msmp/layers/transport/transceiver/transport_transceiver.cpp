@@ -17,7 +17,6 @@ TransportTransceiver::TransportTransceiver(eul::logger::logger_factory& logger_f
     : logger_(logger_factory.create("TransportTransceiver", prefix))
     , transport_receiver_(transport_receiver)
     , transport_transmitter_(transport_transmitter)
-    , started_(false)
 {
     on_control_slot_ = [this](const Frame& frame)
     {

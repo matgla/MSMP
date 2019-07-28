@@ -15,7 +15,7 @@ class TypedMessageHandler : public MessageHandler
 public:
     bool match(uint8_t id, const StreamType& payload) const override
     {
-        UNUSED(payload);
+        UNUSED1(payload);
         return id == Message::id;
     }
 };

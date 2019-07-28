@@ -18,7 +18,8 @@ target_link_libraries(${library_name}
 )
 
 target_compile_options(${library_name} INTERFACE
-    $<$<COMPILE_LANGUAGE:CXX>:-std=c++2a -fconcepts -Wall -Werror>
+    $<$<COMPILE_LANGUAGE:CXX>:-std=c++2a -Wall -Werror>
+    $<$<COMPILE_LANGUAGE:C>:-std=c99 -Wall -Werror>
     $<$<CONFIG:DEBUG>:-Og -g>
     $<$<CONFIG:RELEASE>:-Os>
 )

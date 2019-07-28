@@ -6,6 +6,7 @@
 #include <type_traits>
 
 #include <eul/container/static_vector.hpp>
+#include <eul/utils/unused.hpp>
 
 #include "msmp/serializer/endian.hpp"
 #include "msmp/serializer/endian_type_traits.hpp"
@@ -74,6 +75,7 @@ struct Serializers
     template <std::size_t N>
     constexpr static std::size_t length(const char (&str)[N])
     {
+        UNUSED1(str);
         return N;
     }
 

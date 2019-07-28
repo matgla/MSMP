@@ -34,7 +34,7 @@ TransportTransmitter::TransportTransmitter(
     , frames_sm_data_(&(frames_sm_.value().operator TransportTransmitterSm&()))
     , time_provider_(time_provider)
 {
-    UNUSED(time_provider);
+    UNUSED1(time_provider);
     logger_.trace() << "Created";
     on_frame_success_slot_ = [this]
     {
@@ -43,7 +43,7 @@ TransportTransmitter::TransportTransmitter(
 
     on_frame_failure_slot_ = [this](TransmissionStatus status)
     {
-        UNUSED(status);
+        UNUSED1(status);
         frames_sm_.value().process_event(Failure{});
     };
 
@@ -55,7 +55,7 @@ TransportTransmitter::TransportTransmitter(
 
     on_control_failure_slot_ = [this](TransmissionStatus status)
     {
-        UNUSED(status);
+        UNUSED1(status);
         control_frames_sm_.value().process_event(Failure{});
     };
 
