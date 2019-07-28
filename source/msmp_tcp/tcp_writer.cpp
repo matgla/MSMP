@@ -21,6 +21,7 @@ TcpWriter::TcpWriter(boost::asio::io_service& io_service,
 
 void TcpWriter::connect(std::string_view address, uint16_t port)
 {
+    std::cerr << "Resolving: " << address << ":" << port << std::endl;
     auto endpoints = boost::asio::ip::tcp::resolver(io_service_).resolve({std::string(address), std::to_string(port)});
     performConnection(endpoints);
 }
@@ -39,6 +40,7 @@ void TcpWriter::performConnection(const boost::asio::ip::tcp::resolver::iterator
         {
             if (ec)
             {
+                std::cerr << "ec" << std::endl;
                 if (connected_)
                 {
                     connected_ = false;
@@ -53,6 +55,7 @@ void TcpWriter::performConnection(const boost::asio::ip::tcp::resolver::iterator
 
                 return;
             }
+            std::cerr<< "connected wrter" << std::endl;
             connected_ = true;
             if (on_connected_)
             {

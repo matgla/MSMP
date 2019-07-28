@@ -43,7 +43,7 @@ private:
     TcpReader tcp_reader_;
     DefaultTimeProvider time_provider_;
     Host host_;
-    std::string_view peer_address_;
+    std::string peer_address_;
     uint16_t peer_port_;
 
     boost::sml::sm<TcpHostSm> sm_;
