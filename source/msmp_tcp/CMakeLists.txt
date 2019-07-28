@@ -14,7 +14,10 @@ target_sources(${library_name}
         ${CMAKE_CURRENT_SOURCE_DIR}/tcp_writer.cpp
 )
 
-set(Boost_USE_STATIC_LIBS ON)
+if (NOT BUILD_SHARED)
+    set(Boost_USE_STATIC_LIBS ON)
+endif ()
+
 find_package(Boost REQUIRED COMPONENTS system exception thread)
 
 target_include_directories(${library_name}
