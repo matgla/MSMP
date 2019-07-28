@@ -14,6 +14,21 @@
 namespace msmp_api
 {
 
+class CallbackHolder
+{
+public:
+    CallbackHolder() = default;
+    CallbackHolder(const IConnection::CallbackType& on_success,
+        const IConnection::CallbackType& on_failure);
+
+    bool operator==(const CallbackHolder& other);
+
+    IConnection::CallbackType on_success;
+    IConnection::CallbackType on_failure;
+
+    std::size_t id;
+};
+
 class Connection : public IConnection
 {
 public:
@@ -26,12 +41,12 @@ public:
     void send(const PayloadType& payload, const CallbackType& on_success, const CallbackType& on_failure) override;
     void onConnected(const CallbackType& callback) override;
 private:
-    void removeCallback(const IConnection::CallbackType& callback);
+    void removeCallback(const std::size_t id);
 
     msmp::layers::session::Connection& connection_;
     IConnection::OnDataCallbackType on_data_;
     IConnection::CallbackType on_connected_;
-    std::list<std::pair<IConnection::CallbackType, IConnection::CallbackType>> callbacks_;
+    std::list<CallbackHolder> callbacks_;
 };
 
 } // namespace msmp_api

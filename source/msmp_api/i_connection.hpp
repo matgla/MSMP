@@ -11,7 +11,7 @@ class IConnection
 {
 public:
     using PayloadType = std::vector<uint8_t>;
-    using OnDataCallbackType = std::function<void(const PayloadType& payload)>;
+    using OnDataCallbackType = std::function<void(uint8_t id, const PayloadType& payload)>;
     using CallbackType = std::function<void()>;
 
     virtual ~IConnection() = default;
