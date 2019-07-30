@@ -10,6 +10,12 @@ namespace msmp_api
 
 static std::size_t id_gen = 0;
 
+CallbackHolder::CallbackHolder()
+    : id(++id_gen)
+{
+
+}
+
 CallbackHolder::CallbackHolder(const IConnection::CallbackType& success_callback,
     const IConnection::CallbackType& failure_callback)
     : on_success(success_callback)

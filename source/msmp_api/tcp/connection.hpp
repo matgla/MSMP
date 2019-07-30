@@ -17,7 +17,7 @@ namespace msmp_api
 class CallbackHolder
 {
 public:
-    CallbackHolder() = default;
+    CallbackHolder();
     CallbackHolder(const IConnection::CallbackType& on_success,
         const IConnection::CallbackType& on_failure);
 
