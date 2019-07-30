@@ -9,7 +9,7 @@ target_sources(${library_name}
 )
 
 target_link_libraries(${library_name}
-    PUBLIC
+    PRIVATE
         gsl
         eul
         sml

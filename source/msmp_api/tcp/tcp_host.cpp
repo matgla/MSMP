@@ -14,13 +14,11 @@ public:
         const std::string& peer_address, uint16_t peer_port)
         : host_(name, host_port, peer_address, peer_port)
     {
-        std::cerr << "TcpHostHolder()" << std::endl;
 
     }
 
     ~TcpHostHolder()
     {
-        std::cerr << "~TcpHostHolder()" << std::endl;
     }
 
     void start()

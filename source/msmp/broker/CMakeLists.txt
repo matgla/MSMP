@@ -18,6 +18,8 @@ target_link_libraries(${library_name}
     PUBLIC
         eul
         msmp_layers_session
+    PRIVATE
+        sml
 )
 
 target_compile_options(${library_name} PUBLIC

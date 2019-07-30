@@ -26,7 +26,7 @@ public:
     IConnection::CallbackType on_success;
     IConnection::CallbackType on_failure;
 
-    std::size_t id;
+    const std::size_t id;
 };
 
 class Connection : public IConnection

@@ -8,13 +8,14 @@
 namespace msmp_api
 {
 
+static std::size_t id_gen = 0;
+
 CallbackHolder::CallbackHolder(const IConnection::CallbackType& success_callback,
     const IConnection::CallbackType& failure_callback)
     : on_success(success_callback)
     , on_failure(failure_callback)
+    , id(++id_gen)
 {
-    static std::size_t id_gen = 0;
-    id = ++id_gen;
 }
 
 bool CallbackHolder::operator==(const CallbackHolder& other)
