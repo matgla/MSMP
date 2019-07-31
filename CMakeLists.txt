@@ -10,12 +10,16 @@ target_include_directories(msmp INTERFACE "${PROJECT_SOURCE_DIR}/source")
 add_subdirectory(lib)
 add_subdirectory(source/msmp)
 add_subdirectory(source/msmp_tcp)
-add_subdirectory(source/msmp_api)
+
+if (BUILD_FOR_EXTERNAL_LANGUAGE)
+    add_subdirectory(source/msmp_api)
+endif()
 
 if (BUILD_SHARED)
     message(STATUS "Building as shared library")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+    set (cxx_flags_shared_library "-fPIC" CACHE STRING "compilation flags for shared library")
+else ()
+    message(STATUS "Building as static library")
 endif ()
 
 if (ASAN_ENABLED)
@@ -34,11 +38,6 @@ if (BUILD_EXAMPLES)
     add_subdirectory(example)
     set(BUILD_MSMP_TCP ON)
 endif()
-
-if (BUILD_MSMP_TCP)
-    message(STATUS "Building MSMP TCP")
-    add_subdirectory(source/msmp_tcp)
-endif ()
 
 target_link_libraries(msmp INTERFACE eul gsl crcpp msmp_source)
 

@@ -15,6 +15,7 @@ target_sources(${library_name}
 )
 
 if (NOT BUILD_SHARED)
+    message (STATUS "Using static version of boost libraries")
     set(Boost_USE_STATIC_LIBS ON)
 endif ()
 
