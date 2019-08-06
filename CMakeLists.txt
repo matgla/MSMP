@@ -4,6 +4,9 @@ project(msmp CXX)
 
 set (sources_dir "${PROJECT_SOURCE_DIR}/source/msmp")
 
+include(cmake/GitModules.cmake)
+fetch_module_via_branch(lib/hal ${PROJECT_SOURCE_DIR}/lib/hal ${CMAKE_CURRENT_SOURCE_DIR} "master")
+
 add_library(msmp INTERFACE)
 
 target_include_directories(msmp INTERFACE "${PROJECT_SOURCE_DIR}/source")

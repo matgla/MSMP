@@ -20,3 +20,6 @@
 [submodule "lib/sml"]
 	path = lib/sml
 	url = https://github.com/boost-experimental/sml.git
+[submodule "lib/hal"]
+	path = lib/hal
+	url = https://github.com/matgla/EmbeddedHAL.git
