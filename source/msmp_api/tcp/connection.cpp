@@ -4,8 +4,6 @@
 
 #include <gsl/span>
 
-#include <iostream>
-
 namespace msmp_api
 {
 
@@ -62,9 +60,7 @@ void Connection::onData(const IConnection::OnDataCallbackType& callback)
     connection_.onData([this](uint8_t id, const gsl::span<const uint8_t>& payload) {
         std::vector<uint8_t> data;
         std::copy(payload.begin(), payload.end(), std::back_inserter(data));
-        std::cerr << "There will be crash" << std::endl;
         on_data_(id, data);
-        std::cerr << "I said" << std::endl;
     });
 }
 

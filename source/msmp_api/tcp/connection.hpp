@@ -39,6 +39,7 @@ public:
     void peerDisconnected() override;
     void onData(const OnDataCallbackType& callback) override;
     void send(const PayloadType& payload, const CallbackType& on_success, const CallbackType& on_failure) override;
+    void send2(const std::vector<uint8_t>& data);
     void onConnected(const CallbackType& callback) override;
 private:
     void removeCallback(const std::size_t id);

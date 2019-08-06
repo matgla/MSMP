@@ -2,8 +2,6 @@
 
 #include "msmp_tcp/tcp_host.hpp"
 
-#include <iostream>
-
 namespace msmp
 {
 
@@ -41,7 +39,6 @@ TcpHost::TcpHost(eul::time::i_time_provider& time_provider, std::string_view nam
         tcp_writer_.connect(peer_address_, peer_port_);
         tcp_reader_.start();
     });
-    std::cerr << "this-> 0x" << std::hex << this << std::endl;
 }
 
 
@@ -50,7 +47,6 @@ TcpHost::TcpHost(std::string_view name,
     std::string_view peer_address, uint16_t peer_port)
     : TcpHost(time_provider_, name, host_port, peer_address, peer_port)
 {
-    std::cerr << "Created: " << name << ". Connecting to " << peer_address << ":" << peer_port << std::endl;
 }
 
 TcpHost::~TcpHost()
@@ -61,9 +57,6 @@ TcpHost::~TcpHost()
 
 void TcpHost::start()
 {
-    std::cerr << "this-> 0x" << std::hex << this << std::endl;
-    std::cerr << "Connecting to: " << peer_address_ << ":" << peer_port_ << std::endl;
-
     tcp_writer_.connect(peer_address_, peer_port_);
     tcp_reader_.start();
 
