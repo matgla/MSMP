@@ -13,6 +13,7 @@ target_include_directories(msmp INTERFACE "${PROJECT_SOURCE_DIR}/source")
 add_subdirectory(lib)
 add_subdirectory(source/msmp)
 add_subdirectory(source/msmp_tcp)
+add_subdirectory(source/msmp_usart)
 
 if (BUILD_FOR_EXTERNAL_LANGUAGE)
     add_subdirectory(source/msmp_api)

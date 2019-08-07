@@ -15,7 +15,6 @@
 #include "msmp_tcp/tcp_reader.hpp"
 #include "msmp_tcp/tcp_host_sm.hpp"
 
-
 namespace msmp
 {
 

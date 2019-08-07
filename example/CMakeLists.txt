@@ -1,1 +1,2 @@
 add_subdirectory(communication_over_tcp)
+add_subdirectory(communication_over_usart)
