@@ -19,7 +19,7 @@ int main()
     stubs::StandardErrorStreamStub stream;
     eul::logger::logger_stream_registry::get().register_stream(stream);
 
-    msmp::UsartHost host("HostA", "/dev/ttyS1");
+    msmp::UsartHost host("HostB", hal::board::UsartContainer.get<hal::board::Usart1>());
     msmp::DefaultTimeProvider time;
     eul::logger::logger_factory lf(time);
     msmp::broker::MessageBroker broker(lf);
