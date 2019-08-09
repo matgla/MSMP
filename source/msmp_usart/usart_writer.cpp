@@ -5,14 +5,21 @@
 namespace msmp
 {
 
+UsartWriter::UsartWriter(hal::interfaces::UsartInterface& usart)
+    : usart_(usart)
+{
+}
+
 void UsartWriter::start()
 {
-    UsartConfiguration::UsartPort.init(115200);
+    usart_.init(115200);
 }
 
 void UsartWriter::write(uint8_t byte)
 {
-    UsartConfiguration::UsartPort.write(byte);
+    uint8_t data[1];
+    data[0] = byte;
+    usart_.write(data);
 }
 
 } // namespace msmp

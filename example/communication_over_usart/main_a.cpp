@@ -13,13 +13,15 @@
 #include "test/UT/stubs/StandardErrorStreamStub.hpp"
 #include "msmp/default_time_provider.hpp"
 
+#include <hal/usart.hpp>
+
 
 int main()
 {
     stubs::StandardErrorStreamStub stream;
     eul::logger::logger_stream_registry::get().register_stream(stream);
 
-    msmp::UsartHost host("HostA");
+    msmp::UsartHost host("HostA", hal::board::UsartContainer.get<hal::board::Usart0>());
     msmp::DefaultTimeProvider time;
     eul::logger::logger_factory lf(time);
     msmp::broker::MessageBroker broker(lf);

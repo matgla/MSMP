@@ -4,41 +4,34 @@
 
 #include <eul/logger/logger_stream_registry.hpp>
 
-#include <msmp_tcp/tcp_host.hpp>
+#include <msmp_usart/usart_host.hpp>
 #include <msmp/broker/message_broker.hpp>
+#include <msmp/configuration/configuration.hpp>
 
 #include "message_a_handler.hpp"
 #include "message_b_handler.hpp"
-#include "message_a.hpp"
 #include "test/UT/stubs/StandardErrorStreamStub.hpp"
 #include "msmp/default_time_provider.hpp"
+
 
 int main()
 {
     stubs::StandardErrorStreamStub stream;
     eul::logger::logger_stream_registry::get().register_stream(stream);
 
-
-    msmp::TcpHost host("TcpHostB", 1237, "localhost", 1236);
+    msmp::UsartHost host("HostA", "/dev/ttyS1");
     msmp::DefaultTimeProvider time;
     eul::logger::logger_factory lf(time);
     msmp::broker::MessageBroker broker(lf);
-    broker.addConnection(host.getConnection());
-    MessageBHandler handler_b;
-    MessageAHandler handler_a(broker);
-    broker.addHandler(handler_b);
-    broker.addHandler(handler_a);
 
-    host.onConnected([&broker] {
+    broker.addConnection(host.getConnection());
+    MessageAHandler handler_a(broker);
+    MessageBHandler handler_b;
+    broker.addHandler(handler_a);
+    broker.addHandler(handler_b);
+
+    host.onConnected([]{
         std::cout << "Peer connected!" << std::endl;
-        auto msg_a = MessageA{
-            177,
-            "TestingMessage"}.serialize();
-        broker.publish(gsl::make_span(msg_a.begin(), msg_a.end()), []{
-            std::cout << "Message A successfuly published" << std::endl;
-        }, [] {
-            std::cout << "Failure while publishing Message A" << std::endl;
-        });
     });
 
     host.start();

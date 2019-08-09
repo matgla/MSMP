@@ -7,7 +7,7 @@ target_sources(${library_name}
         ${CMAKE_CURRENT_SOURCE_DIR}/usart_host.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/usart_reader.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/usart_writer.hpp
-        PRIVATE
+    PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/usart_host.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/usart_reader.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/usart_writer.cpp
@@ -22,6 +22,5 @@ target_link_libraries(${library_name}
     PUBLIC
         msmp
 
-    PRIVATE
         hal
 )

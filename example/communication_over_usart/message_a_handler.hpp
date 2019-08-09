@@ -25,8 +25,8 @@ public:
         std::cout << "Received message A -> name: " << msg_a.name << ", value: " << msg_a.value << std::endl;
 
         auto msg_b = MessageB{
-            .value = 19.54,
-            .name = msg_a.name
+            19.54,
+            msg_a.name
         }.serialize();
 
         message_broker_.publish(gsl::make_span(msg_b.begin(), msg_b.end()));

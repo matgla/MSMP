@@ -85,9 +85,9 @@ TransmissionStatus TransportTransmitter::sendControl(
     const StreamType& payload, const CallbackType& on_success, const CallbackType& on_failure)
 {
     control_frames_sm_.value().process_event(Send{
-        .payload = payload,
-        .on_success = on_success,
-        .on_failure = on_failure
+        payload,
+        on_success,
+        on_failure
     });
 
     return TransmissionStatus::Ok;
@@ -111,9 +111,9 @@ TransmissionStatus
     TransportTransmitter::send(const StreamType& payload, const CallbackType& on_success, const CallbackType& on_failure)
 {
     frames_sm_.value().process_event(Send{
-        .payload = payload,
-        .on_success = on_success,
-        .on_failure = on_failure
+        payload,
+        on_success,
+        on_failure
     });
 
     return TransmissionStatus::Ok;

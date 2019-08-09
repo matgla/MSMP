@@ -18,7 +18,7 @@ target_include_directories(communication_over_usart_example_peer_a
 
 
 target_link_libraries(communication_over_usart_example_peer_a
-    PRIVATE
+        hal
         msmp_usart
         gsl
 )

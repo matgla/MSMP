@@ -26,10 +26,10 @@ void ConnectionSm::sendHandshake()
 {
     logger_.info() << "Sending handshake";
     auto handshake = messages::control::Handshake{
-        .protocol_version_major = protocol_version_major,
-        .protocol_version_minor = protocol_version_minor,
-        .name                   = {},
-        .max_payload_size       = configuration::Configuration::max_payload_size
+        protocol_version_major,
+        protocol_version_minor,
+        {},
+        configuration::Configuration::max_payload_size
     };
 
     constexpr auto max_name_size = sizeof(messages::control::Handshake::name);

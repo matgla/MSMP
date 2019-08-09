@@ -5,16 +5,22 @@
 namespace msmp
 {
 
-UsartReader::UsartReader(const OnDataCallback& on_data)
+UsartReader::UsartReader(hal::interfaces::UsartInterface& usart, const OnDataCallback& on_data)
     : on_data_(on_data)
+    , usart_(usart)
 {
-
+    slot_ = [this] (const hal::interfaces::UsartInterface::StreamType& data) {
+        for (const auto byte : data)
+        {
+            on_data_(byte);
+        }
+    };
 }
 
 void UsartReader::start()
 {
-    UsartConfiguration::UsartPort.init(115200);
-    UsartConfiguration::UsartPort.onData(on_data_);
+    usart_.init(115200);
+    usart_.onData(slot_);
 }
 
 }

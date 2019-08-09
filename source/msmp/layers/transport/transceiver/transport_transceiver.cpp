@@ -53,16 +53,16 @@ void TransportTransceiver::respondNack(const Frame& frame)
         case TransportFrameStatus::CrcMismatch:
         {
             const auto nack = messages::control::Nack{
-                .transaction_id = frame.transaction_id,
-                .reason = messages::control::Nack::Reason::CrcMismatch
+                frame.transaction_id,
+                messages::control::Nack::Reason::CrcMismatch
             }.serialize();
             transport_transmitter_.sendControl(gsl::make_span(nack.begin(), nack.end()));
         } break;
         case TransportFrameStatus::WrongMessageType:
         {
             auto nack = messages::control::Nack{
-                .transaction_id = frame.transaction_id,
-                .reason = messages::control::Nack::Reason::WrongMessageType
+                frame.transaction_id,
+                messages::control::Nack::Reason::WrongMessageType
             }.serialize();
             transport_transmitter_.sendControl(gsl::make_span(nack.begin(), nack.end()));
         } break;
@@ -71,7 +71,7 @@ void TransportTransceiver::respondNack(const Frame& frame)
 
 void TransportTransceiver::respondAck(const Frame& frame)
 {
-    auto ack = messages::control::Ack{.transaction_id = frame.transaction_id}.serialize();
+    auto ack = messages::control::Ack{frame.transaction_id}.serialize();
     transport_transmitter_.sendControl(gsl::make_span(ack.begin(), ack.end()));
 }
 
