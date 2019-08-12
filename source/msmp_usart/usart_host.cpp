@@ -18,6 +18,7 @@ void UsartHost::start()
 {
     usart_reader_.start();
     usart_writer_.start();
+    host_.connect();
 }
 
 layers::session::Connection& UsartHost::getConnection()

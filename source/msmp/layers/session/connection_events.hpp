@@ -22,6 +22,11 @@ struct PeerConnected
     std::string_view name;
 };
 
+struct PeerResponded
+{
+    std::string_view name;
+};
+
 struct Success
 {
 

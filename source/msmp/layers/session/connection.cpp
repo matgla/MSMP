@@ -82,7 +82,16 @@ void Connection::handle(const StreamType& payload)
         if (payload[1] == messages::control::Handshake::id)
         {
             auto msg = messages::control::Handshake::deserialize(payload);
-            sm_.process_event(PeerConnected{msg.name});
+            if (msg.is_response_for_other_handshake == 1)
+            {
+                logger_.trace() << "Received response for handshake";
+                sm_.process_event(PeerResponded{msg.name});
+            }
+            else
+            {
+                logger_.trace() << "Received handshake";
+                sm_.process_event(PeerConnected{msg.name});
+            }
             return;
         }
 

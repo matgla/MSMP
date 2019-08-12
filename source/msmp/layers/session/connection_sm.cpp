@@ -28,6 +28,29 @@ void ConnectionSm::sendHandshake()
     auto handshake = messages::control::Handshake{
         protocol_version_major,
         protocol_version_minor,
+        0,
+        {},
+        configuration::Configuration::max_payload_size
+    };
+
+    constexpr auto max_name_size = sizeof(messages::control::Handshake::name);
+
+    std::size_t length = name_.length() < max_name_size - 1 ? name_.length() : max_name_size - 1;
+    std::copy(name_.begin(), name_.begin() + length, std::begin(handshake.name));
+    handshake.name[length + 1] = 0;
+
+    const auto serialized = handshake.serialize();
+
+    transmit_.emit(gsl::make_span(serialized.begin(), serialized.end()));
+}
+
+void ConnectionSm::sendHandshakeResponse()
+{
+    logger_.info() << "Sending handshake response";
+    auto handshake = messages::control::Handshake{
+        protocol_version_major,
+        protocol_version_minor,
+        1,
         {},
         configuration::Configuration::max_payload_size
     };

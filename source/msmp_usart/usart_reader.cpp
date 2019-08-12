@@ -19,8 +19,7 @@ UsartReader::UsartReader(hal::interfaces::UsartInterface& usart, const OnDataCal
 
 void UsartReader::start()
 {
-    usart_.init(115200);
     usart_.onData(slot_);
 }
 
-}
+} // namespace msmp

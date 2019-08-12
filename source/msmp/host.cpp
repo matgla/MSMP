@@ -14,7 +14,10 @@ Host::Host(eul::time::i_time_provider& time_provider, layers::physical::IDataWri
 {
 }
 
-Host::~Host() = default;
+Host::~Host()
+{
+    disconnect();
+}
 
 layers::session::Connection& Host::getConnection()
 {

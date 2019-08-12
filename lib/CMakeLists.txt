@@ -16,4 +16,4 @@ if (DISABLE_EXCEPTIONS)
     set(SML_USE_EXCEPTIONS   OFF CACHE BOOL "Do not disable exceptions" FORCE)
 endif()
 
-fetch_module_via_branch(lib/sml ${PROJECT_SOURCE_DIR}/lib/sml ${PROJECT_SOURCE_DIR} "master")
+fetch_module_via_tag(lib/sml ${PROJECT_SOURCE_DIR}/lib/sml ${PROJECT_SOURCE_DIR} "master")

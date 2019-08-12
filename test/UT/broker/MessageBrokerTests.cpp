@@ -94,6 +94,7 @@ public:
         auto handshake = messages::control::Handshake{
             protocol_version_major,
             protocol_version_minor,
+            0,
             {},
             configuration::Configuration::max_payload_size
         };

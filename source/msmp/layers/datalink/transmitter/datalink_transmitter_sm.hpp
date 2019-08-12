@@ -50,8 +50,6 @@ public:
             , state<TransmittedByte>        + event<ResponseReceived> [         !(IsBufferEmpty(buffer_)) && (IsNextByteSpecial(buffer_))           ]  / call(this, &DataLinkTransmitterSm::clearCounterAndSendEscapeCode) = state<ForceSendNextByte>
             , state<TransmittedByte>        + event<ResponseReceived> [         !(IsBufferEmpty(buffer_)) && !(IsNextByteSpecial(buffer_))          ]  / call(this, &DataLinkTransmitterSm::clearCounterAndSendNextByte)   = state<TransmittedByte>
             , state<ForceSendNextByte>      + event<ResponseReceived>                                                                                  / call(this, &DataLinkTransmitterSm::clearCounterAndSendNextByte)   = state<TransmittedByte>
-        /* on_entries */
-            , state<Idle>                   + on_entry<_>                                                                                              / call(this, &DataLinkTransmitterSm::initialize)
         /* failures */
             , state<WaitingForStartByteAck> + event<FailureReceived>  [ WasRetransmittedLessThan(retransmission_counter_, allowed_retransmissions)  ]  / call(this, &DataLinkTransmitterSm::retryTransmission)            = state<WaitingForStartByteAck>
             , state<TransmittedByte>        + event<FailureReceived>  [ WasRetransmittedLessThan(retransmission_counter_, allowed_retransmissions)  ]  / call(this, &DataLinkTransmitterSm::retryTransmission)            = state<TransmittedByte>
@@ -74,8 +72,8 @@ public:
 private:
     void initialize();
     void writeDataToBufferAndStart(const SendFrame& event);
-    void rejectWithTooMuchPayload(const SendFrame& event) const;
-    void reportWriterFailure() const;
+    void rejectWithTooMuchPayload(const SendFrame& event);
+    void reportWriterFailure();
     void finishTransmission();
     void clearCounterAndSendEscapeCode();
     void clearCounterAndSendNextByte();

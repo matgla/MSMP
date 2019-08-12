@@ -54,17 +54,19 @@ void DataLinkTransmitterSm::writeDataToBufferAndStart(const SendFrame& event)
     sendByteAsync(static_cast<uint8_t>(ControlByte::StartFrame));
 }
 
-void DataLinkTransmitterSm::rejectWithTooMuchPayload(const SendFrame& event) const
+void DataLinkTransmitterSm::rejectWithTooMuchPayload(const SendFrame& event)
 {
     if (event.onFailure())
     {
         event.onFailure()(TransmissionStatus::TooMuchPayload);
     }
+    initialize();
 }
 
-void DataLinkTransmitterSm::reportWriterFailure() const
+void DataLinkTransmitterSm::reportWriterFailure()
 {
     on_failure_.emit(TransmissionStatus::WriterReportedFailure);
+    initialize();
 }
 
 
@@ -86,6 +88,7 @@ void DataLinkTransmitterSm::finishTransmission()
     buffer_.clear();
     sendByteAsync(static_cast<uint8_t>(ControlByte::StartFrame));
     on_success_.emit();
+    initialize();
 }
 
 void DataLinkTransmitterSm::sendEscapeCode()

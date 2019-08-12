@@ -32,27 +32,28 @@ public:
         using namespace eul::utils;
 
         return make_transition_table(
-        /*  |          from           |        when             |                              do                       |         to       |*/
-            * state<Idle>             + event<Connect>          / call(this, &ConnectionSm::sendHandshake)              = state<Idle>
-            , state<Idle>             + event<Success>                                                                  = state<ConnectedToPeer>
-            , state<Idle>             + event<Failure>          / call(this, &ConnectionSm::sendHandshake)              = state<Idle>
-            , state<Idle>             + event<PeerConnected>    / call(this, &ConnectionSm::sendHandshake)              = state<PeerIsConnected>
-            , state<ConnectedToPeer>  + event<PeerConnected>    / call(this, &ConnectionSm::notify)                     = state<Connected>
-            , state<PeerIsConnected>  + event<Success>          / call(this, &ConnectionSm::notify)                     = state<Connected>
-            , state<PeerIsConnected>  + event<Failure>          / call(this, &ConnectionSm::sendHandshake)              = state<PeerIsConnected>
+        /*  |          from           |        when             |                              do                        |         to       |*/
+            * state<Idle>             + event<Connect>          / call(this, &ConnectionSm::sendHandshake)               = state<Idle>
+            , state<Idle>             + event<Success>                                                                   = state<ConnectedToPeer>
+            , state<Idle>             + event<Failure>          / call(this, &ConnectionSm::sendHandshake)               = state<Idle>
+            , state<Idle>             + event<PeerConnected>    / call(this, &ConnectionSm::sendHandshakeResponse)       = state<PeerIsConnected>
+            , state<ConnectedToPeer>  + event<PeerResponded>    / call(this, &ConnectionSm::notify)                      = state<Connected>
+            , state<PeerIsConnected>  + event<Success>          / call(this, &ConnectionSm::notify)                      = state<Connected>
+            , state<PeerIsConnected>  + event<Failure>          / call(this, &ConnectionSm::sendHandshake)               = state<PeerIsConnected>
 
-            , state<Connected>        + event<Disconnect>       / call(this, &ConnectionSm::disconnectPeer)             = state<PeerIsConnected>
-            , state<Connected>        + event<PeerDisconnected> / call(this, &ConnectionSm::deconfigureConnection)      = state<ConnectedToPeer>
-            , state<PeerIsConnected>  + event<PeerDisconnected> / call(this, &ConnectionSm::deconfigureConnection)      = state<Idle>
+            , state<Connected>        + event<Disconnect>       / call(this, &ConnectionSm::disconnectPeer)              = state<PeerIsConnected>
+            , state<Connected>        + event<PeerConnected>    / call(this, &ConnectionSm::sendHandshakeResponse)       = state<Connected>
+            , state<Connected>        + event<PeerDisconnected> / call(this, &ConnectionSm::deconfigureConnection)       = state<ConnectedToPeer>
+            , state<PeerIsConnected>  + event<PeerDisconnected> / call(this, &ConnectionSm::deconfigureConnection)       = state<Idle>
             , state<Connected>        + event<PeerUnexpectedlyDisconnected> /call(this, &ConnectionSm::resetTransceiver) = state<Idle>
             , state<PeerIsConnected>  + event<PeerUnexpectedlyDisconnected> /call(this, &ConnectionSm::resetTransceiver) = state<Idle>
-            , state<ConnectedToPeer>  + event<Disconnect>       / call(this, &ConnectionSm::disconnectPeer)             = state<Idle>
+            , state<ConnectedToPeer>  + event<Disconnect>       / call(this, &ConnectionSm::disconnectPeer)              = state<Idle>
 
-            , state<Connected>        + event<MessageReceived>  / call(this, &ConnectionSm::handleMessage)              = state<Connected>
-            , state<Connected>        + event<SendMessage>      / call(this, &ConnectionSm::sendMessage)                = state<Connected>
-            , state<Idle>             + event<SendMessage>      / call(this, &ConnectionSm::rejectMessage)              = state<Idle>
-            , state<ConnectedToPeer>  + event<SendMessage>      / call(this, &ConnectionSm::rejectMessage)              = state<ConnectedToPeer>
-            , state<PeerIsConnected>  + event<SendMessage>      / call(this, &ConnectionSm::rejectMessage)              = state<PeerIsConnected>
+            , state<Connected>        + event<MessageReceived>  / call(this, &ConnectionSm::handleMessage)               = state<Connected>
+            , state<Connected>        + event<SendMessage>      / call(this, &ConnectionSm::sendMessage)                 = state<Connected>
+            , state<Idle>             + event<SendMessage>      / call(this, &ConnectionSm::rejectMessage)               = state<Idle>
+            , state<ConnectedToPeer>  + event<SendMessage>      / call(this, &ConnectionSm::rejectMessage)               = state<ConnectedToPeer>
+            , state<PeerIsConnected>  + event<SendMessage>      / call(this, &ConnectionSm::rejectMessage)               = state<PeerIsConnected>
         );
     }
 
@@ -62,6 +63,7 @@ public:
 
 private:
     void sendHandshake();
+    void sendHandshakeResponse();
     void deconfigureConnection();
     void disconnectPeer();
     void handleMessage(const MessageReceived& msg);

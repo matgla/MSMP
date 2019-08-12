@@ -1,4 +1,5 @@
 #include <iostream>
+#include <thread>
 
 #include <gsl/span>
 
@@ -22,6 +23,7 @@ int main()
     eul::logger::logger_stream_registry::get().register_stream(stream);
 
     msmp::UsartHost host("HostA", hal::board::UsartContainer.get<hal::board::Usart0>());
+    hal::board::UsartContainer.get<hal::board::Usart0>().init(9600);
     msmp::DefaultTimeProvider time;
     eul::logger::logger_factory lf(time);
     msmp::broker::MessageBroker broker(lf);
@@ -37,4 +39,9 @@ int main()
     });
 
     host.start();
+
+    while (true)
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
 }

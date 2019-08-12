@@ -12,7 +12,6 @@ UsartWriter::UsartWriter(hal::interfaces::UsartInterface& usart)
 
 void UsartWriter::start()
 {
-    usart_.init(115200);
 }
 
 void UsartWriter::write(uint8_t byte)
@@ -20,6 +19,7 @@ void UsartWriter::write(uint8_t byte)
     uint8_t data[1];
     data[0] = byte;
     usart_.write(data);
+    on_success_.emit();
 }
 
 } // namespace msmp
