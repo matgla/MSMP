@@ -17,7 +17,7 @@ class MessageBroker
 {
 public:
     using CallbackType = layers::session::CallbackType;
-    MessageBroker(eul::logger::logger_factory& logger_factory);
+    MessageBroker(const eul::logger::logger_factory& logger_factory);
 
     void addConnection(layers::session::Connection& connection);
     void addHandler(MessageHandler& handler);

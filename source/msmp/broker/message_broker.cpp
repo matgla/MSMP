@@ -5,7 +5,7 @@ namespace msmp
 namespace broker
 {
 
-MessageBroker::MessageBroker(eul::logger::logger_factory& logger_factory)
+MessageBroker::MessageBroker(const eul::logger::logger_factory& logger_factory)
     : logger_(logger_factory.create("MessageBroker"))
 {
 }
