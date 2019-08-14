@@ -13,7 +13,7 @@ hal::interfaces::UsartInterface& getUsartByName(const std::string& device)
 {
     if (device == "Usart1")
     {
-        return hal::interfaces::UsartContainer.get<hal::interfaces::Usart0>();
+        return hal::board::UsartContainer.get<hal::interfaces::Usart0>();
     }
 }
 
