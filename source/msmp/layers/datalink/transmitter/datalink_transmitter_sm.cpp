@@ -16,6 +16,7 @@ DataLinkTransmitterSm::DataLinkTransmitterSm(eul::logger::logger_factory& logger
     : logger_(logger_factory.create("DataLinkTransmitterSm", prefix))
     , writer_(&writer)
     , retransmission_counter_(0)
+    , is_idle_(true)
 {
 }
 
@@ -23,6 +24,7 @@ DataLinkTransmitterSm::DataLinkTransmitterSm(const DataLinkTransmitterSm& data_l
     : logger_(data_link_transmitter.logger_)
     , writer_(data_link_transmitter.writer_)
     , retransmission_counter_(0)
+    , is_idle_(true)
 {
 
 }
@@ -40,12 +42,14 @@ void DataLinkTransmitterSm::doOnIdle(OnIdleSlot& on_idle)
 void DataLinkTransmitterSm::initialize()
 {
     buffer_.clear();
+    is_idle_ = true;
     on_idle_.emit();
 }
 
 void DataLinkTransmitterSm::writeDataToBufferAndStart(const SendFrame& event)
 {
     logger_.trace() << "Storing data in buffer: " << eul::logger::hex << event.getData();
+    is_idle_ = false;
     std::copy(event.getData().begin(), event.getData().end(), std::back_inserter(buffer_));
     on_success_.disconnect_all();
     on_failure_.disconnect_all();
@@ -80,6 +84,11 @@ void DataLinkTransmitterSm::sendByteAsync(uint8_t byte)
 {
     current_byte_ = byte;
     sendByte();
+}
+
+bool DataLinkTransmitterSm::isIdle() const
+{
+    return is_idle_;
 }
 
 void DataLinkTransmitterSm::finishTransmission()

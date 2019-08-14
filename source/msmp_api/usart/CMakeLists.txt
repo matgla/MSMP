@@ -12,6 +12,7 @@ target_sources(msmp_api_usart
 target_include_directories(msmp_api_usart
     PUBLIC
         ${PROJECT_SOURCE_DIR}/source/msmp_api
+        ${PROJECT_SOURCE_DIR}/source
 )
 
 target_link_libraries(msmp_api_usart msmp_usart)

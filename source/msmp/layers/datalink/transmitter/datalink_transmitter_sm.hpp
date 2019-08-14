@@ -68,6 +68,7 @@ public:
 
     void doOnByteSent(OnByteSentSlot& slot);
     void doOnIdle(OnIdleSlot& on_idle);
+    bool isIdle() const;
 
 private:
     void initialize();
@@ -94,6 +95,7 @@ private:
     uint8_t current_byte_;
     configuration::Configuration::LifetimeType lifetime_;
     uint8_t retransmission_counter_;
+    bool is_idle_;
 };
 
 } // namespace transmitter

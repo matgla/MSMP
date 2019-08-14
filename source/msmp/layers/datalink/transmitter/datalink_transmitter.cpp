@@ -82,7 +82,7 @@ void DataLinkTransmitter::doOnIdle(OnIdleSlot& slot)
 
 bool DataLinkTransmitter::isIdle() const
 {
-    return sm_.is(boost::sml::state<Idle>);
+    return sm_data_.isIdle();
 }
 
 

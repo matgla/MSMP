@@ -16,6 +16,7 @@ add_subdirectory(source/msmp_tcp)
 add_subdirectory(source/msmp_usart)
 
 if (BUILD_FOR_EXTERNAL_LANGUAGE)
+    message (STATUS "Building API")
     add_subdirectory(source/msmp_api)
 endif()
 
