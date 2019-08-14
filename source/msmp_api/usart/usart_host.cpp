@@ -13,7 +13,7 @@ hal::interfaces::UsartInterface& getUsartByName(const std::string& device)
 {
     if (device == "Usart1")
     {
-        return hal::board::UsartContainer.get<hal::interfaces::Usart0>();
+        return hal::board::UsartContainer.get<hal::board::Usart0>();
     }
 }
 
@@ -50,7 +50,6 @@ public:
 
 private:
     std::function<void()> callback_;
-    hal::interfaces::Usart
     msmp::UsartHost host_;
 };
 
