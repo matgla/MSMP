@@ -18,6 +18,14 @@ public:
         UNUSED1(payload);
         return id == Message::id;
     }
+
+    void handle(const StreamType& payload) override
+    {
+        auto deserialized_msg = Message::deserialize(payload);
+        handle(deserialized_msg);
+    }
+
+    virtual void handle(const Message& msg) = 0;
 };
 
 } // namespace broker
