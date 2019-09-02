@@ -4,6 +4,8 @@
 
 #include <gsl/span>
 
+#include <iostream>
+
 namespace msmp_api
 {
 
@@ -94,6 +96,7 @@ void Connection::onConnected(const IConnection::CallbackType& callback)
 {
     on_connected_ = callback;
     connection_.onConnected([this] {
+        std::cerr << "On connected callback" << std::endl;
         on_connected_();
     });
 }

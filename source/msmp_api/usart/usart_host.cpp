@@ -62,8 +62,12 @@ public:
 
     void start()
     {
+        std::cerr << "Initialziing" << std::endl;
         usart_.init(9600);
+        std::cerr << "Thread spawned" << std::endl;
+
         host_.start();
+        std::cerr << "Connection enstablished" << std::endl;
     }
 
     void onConnected(const std::function<void()>& callback)

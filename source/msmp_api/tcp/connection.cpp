@@ -4,6 +4,8 @@
 
 #include <gsl/span>
 
+#include <iostream>
+
 namespace msmp_api
 {
 
@@ -93,7 +95,9 @@ void Connection::send(const IConnection::PayloadType& payload,
 void Connection::onConnected(const IConnection::CallbackType& callback)
 {
     on_connected_ = callback;
+    std::cerr << "On connected setting!!!" << std::endl;
     connection_.onConnected([this] {
+        std::cerr << "Callback was fired" << std::endl;
         on_connected_();
     });
 }
