@@ -12,6 +12,8 @@ set(SML_BUILD_EXAMPLES   OFF CACHE BOOL "Build examples" FORCE)
 set(SML_BUILD_TESTS      OFF CACHE BOOL "Build tests" FORCE)
 set(SML_USE_EXCEPTIONS   ON CACHE BOOL "Do not disable exceptions" FORCE)
 
+set(HAS_CXX20_FLAG TRUE CACHE STRING "System name" FORCE)
+
 if (DISABLE_EXCEPTIONS)
     set(SML_USE_EXCEPTIONS   OFF CACHE BOOL "Do not disable exceptions" FORCE)
 endif()
