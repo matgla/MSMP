@@ -18,4 +18,4 @@ if (DISABLE_EXCEPTIONS)
     set(SML_USE_EXCEPTIONS   OFF CACHE BOOL "Do not disable exceptions" FORCE)
 endif()
 
-fetch_module_via_tag(lib/sml ${PROJECT_SOURCE_DIR}/lib/sml ${PROJECT_SOURCE_DIR} "v1.0.0")
+fetch_module_via_tag(lib/sml ${PROJECT_SOURCE_DIR}/lib/sml ${PROJECT_SOURCE_DIR} "v1.1.1")
